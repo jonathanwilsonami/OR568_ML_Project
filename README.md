@@ -1,18 +1,3 @@
-
-
-Make R available inside Jupyter (one-time kernel registration)
-
-Run:
-
-R -q -e 'IRkernel::installspec(user = TRUE)'
-
-
-Now Jupyter can run Python and R kernels.
-
-
-quarto preview
-quarto render 
-
 # OR 568 ML Project & Shared Notebooks (Python + R + Quarto)
 
 This repository is a simple, shared workspace for a mixed team using:
