@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Conda
+.conda/
+conda-bld/
+
+# Jupyter
+.ipynb_checkpoints/
+# *.ipynb
+
+# Quarto
+.quarto/
+_site/
+docs/
+
+# Data outputs (generated locally)
+data/raw/
+data/processed/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+.Rhistory
+.Rproj.user/
+
+/.quarto/
+**/*.quarto_ipynb

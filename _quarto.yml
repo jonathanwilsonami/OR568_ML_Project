@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: docs
+  execute-dir: project # Sets your root directory 
+  resources:
+    - images/**
+    - OR568_ML_Project/ml-shared-notebooks/data/**
+
+website:
+  title: "OR 568 Machine Learning Project"
+  site-url: https://jonathanwilsonami.github.io/OR568_ML_Project/
+  repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
+  navbar:
+    left:
+      - href: ml-shared-notebooks/notebooks/r/01_report.qmd
+        text: "R Report"
+      - href: ml-shared-notebooks/notebooks/python/01_eda_model.ipynb
+        text: "Python Notebook"
+
+format:
+  html:
+    theme: cyborg
+    css: styles.css
+    toc: true
+    include-in-header:
+      - text: |
+          <link rel="stylesheet"
+                href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+                
+bibliography: references.bib
+csl: https://www.zotero.org/styles/ieee

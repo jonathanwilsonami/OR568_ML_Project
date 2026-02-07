@@ -1,0 +1,70 @@
+name: or568_ml_project
+channels:
+  - conda-forge
+dependencies:
+  # --------------------
+  # Core
+  # --------------------
+  - python=3.11
+  - pip
+
+  # --------------------
+  # Jupyter / notebooks
+  # --------------------
+  - jupyterlab
+  - ipykernel
+  - jupytext
+  - nb_conda_kernels
+
+  # --------------------
+  # Python data + ML
+  # --------------------
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+
+  # --------------------
+  # Common ML / modeling tools
+  # --------------------
+  - xgboost
+  - lightgbm
+  - statsmodels
+
+  # --------------------
+  # I/O + interop (Python <-> R)
+  # --------------------
+  - pyarrow
+  - fastparquet
+
+  # --------------------
+  # R base + kernels
+  # --------------------
+  - r-base=4.3
+  - r-irkernel
+
+  # --------------------
+  # R data science core
+  # --------------------
+  - r-tidyverse
+  - r-data.table
+  - r-arrow
+  - r-readr
+  - r-dplyr
+  - r-tidyr
+  - r-ggplot2
+
+  # --------------------
+  # R modeling / ML
+  # --------------------
+  - r-caret
+  - r-ranger
+  - r-xgboost
+
+  # --------------------
+  # R reporting
+  # --------------------
+  - r-knitr
+  - r-rmarkdown
