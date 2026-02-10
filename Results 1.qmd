@@ -1,0 +1,9 @@
+---
+title: "Aviation Component Analysis"
+editor: visual
+---
+
+```{echo: TRUE}
+
+
+```
