@@ -1,0 +1,5 @@
+icao24,n_number,aircraft_code,aircraft_manufacturer,aircraft_model,aircraft_type,aircraft_category,num_engines,num_seats,cruising_speed_mph,manufacturing_year,registrant_type,registrant_name,registrant_city,registrant_state,registrant_country
+a4bb8a,N404AN,3940051,AIRBUS,A321-253NX,Fixed wing multi engine,Land,2.0,222.0,,2019.0,Corporation,BANK OF UTAH TRUSTEE,SALT LAKE CITY,UT,US
+a97d63,N710PS,1390015,BOMBARDIER INC,CL-600-2C10,Fixed wing multi engine,Land,2.0,80.0,,2004.0,LLC,DOUGHERTY AIR TRUSTEE LLC TRUSTEE,MINNEAPOLIS,MN,US
+abd19e,N8603F,138440A,BOEING,737-8H4,Fixed wing multi engine,Land,2.0,143.0,,2012.0,Corporation,WILMINGTON TRUST CO TRUSTEE,WILMINGTON,DE,US
+ac508b,N893AT,1383700,BOEING,717-200,Fixed wing multi engine,Land,2.0,100.0,,2004.0,Corporation,DELTA AIR LINES INC,ATLANTA,GA,US
