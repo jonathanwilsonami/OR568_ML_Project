@@ -68,3 +68,13 @@ dependencies:
   # --------------------
   - r-knitr
   - r-rmarkdown
+
+  # --------------------
+  # Data Engineering / APIs
+  # --------------------
+  - faa_aircraft_registry
+  - pyopensky
+
+
+  - matplotlib 
+  - foliuum 
