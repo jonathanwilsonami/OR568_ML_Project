@@ -1,352 +1,257 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
-import pandas as pd
-import numpy as np
+from pathlib import Path
+import polars as pl
 
-# ------------------------------------------------------------
-# INPUT PATHS (your exact paths)
-# ------------------------------------------------------------
-FLIGHTS_CSV = "/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/bwi_delays.csv"
-WEATHER_CSV = "/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/BWI_Weather_from_Iowa Environmental Mesonet_IEM_ASOS_27 June 2022(in).csv"
-REGISTRY_CSV = "/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/raw_data/faa_aircraft_registry.csv"
+# ============================================================
+# Build Enriched Flight Delay Dataset (BTS + Hourly Weather + Registry)
+# Fixes:
+#  - Polars "streaming" deprecation -> use engine="streaming"
+#  - Weather CSV parsing error: "could not parse `null` as dtype f64"
+#    -> force weather numeric columns to Utf8 on read + convert later
+# ============================================================
 
-# Output
-OUT_CSV = "/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/enriched_flights.csv"
+# ----------------------------
+# Paths (your directory layout)
+# ----------------------------
+BASE_DIR = Path(__file__).resolve().parent
+data_dir = BASE_DIR / "raw_data"
 
-# ------------------------------------------------------------
-# PARAMETERS
-# ------------------------------------------------------------
-# Nearest weather observation allowed distance from scheduled time
-WEATHER_TOLERANCE = pd.Timedelta("2h")
+bts_path = data_dir / "BTS_data_2019.csv"                      # BTS flights CSV
+weather_path = data_dir / "weather.csv"                        # Weather CSV (IEM/ASOS export)
+registry_path = data_dir / "faa_flight_registry_2025.parquet"  # Registry parquet
 
-# Regional features thresholds
-STORM_SEVERITY_THRESHOLD = 1.5
-SYSTEM_INDEX_THRESHOLD = 1.0
-SYSTEM_STORM_COUNT_THRESHOLD = 2
+out_dir = BASE_DIR / "outputs"
+out_dir.mkdir(parents=True, exist_ok=True)
 
-# BTS scheduled times are local; for BWI this is America/New_York
-# We convert scheduled times to UTC to align with IEM timestamps (typically UTC).
-LOCAL_TZ_DEFAULT = "America/New_York"
+OUT_CSV = out_dir / "enriched_flights.csv"
+OUT_PARQUET = out_dir / "enriched_flights.parquet"
 
-# ------------------------------------------------------------
-# HELPERS
-# ------------------------------------------------------------
-def hhmm_to_minutes(hhmm) -> float:
-    """Convert HHMM (e.g., 1209) to minutes after midnight."""
-    if pd.isna(hhmm):
-        return np.nan
-    # CRSDepTime can be int/float; preserve leading zeros
-    s = str(int(float(hhmm))).zfill(4)
-    hh = int(s[:2])
-    mm = int(s[2:])
-    return hh * 60 + mm
+# ----------------------------
+# Config
+# ----------------------------
+FORCE_REGISTRY_STRINGS = True  # fill ALL registry cols with "Registry Not Found"
+AIRPORT_TO_STATION: dict[str, str] = {
+    # "BWI": "KBWI",
+}
 
+# Weather columns that often contain "null" strings; read as strings first
+WEATHER_NUMERIC_COLS = [
+    "lon", "lat", "elevation", "tmpf", "dwpf", "relh", "drct", "sknt",
+    "p01i", "alti", "mslp", "vsby", "gust",
+    "skyl1", "skyl2", "skyl3", "skyl4",
+    "ice_accretion_1hr", "ice_accretion_3hr", "ice_accretion_6hr",
+    "peak_wind_gust", "peak_wind_drct", "feel", "snowdepth",
+]
 
-def build_local_ts(flight_date: pd.Series, hhmm: pd.Series, local_tz: str) -> pd.Series:
+# ----------------------------
+# Helpers
+# ----------------------------
+def lazy_read_bts(path: Path) -> pl.LazyFrame:
+    return pl.scan_csv(path, infer_schema_length=50000)
+
+def lazy_read_registry(path: Path) -> pl.LazyFrame:
+    return pl.scan_parquet(path)
+
+def lazy_read_weather(path: Path) -> pl.LazyFrame:
     """
-    Build timezone-aware timestamps from FlightDate + HHMM in local time, then keep tz-aware.
+    Weather CSV may contain literal 'null' strings in numeric columns.
+    We prevent parser errors by reading those columns as Utf8, then converting later.
     """
-    d = pd.to_datetime(flight_date, errors="coerce")  # date only
-    mins = hhmm.apply(hhmm_to_minutes)
-    ts_naive = d + pd.to_timedelta(mins, unit="m")
-    # Localize to local_tz, then convert to UTC
-    ts_local = ts_naive.dt.tz_localize(local_tz, nonexistent="NaT", ambiguous="NaT")
-    ts_utc = ts_local.dt.tz_convert("UTC")
-    return ts_utc
-
-
-def normalize_upper(s: pd.Series) -> pd.Series:
-    return s.astype(str).str.strip().str.upper()
-
-
-def compute_weather_severity(wind_knots, vis_miles, precip_in, ceiling_ft) -> pd.Series:
-    """
-    Excel-matching formula:
-      (wind/30) + (1 - vis/10) + IF(precip>0,1,0) + IF(ceiling<1000,1,0)
-    """
-    wind = pd.to_numeric(wind_knots, errors="coerce").fillna(0.0)
-    vis = pd.to_numeric(vis_miles, errors="coerce").fillna(10.0).clip(0.0, 10.0)
-    p01i = pd.to_numeric(precip_in, errors="coerce").fillna(0.0)
-    ceil = pd.to_numeric(ceiling_ft, errors="coerce").fillna(99999.0)
-
-    precip_flag = (p01i > 0).astype(int)
-    low_ceiling_flag = (ceil < 1000).astype(int)
-
-    return (wind / 30.0) + (1.0 - (vis / 10.0)) + precip_flag + low_ceiling_flag
-
-
-def prep_weather(weather_csv: str) -> pd.DataFrame:
-    w = pd.read_csv(weather_csv)
-
-    # Expected columns: station, valid, tmpf, sknt, vsby, p01i, skyl1, ...
-    w["station"] = normalize_upper(w["station"])
-
-    # IEM 'valid' is typically UTC; parse as UTC-aware.
-    w["valid_ts"] = pd.to_datetime(w["valid"], errors="coerce", utc=True)
-
-    # Keep only needed columns (safe if extras exist)
-    keep = ["station", "valid_ts", "tmpf", "sknt", "vsby", "p01i", "skyl1", "gust", "wxcodes"]
-    keep = [c for c in keep if c in w.columns]
-    w = w[keep].copy()
-
-    w = w.dropna(subset=["station", "valid_ts"]).sort_values(["station", "valid_ts"])
-    return w
-
-
-def attach_weather_nearest(
-    flights: pd.DataFrame,
-    weather: pd.DataFrame,
-    airport_col: str,
-    time_col: str,
-    prefix: str,
-) -> pd.DataFrame:
-    """
-    Nearest-time weather join using merge_asof.
-
-    Key requirement: left/right must be sorted by the 'on' key globally (ts).
-    When using `by=station`, we still sort by ts first to satisfy pandas.
-    """
-    f = flights.copy()
-
-    # Station key (airport code)
-    f[f"{prefix}_station"] = normalize_upper(f[airport_col])
-
-    # Stable row id so we can join back safely
-    f["_row_id"] = np.arange(len(f), dtype=np.int64)
-
-    # Left frame: one row per flight with join keys
-    left = f[["_row_id", f"{prefix}_station", time_col]].rename(
-        columns={f"{prefix}_station": "station", time_col: "ts"}
+    return pl.scan_csv(
+        path,
+        infer_schema_length=50000,
+        null_values=["null", "NULL", ""],
+        schema_overrides={c: pl.Utf8 for c in WEATHER_NUMERIC_COLS},
+        ignore_errors=True,  # tolerate any weird rows; you can set False once stable
     )
 
-    # Ensure datetime (UTC) and drop NaT after coercion
-    left["station"] = normalize_upper(left["station"])
-    left["ts"] = pd.to_datetime(left["ts"], utc=True, errors="coerce")
-    left = left.dropna(subset=["station", "ts"])
+def normalize_upper(col: str) -> pl.Expr:
+    return pl.col(col).cast(pl.Utf8).str.strip_chars().str.to_uppercase()
 
-    # Right frame: weather observations
-    right = weather.copy()
-    right = right.rename(columns={"valid_ts": "ts"})
-    right["station"] = normalize_upper(right["station"])
-    right["ts"] = pd.to_datetime(right["ts"], utc=True, errors="coerce")
-    right = right.dropna(subset=["station", "ts"])
-
-    # IMPORTANT: sort by ts FIRST (global monotonic requirement), then station
-    left = left.sort_values(["ts", "station"]).reset_index(drop=True)
-    right = right.sort_values(["ts", "station"]).reset_index(drop=True)
-
-    merged = pd.merge_asof(
-        left,
-        right,
-        on="ts",
-        by="station",
-        direction="nearest",
-        tolerance=WEATHER_TOLERANCE,
+def parse_flight_date_expr(date_col: str) -> pl.Expr:
+    s = pl.col(date_col).cast(pl.Utf8)
+    return (
+        pl.when(s.str.contains(r"/"))
+        .then(s.str.strptime(pl.Date, "%m/%d/%Y", strict=False))
+        .otherwise(s.str.strptime(pl.Date, "%Y-%m-%d", strict=False))
     )
 
-    # Join merged weather back to flights by row_id
-    f = f.merge(
-        merged.drop(columns=["station", "ts"], errors="ignore"),
-        on="_row_id",
+def hhmm_to_hour_start_expr(time_col: str) -> pl.Expr:
+    t = pl.col(time_col).cast(pl.Int64, strict=False)
+    s = t.cast(pl.Utf8).str.zfill(4)
+    hh = s.str.slice(0, 2)
+    return hh + ":00:00"
+
+def map_airport_to_station_expr(airport_col: str, out_col: str) -> pl.Expr:
+    if not AIRPORT_TO_STATION:
+        return normalize_upper(airport_col).alias(out_col)
+    return (
+        normalize_upper(airport_col)
+        .map_dict(AIRPORT_TO_STATION, default=None)
+        .fill_null(normalize_upper(airport_col))
+        .alias(out_col)
+    )
+
+def compute_arrival_date_rollover(bts: pl.LazyFrame) -> pl.LazyFrame:
+    dep = pl.col("CRSDepTime").cast(pl.Int64, strict=False)
+    arr = pl.col("CRSArrTime").cast(pl.Int64, strict=False)
+    return bts.with_columns(
+        pl.when(arr.is_not_null() & dep.is_not_null() & (arr < dep))
+          .then(pl.col("flight_date") + pl.duration(days=1))
+          .otherwise(pl.col("flight_date"))
+          .alias("arr_flight_date")
+    )
+
+def prefix_weather(lf: pl.LazyFrame, prefix: str) -> pl.LazyFrame:
+    schema_cols = lf.collect_schema().names()
+    key_cols = {"station", "wx_hour"}
+    exprs = [pl.col("station"), pl.col("wx_hour")]
+    for c in schema_cols:
+        if c in key_cols:
+            continue
+        exprs.append(pl.col(c).alias(f"{prefix}{c}"))
+    return lf.select(exprs)
+
+def weather_severity(prefix: str) -> pl.Expr:
+    wind = pl.col(f"{prefix}sknt").cast(pl.Float64, strict=False).fill_null(0.0)
+    vis  = pl.col(f"{prefix}vsby").cast(pl.Float64, strict=False).fill_null(10.0).clip(0.0, 10.0)
+    p01i = pl.col(f"{prefix}p01i").cast(pl.Float64, strict=False).fill_null(0.0)
+    ceil = pl.col(f"{prefix}skyl1").cast(pl.Float64, strict=False).fill_null(99999.0)
+    return (
+        (wind / 30.0)
+        + (1.0 - (vis / 10.0))
+        + (p01i.gt(0).cast(pl.Int64))
+        + (ceil.lt(1000).cast(pl.Int64))
+    )
+
+def to_float(col: str) -> pl.Expr:
+    return pl.col(col).cast(pl.Utf8).str.strip_chars().str.to_lowercase().replace("null", None).cast(pl.Float64, strict=False)
+
+# ----------------------------
+# Load (Lazy)
+# ----------------------------
+bts = lazy_read_bts(bts_path)
+wx = lazy_read_weather(weather_path)
+reg = lazy_read_registry(registry_path)
+
+# ----------------------------
+# Prep BTS
+# ----------------------------
+bts = bts.with_columns([
+    parse_flight_date_expr("FlightDate").alias("flight_date"),
+    normalize_upper("Origin").alias("Origin"),
+    normalize_upper("Dest").alias("Dest"),
+    normalize_upper("Tail_Number").alias("Tail_Number"),
+])
+
+bts = compute_arrival_date_rollover(bts)
+
+bts = bts.with_columns([
+    (pl.col("flight_date").cast(pl.Utf8) + " " + hhmm_to_hour_start_expr("CRSDepTime"))
+        .str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S", strict=False)
+        .alias("dep_hour"),
+
+    (pl.col("arr_flight_date").cast(pl.Utf8) + " " + hhmm_to_hour_start_expr("CRSArrTime"))
+        .str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S", strict=False)
+        .alias("arr_hour"),
+
+    map_airport_to_station_expr("Origin", "dep_station"),
+    map_airport_to_station_expr("Dest", "arr_station"),
+])
+
+# ----------------------------
+# Prep Weather
+# - parse valid
+# - truncate to hour
+# - normalize station
+# - convert key numeric fields to float AFTER read
+# ----------------------------
+wx = (
+    wx.with_columns([
+        normalize_upper("station").alias("station"),
+        pl.col("valid").cast(pl.Utf8).str.strptime(pl.Datetime, strict=False).alias("valid_ts"),
+    ])
+    .with_columns([
+        pl.col("valid_ts").dt.truncate("1h").alias("wx_hour"),
+    ])
+)
+
+# Convert commonly used fields for severity, safely
+for c in ["sknt", "vsby", "p01i", "skyl1", "tmpf"]:
+    if c in wx.collect_schema().names():
+        wx = wx.with_columns(to_float(c).alias(c))
+
+# Prefix for dep/arr joins
+wx_dep = prefix_weather(wx, "dep_")
+wx_arr = prefix_weather(wx, "arr_")
+
+# ----------------------------
+# Join BTS ↔ Weather by hour (CRS-based)
+# ----------------------------
+joined = (
+    bts.join(
+        wx_dep,
+        left_on=["dep_station", "dep_hour"],
+        right_on=["station", "wx_hour"],
         how="left",
     )
+    .drop(["dep_station", "station", "wx_hour"], strict=False)
+)
 
-    # Derived features
-    f[f"{prefix}_tmpf"] = f.get("tmpf", np.nan)
-    f[f"{prefix}_wind"] = f.get("sknt", np.nan)
-    f[f"{prefix}_visibility"] = f.get("vsby", np.nan)
-
-    p01i = pd.to_numeric(f.get("p01i", 0), errors="coerce").fillna(0.0)
-    f[f"{prefix}_precip_flag"] = (p01i > 0).astype(int)
-
-    ceil = pd.to_numeric(f.get("skyl1", np.nan), errors="coerce")
-    f[f"{prefix}_ceiling_ft"] = ceil
-    f[f"{prefix}_low_ceiling_flag"] = (ceil.fillna(99999.0) < 1000).astype(int)
-
-    f[f"{prefix}_weather_severity"] = compute_weather_severity(
-        f[f"{prefix}_wind"],
-        f[f"{prefix}_visibility"],
-        p01i,
-        f[f"{prefix}_ceiling_ft"],
+joined = (
+    joined.join(
+        wx_arr,
+        left_on=["arr_station", "arr_hour"],
+        right_on=["station", "wx_hour"],
+        how="left",
     )
+    .drop(["arr_station", "station", "wx_hour"], strict=False)
+)
 
-    # Optional: drop raw weather columns
-    for c in ["tmpf", "sknt", "vsby", "p01i", "skyl1", "gust", "wxcodes"]:
-        if c in f.columns:
-            f.drop(columns=[c], inplace=True, errors="ignore")
+# Add severity if inputs exist
+cols_now = set(joined.collect_schema().names())
+if {"dep_sknt", "dep_vsby", "dep_p01i", "dep_skyl1"}.issubset(cols_now):
+    joined = joined.with_columns(weather_severity("dep_").alias("dep_weather_severity"))
+if {"arr_sknt", "arr_vsby", "arr_p01i", "arr_skyl1"}.issubset(cols_now):
+    joined = joined.with_columns(weather_severity("arr_").alias("arr_weather_severity"))
 
-    # Cleanup helper
-    f.drop(columns=["_row_id"], inplace=True, errors="ignore")
+# ----------------------------
+# Registry join (Tail_Number == n_number)
+# ----------------------------
+reg = reg.with_columns([normalize_upper("n_number").alias("n_number")])
 
-    return f
+joined = joined.join(
+    reg,
+    left_on="Tail_Number",
+    right_on="n_number",
+    how="left",
+)
 
+# Fill missing registry values
+reg_cols = [c for c in reg.collect_schema().names() if c != "n_number"]
+joined_cols = set(joined.collect_schema().names())
 
-def add_regional_features(flights: pd.DataFrame, weather: pd.DataFrame) -> pd.DataFrame:
-    """
-    Computes hourly regional summaries across the stations present in `weather`.
-    If your weather file includes only BWI, the regional index == BWI severity (per hour).
-    """
-    w = weather.copy()
-    for col in ["sknt", "vsby", "p01i", "skyl1"]:
-        if col not in w.columns:
-            w[col] = np.nan
+if FORCE_REGISTRY_STRINGS:
+    joined = joined.with_columns([
+        pl.when(pl.col(c).is_null())
+          .then(pl.lit("Registry Not Found"))
+          .otherwise(pl.col(c).cast(pl.Utf8, strict=False))
+          .alias(c)
+        for c in reg_cols
+        if c in joined_cols
+    ])
 
-    w["severity"] = compute_weather_severity(w["sknt"], w["vsby"], w["p01i"], w["skyl1"])
+# ----------------------------
+# Materialize + Write
+# - Polars 1.25+: use engine="streaming"
+# ----------------------------
+df = joined.collect(engine="streaming")
 
-    # FIX: use "h" not "H"
-    w["hour"] = w["valid_ts"].dt.floor("h")
+df.write_csv(OUT_CSV)
+df.write_parquet(OUT_PARQUET)
 
-    regional = (
-        w.groupby("hour")
-         .agg(
-             regional_weather_index=("severity", "mean"),
-             regional_storm_count=("severity", lambda s: int((s >= STORM_SEVERITY_THRESHOLD).sum())),
-         )
-         .reset_index()
-         .sort_values("hour")
-    )
-
-    f = flights.copy()
-
-    # FIX: use "h" not "H"
-    f["dep_hour"] = f["crs_dep_ts_utc"].dt.floor("h")
-
-    f = f.merge(regional, left_on="dep_hour", right_on="hour", how="left").drop(columns=["hour"], errors="ignore")
-
-    f["regional_storm_count"] = pd.to_numeric(f["regional_storm_count"], errors="coerce").fillna(0).astype(int)
-
-    f["system_weather_flag"] = np.where(
-        (pd.to_numeric(f["regional_weather_index"], errors="coerce") > SYSTEM_INDEX_THRESHOLD) |
-        (f["regional_storm_count"] >= SYSTEM_STORM_COUNT_THRESHOLD),
-        1,
-        0
-    )
-
-    return f
-
-
-def attach_registry(flights: pd.DataFrame, registry_csv: str) -> pd.DataFrame:
-    """
-    Join registry fields using Tail_Number (BTS) -> n_number (registry).
-    """
-    reg = pd.read_csv(registry_csv)
-
-    # Normalize keys
-    f = flights.copy()
-    f["Tail_Number"] = normalize_upper(f["Tail_Number"])
-
-    if "n_number" not in reg.columns:
-        raise ValueError("Registry CSV missing required column: n_number")
-
-    reg["n_number"] = normalize_upper(reg["n_number"])
-
-    # Choose columns to bring in (add more if you want)
-    registry_cols = [
-        "n_number",
-        "aircraft_type",
-        "num_seats",
-        "aircraft_manufacturer",
-        "aircraft_model",
-        "num_engines",
-        "manufacturing_year",
-        "registrant_type",
-        "registrant_name",
-        "registrant_city",
-        "registrant_state",
-        "registrant_country",
-    ]
-    registry_cols = [c for c in registry_cols if c in reg.columns]
-
-    reg_small = reg[registry_cols].drop_duplicates(subset=["n_number"])
-
-    f = f.merge(reg_small, left_on="Tail_Number", right_on="n_number", how="left")
-    f = f.drop(columns=["n_number"], errors="ignore")
-    return f
-
-
-# ------------------------------------------------------------
-# MAIN
-# ------------------------------------------------------------
-def main() -> None:
-    # 1) Flights (BTS delays)
-    flights = pd.read_csv(FLIGHTS_CSV)
-
-    # Normalize airport codes
-    flights["Origin"] = normalize_upper(flights["Origin"])
-    flights["Dest"] = normalize_upper(flights["Dest"])
-
-    # Build scheduled timestamps in UTC (assume BTS times are local to BWI timezone)
-    flights["crs_dep_ts_utc"] = build_local_ts(flights["FlightDate"], flights["CRSDepTime"], LOCAL_TZ_DEFAULT)
-    flights["crs_arr_ts_utc"] = build_local_ts(flights["FlightDate"], flights["CRSArrTime"], LOCAL_TZ_DEFAULT)
-
-    # 2) Weather
-    weather = prep_weather(WEATHER_CSV)
-
-    # 3) Attach dep weather (Origin)
-    flights = attach_weather_nearest(
-        flights=flights,
-        weather=weather,
-        airport_col="Origin",
-        time_col="crs_dep_ts_utc",
-        prefix="dep"
-    )
-
-    # 4) Attach arr weather (Dest)
-    flights = attach_weather_nearest(
-        flights=flights,
-        weather=weather,
-        airport_col="Dest",
-        time_col="crs_arr_ts_utc",
-        prefix="arr"
-    )
-
-    # 5) Regional system features
-    flights = add_regional_features(flights, weather)
-
-    # 6) Registry join
-    flights = attach_registry(flights, REGISTRY_CSV)
-
-    # 7) Output columns (your key set + useful IDs)
-    out_cols = [
-        "FlightDate",
-        "Reporting_Airline",
-        "Origin",
-        "Dest",
-        "CRSDepTime",
-        "ArrDelay",
-        "Tail_Number",
-        # Registry
-        "aircraft_type",
-        "num_seats",
-        # Dep wx
-        "dep_tmpf",
-        "dep_wind",
-        "dep_visibility",
-        "dep_precip_flag",
-        "dep_ceiling_ft",
-        "dep_weather_severity",
-        # Arr wx
-        "arr_tmpf",
-        "arr_wind",
-        "arr_visibility",
-        "arr_precip_flag",
-        "arr_ceiling_ft",
-        "arr_weather_severity",
-        # Regional system
-        "regional_weather_index",
-        "regional_storm_count",
-        "system_weather_flag",
-    ]
-    out_cols = [c for c in out_cols if c in flights.columns]
-
-    os.makedirs(os.path.dirname(OUT_CSV), exist_ok=True)
-    flights[out_cols].to_csv(OUT_CSV, index=False)
-
-    print(f"✅ Enriched dataset saved: {OUT_CSV}")
-    print(f"Rows: {len(flights):,} | Columns written: {len(out_cols)}")
-
-
-if __name__ == "__main__":
-    main()
+print(f"✅ Wrote CSV: {OUT_CSV}")
+print(f"✅ Wrote Parquet: {OUT_PARQUET}")
+print(df.head(5))
