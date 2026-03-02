@@ -1,0 +1,23 @@
+---
+title: "Example Report (R / Quarto)"
+format:
+  html:
+    toc: true
+---
+
+## Load the dataset
+
+```{r}
+library(tidyverse)
+
+df <- readr::read_csv("data/raw/example.csv", show_col_types = FALSE)
+glimpse(df)
+
+```
+
+```{r}
+df %>%
+  ggplot(aes(x = x1, y = x2, color = factor(y))) +
+  geom_point(alpha = 0.6) +
+  labs(color = "y")
+```
