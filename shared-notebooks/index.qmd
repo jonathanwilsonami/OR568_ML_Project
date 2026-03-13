@@ -1,0 +1,15 @@
+---
+title: "Shared Notebooks"
+sidebar: shared-notebooks
+---
+
+# Shared Notebooks
+
+Browse the team's notebooks using the sidebar.
+
+## Team Members
+
+- Jon
+- Karan
+- Irena
+- Val

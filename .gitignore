@@ -32,3 +32,7 @@ data/processed/
 **/*.quarto_ipynb
 
 notes.txt
+
+data_pipeline/outputs/*
+data_pipeline/raw_data/*
+data/*
