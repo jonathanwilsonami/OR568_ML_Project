@@ -1,63 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/paper.html</loc>
-    <lastmod>2026-03-13T13:12:00.929Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/slides.html</loc>
+    <lastmod>2026-03-13T13:40:06.020Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/about.html</loc>
-    <lastmod>2026-03-13T13:02:28.533Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/r/01_report.html</loc>
-    <lastmod>2026-03-13T12:54:47.524Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/states_eda.html</loc>
-    <lastmod>2026-02-21T16:51:57.681Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/filter_data.html</loc>
-    <lastmod>2026-02-27T02:08:31.173Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/flight_delay_eda_plots.html</loc>
-    <lastmod>2026-03-08T20:28:39.060Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/python/01_eda_model.html</loc>
-    <lastmod>2026-03-13T12:52:37.837Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/python/01_eda_model.html</loc>
-    <lastmod>2026-03-13T12:54:51.525Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/r/01_report.html</loc>
-    <lastmod>2026-03-13T12:54:51.553Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/01_report.html</loc>
-    <lastmod>2026-03-13T12:53:53.349Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_eda.html</loc>
-    <lastmod>2026-02-17T23:32:37.685Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html</loc>
-    <lastmod>2026-02-17T23:35:20.776Z</lastmod>
-  </url>
-  <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/python/01_eda_model.html</loc>
-    <lastmod>2026-03-13T12:54:47.495Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/index.html</loc>
+    <lastmod>2026-03-13T13:15:46.036Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/index.html</loc>
     <lastmod>2026-03-13T12:28:29.408Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/index.html</loc>
-    <lastmod>2026-03-13T13:15:46.036Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/python/01_eda_model.html</loc>
+    <lastmod>2026-03-13T12:54:47.495Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html</loc>
+    <lastmod>2026-02-17T23:35:20.776Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_eda.html</loc>
+    <lastmod>2026-02-17T23:32:37.685Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/01_report.html</loc>
+    <lastmod>2026-03-13T12:53:53.349Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/r/01_report.html</loc>
+    <lastmod>2026-03-13T12:54:51.553Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/python/01_eda_model.html</loc>
+    <lastmod>2026-03-13T12:54:51.525Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/python/01_eda_model.html</loc>
+    <lastmod>2026-03-13T12:52:37.837Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/flight_delay_eda_plots.html</loc>
+    <lastmod>2026-03-08T20:28:39.060Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/filter_data.html</loc>
+    <lastmod>2026-02-27T02:08:31.173Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/states_eda.html</loc>
+    <lastmod>2026-02-21T16:51:57.681Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/r/01_report.html</loc>
+    <lastmod>2026-03-13T12:54:47.524Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/about.html</loc>
+    <lastmod>2026-03-13T13:02:28.533Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/paper.html</loc>
+    <lastmod>2026-03-13T13:12:00.929Z</lastmod>
   </url>
 </urlset>

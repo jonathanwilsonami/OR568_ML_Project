@@ -1,219 +1,318 @@
 [
   {
-    "objectID": "paper.html",
-    "href": "paper.html",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "objectID": "slides.html#motivation",
+    "href": "slides.html#motivation",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Motivation",
+    "text": "Motivation\n\nFlight delays ripple through airline networks\nSmall disruptions propagate across aircraft rotations\nUnderstanding delay drivers helps improve operational planning\n\nFocus of this study:\nBWI → EWR market pair"
+  },
+  {
+    "objectID": "slides.html#research-questions",
+    "href": "slides.html#research-questions",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Research Questions",
+    "text": "Research Questions\n\nWhat factors most strongly predict flight delays?\nHow much do delays propagate from earlier flights?\nWhich machine learning models perform best?\nWhat structural patterns exist in the data?"
+  },
+  {
+    "objectID": "slides.html#data-sources",
+    "href": "slides.html#data-sources",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Data Sources",
+    "text": "Data Sources\nPrimary dataset:\nBureau of Transportation Statistics (BTS)\nKey variables:\n\ndeparture delays\narrival delays\ncarrier information\nroute identifiers\nweather conditions\ntime-of-day indicators"
+  },
+  {
+    "objectID": "slides.html#feature-engineering",
+    "href": "slides.html#feature-engineering",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Feature Engineering",
+    "text": "Feature Engineering\nKey engineered features:\nDelay Indicator\n\\[\nDelayed =\n\\begin{cases}\n1 & Delay &gt; 15 \\\\\n0 & otherwise\n\\end{cases}\n\\]\nPrior Aircraft Delay\n\\[\nPriorDelay = ArrivalDelay_{previous}\n\\]\nTurnaround Time\n\\[\nTurnaround = DepartureTime - PreviousArrival\n\\]"
+  },
+  {
+    "objectID": "slides.html#exploratory-analysis",
+    "href": "slides.html#exploratory-analysis",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Exploratory Analysis",
+    "text": "Exploratory Analysis\nImportant patterns we examine:\n\ndistribution of delays\ntime-of-day effects\nweather vs delay relationships\ndelay propagation patterns"
+  },
+  {
+    "objectID": "slides.html#modeling-approaches",
+    "href": "slides.html#modeling-approaches",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Modeling Approaches",
+    "text": "Modeling Approaches\nWe evaluate multiple models:\n\nLogistic Regression\nRidge Logistic Regression\nDecision Trees\nRandom Forest\nK-Nearest Neighbors\n\nEach model is evaluated using:\n\naccuracy\nconfusion matrix\ninterpretability"
+  },
+  {
+    "objectID": "slides.html#logistic-regression",
+    "href": "slides.html#logistic-regression",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Logistic Regression",
+    "text": "Logistic Regression\nBaseline probabilistic model:\n\\[\nP(Y=1|X) = \\frac{1}{1+e^{-\\eta}}\n\\]\n\\[\n\\eta = \\beta_0 + \\beta_1X_1 + \\beta_2X_2 + ... + \\beta_pX_p\n\\]"
+  },
+  {
+    "objectID": "slides.html#tree-based-models",
+    "href": "slides.html#tree-based-models",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Tree-Based Models",
+    "text": "Tree-Based Models\nDecision trees provide interpretable rules.\nRandom forests improve performance using:\n\nensemble learning\nbootstrap sampling\nfeature randomness"
+  },
+  {
+    "objectID": "slides.html#model-comparison",
+    "href": "slides.html#model-comparison",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Model Comparison",
+    "text": "Model Comparison\nMetrics used:\n\nAccuracy\nPrecision\nRecall\nF1 Score"
+  },
+  {
+    "objectID": "slides.html#key-findings",
+    "href": "slides.html#key-findings",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Key Findings",
+    "text": "Key Findings\nImportant drivers of delay:\n\nupstream aircraft delays\ntime-of-day scheduling effects\nweather conditions\nairport congestion\n\nTree-based models produced the most reliable predictions."
+  },
+  {
+    "objectID": "slides.html#operational-insights",
+    "href": "slides.html#operational-insights",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Operational Insights",
+    "text": "Operational Insights\nMachine learning models can help:\n\nidentify high-risk flights\nanticipate delay propagation\nimprove scheduling decisions\nsupport airline operations analysis"
+  },
+  {
+    "objectID": "slides.html#limitations",
+    "href": "slides.html#limitations",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Limitations",
+    "text": "Limitations\n\nincomplete operational data\nweather approximation\nroute-specific analysis\nlimited network context"
+  },
+  {
+    "objectID": "slides.html#future-work",
+    "href": "slides.html#future-work",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Future Work",
+    "text": "Future Work\nPotential improvements:\n\nexpand to full airline network\nincorporate time-series models\nintegrate air traffic control data\ninclude crew and maintenance data"
+  },
+  {
+    "objectID": "slides.html#conclusion",
+    "href": "slides.html#conclusion",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Conclusion",
+    "text": "Conclusion\nThis study demonstrates that:\n\ndelay propagation is a key driver of disruption\nmachine learning models can effectively classify delays\nroute-level analysis provides actionable operational insight"
+  },
+  {
+    "objectID": "slides.html#questions",
+    "href": "slides.html#questions",
+    "title": "Predicting Flight Delays Between BWI and EWR",
+    "section": "Questions",
+    "text": "Questions"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Home",
     "section": "",
-    "text": "Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the BWI–EWR market pair using machine learning, exploratory data analysis, and engineered operational features.\nUsing Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised learning approaches including logistic regression, ridge regression, classification trees, random forests, and K-nearest neighbors.\nOur findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation."
+    "text": "Welcome\nThis site contains all our team’s work as well as shared notebooks organized by team member."
   },
   {
-    "objectID": "paper.html#abstract",
-    "href": "paper.html#abstract",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "objectID": "shared-notebooks/index.html",
+    "href": "shared-notebooks/index.html",
+    "title": "Shared Notebooks",
     "section": "",
-    "text": "Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the BWI–EWR market pair using machine learning, exploratory data analysis, and engineered operational features.\nUsing Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised learning approaches including logistic regression, ridge regression, classification trees, random forests, and K-nearest neighbors.\nOur findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation."
+    "text": "Browse the team’s notebooks using the sidebar.\n\n\n\nJon\nKaran\nIrena\nVal",
+    "crumbs": [
+      "Home",
+      "Shared Notebooks"
+    ]
   },
   {
-    "objectID": "paper.html#introduction-background",
-    "href": "paper.html#introduction-background",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "2 Introduction & Background",
-    "text": "2 Introduction & Background\n\n2.1 Motivation\nFlight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.\nUnderstanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.\n\n\n2.2 Why the BWI–EWR Market Pair\nThe BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.\nFlights between these airports are vulnerable to multiple sources of disruption:\n\nupstream aircraft delays\nweather disruptions\nairspace congestion\noperational scheduling constraints\n\n\n\n2.3 What This Research Contributes\nThis study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays."
-  },
-  {
-    "objectID": "paper.html#data",
-    "href": "paper.html#data",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "3 Data",
-    "text": "3 Data\n\n3.1 Dataset Overview\nThis analysis uses flight operations data from the Bureau of Transportation Statistics (BTS). These records contain detailed flight-level information including:\n\nscheduled departure and arrival times\nactual departure and arrival times\ndelay categories\ncarrier information\norigin and destination airports\n\nThe dataset is enriched with weather variables and engineered temporal features.\n\n\n3.2 Limitations\nSeveral limitations should be noted:\n\nBTS delay categories are aggregated and sometimes coarse\nweather observations may not perfectly represent local flight conditions\nroute-level analysis cannot capture all national network effects\nairline operational decisions such as crew scheduling are not directly observed\n\nDespite these limitations, the dataset provides a strong foundation for studying delay patterns."
-  },
-  {
-    "objectID": "paper.html#feature-engineering",
-    "href": "paper.html#feature-engineering",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "4 Feature Engineering",
-    "text": "4 Feature Engineering\n\n4.1 Delay Indicator\nTo simplify classification, we define a binary delay variable:\n\\[\nDelayed_i =\n\\begin{cases}\n1 & \\text{if DepartureDelay}_i &gt; 15 \\\\\n0 & \\text{otherwise}\n\\end{cases}\n\\]\n\n\n4.2 Prior Aircraft Delay\nUpstream delays are captured by the delay of the previous aircraft flight:\n\\[\nPriorDelay_i = ArrivalDelay_{previous}\n\\]\n\n\n4.3 Turnaround Time\nTurnaround time captures the buffer between flights:\n\\[\nTurnaround_i = DepartureTime_i - PreviousArrivalTime_i\n\\]\n\n\n4.4 Weather Severity\nWeather features combine several meteorological indicators:\n\\[\nWeatherSeverity = f(wind, visibility, precipitation, storm\\ indicators)\n\\]\n\n\n4.5 Temporal Features\nTime-based indicators include:\n\ndeparture hour\nday of week\nmonth\nholiday flags\n\nThese help capture cyclical delay patterns."
-  },
-  {
-    "objectID": "paper.html#exploratory-data-analysis",
-    "href": "paper.html#exploratory-data-analysis",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "5 Exploratory Data Analysis",
-    "text": "5 Exploratory Data Analysis\n\n5.1 Distribution of Delays\n\n# Histogram of departure delays\n# ggplot(df, aes(x = DepDelayMinutes)) +\n#   geom_histogram(bins = 50)\n\n\n\n5.2 Delays by Time of Day\n\n# Delay frequency by departure hour\n\n\n\n5.3 Weather vs Delay\n\n# Weather severity vs delay outcome\n\n\n\n5.4 Delay Propagation\n\n# Previous arrival delay vs next departure delay"
-  },
-  {
-    "objectID": "paper.html#research-questions",
-    "href": "paper.html#research-questions",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "6 Research Questions",
-    "text": "6 Research Questions\nThis study seeks to answer the following questions:\n\nWhich operational and weather variables most strongly predict flight delays?\nHow strongly do delays propagate from prior flights?\nWhich machine learning models best classify delayed flights?\nCan unsupervised methods reveal underlying structure in delay patterns?"
-  },
-  {
-    "objectID": "paper.html#building-classifiers",
-    "href": "paper.html#building-classifiers",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "7 Building Classifiers",
-    "text": "7 Building Classifiers\n\n7.1 Logistic Regression\nWe begin with a baseline logistic regression model.\n\\[\nP(Y_i = 1|X_i) =\n\\frac{1}{1 + e^{-\\eta_i}}\n\\]\n\\[\n\\eta_i = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + ... + \\beta_p X_p\n\\]\n\n# logistic regression model\n\n\n\n\n7.2 Ridge Logistic Regression\nTo address multicollinearity and improve stability we apply ridge regularization.\n\n# ridge logistic regression\n\n\n\n\n7.3 Classification Tree\nDecision trees provide interpretable classification rules.\n\n# classification tree\n\n\n\n\n7.4 Random Forest\nRandom forests improve predictive accuracy through ensemble learning.\n\n# random forest model\n\n\n\n\n7.5 K-Nearest Neighbors\nKNN classifies flights based on nearby observations in feature space.\n\n# knn model"
-  },
-  {
-    "objectID": "paper.html#unsupervised-analysis",
-    "href": "paper.html#unsupervised-analysis",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "8 Unsupervised Analysis",
-    "text": "8 Unsupervised Analysis\n\n8.1 Principal Component Analysis\nPCA identifies dominant dimensions in the feature space.\n\n# PCA analysis\n\n\n\n8.2 K-Means Clustering\nClustering reveals natural groupings among flight observations.\n\n# kmeans clustering"
-  },
-  {
-    "objectID": "paper.html#model-comparison",
-    "href": "paper.html#model-comparison",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "9 Model Comparison",
-    "text": "9 Model Comparison\nWe compare models using metrics such as:\n\naccuracy\nprecision\nrecall\nF1 score\n\n\n# model comparison table"
-  },
-  {
-    "objectID": "paper.html#results",
-    "href": "paper.html#results",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "10 Results",
-    "text": "10 Results\n\n10.1 Key Findings\nThe analysis suggests that delay outcomes are influenced by several interacting factors:\n\nupstream aircraft delays\nairport congestion patterns\nweather conditions\ntemporal scheduling effects\n\n\n\n10.2 Operational Interpretation\nPredictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions."
-  },
-  {
-    "objectID": "paper.html#discussion-limitations",
-    "href": "paper.html#discussion-limitations",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "11 Discussion & Limitations",
-    "text": "11 Discussion & Limitations\nSeveral limitations should be considered:\n\nmissing operational factors such as crew and maintenance constraints\nimperfect weather measurements\nroute-specific findings that may not generalize\n\nDespite these challenges, the framework provides a replicable approach for studying delay behavior."
-  },
-  {
-    "objectID": "paper.html#conclusion",
-    "href": "paper.html#conclusion",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "12 Conclusion",
-    "text": "12 Conclusion\nThis study demonstrates how machine learning methods can be applied to understand delay dynamics in the BWI–EWR market pair.\nTree-based methods and penalized regression provide the best balance of predictive performance and interpretability. The analysis highlights the importance of upstream delay propagation and temporal operational patterns.\nFuture work could extend this framework to larger airline networks and incorporate time-series modeling approaches."
-  },
-  {
-    "objectID": "paper.html#references",
-    "href": "paper.html#references",
-    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
-    "section": "13 References",
-    "text": "13 References"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About Us",
+    "objectID": "shared-notebooks/index.html#team-members",
+    "href": "shared-notebooks/index.html#team-members",
+    "title": "Shared Notebooks",
     "section": "",
-    "text": "Jonathan Wilson\n\n\n\nI’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University.\n\n\n\n\n\n\n\nKaran\n\n\n\nKaran is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team.\n\n\n\n\n\n\n\nIrena\n\n\n\nIrena is a member of the OR 568 Machine Learning Project team. Add a short biography here covering educational background, analytical strengths, professional experience, and contributions to the project. This section can also highlight areas such as modeling, data analysis, visualization, or machine learning interests.\n\n\n\n\n\n\n\nVal\n\n\n\nVal is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths."
+    "text": "Jon\nKaran\nIrena\nVal",
+    "crumbs": [
+      "Home",
+      "Shared Notebooks"
+    ]
   },
   {
-    "objectID": "about.html#jonathan-wilson",
-    "href": "about.html#jonathan-wilson",
-    "title": "About Us",
+    "objectID": "shared-notebooks/notebooks/karan/python/01_eda_model.html",
+    "href": "shared-notebooks/notebooks/karan/python/01_eda_model.html",
+    "title": "Example Jupyter Notebook",
     "section": "",
-    "text": "Jonathan Wilson\n\n\n\nI’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University."
+    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
+    "crumbs": [
+      "Shared Notebooks",
+      "Karan",
+      "Karan",
+      "Python",
+      "Example Jupyter Notebook"
+    ]
   },
   {
-    "objectID": "about.html#karan-lastname",
-    "href": "about.html#karan-lastname",
-    "title": "About Us",
+    "objectID": "shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html",
+    "href": "shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html",
+    "title": "OR 568 Machine Learning Project",
     "section": "",
-    "text": "Karan\n\n\n\nKaran is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team."
+    "text": "# --- Drop-in demo: flight-level features -&gt; Logistic Regression + Random Forest + plots ---\n\nfrom pathlib import Path\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    ConfusionMatrixDisplay,\n    RocCurveDisplay,\n)\n\n# ----------------------------\n# 1) Load data\n# ----------------------------\nBASE_DIR = Path.cwd()\nfile_path = BASE_DIR / \"..\" / \"..\" / \"data\" / \"iad_dca_states_smoketest.parquet\"\n\ndf = pd.read_parquet(file_path)\n\n# Ensure timestamp is datetime (UTC)\nif \"snapshot_time\" not in df.columns:\n    raise ValueError(f\"'snapshot_time' not found in columns: {list(df.columns)}\")\n\ndf[\"snapshot_time\"] = pd.to_datetime(df[\"snapshot_time\"], utc=True)\n\n# Basic cleaning (dedupe by aircraft+time, sort)\ndf = (\n    df.sort_values([\"icao24\", \"snapshot_time\"])\n      .drop_duplicates(subset=[\"icao24\", \"snapshot_time\"])\n)\n\n# Optional: filter out invalid values if columns exist\nfor col in [\"velocity\", \"geo_altitude\"]:\n    if col in df.columns:\n        df = df[df[col].notna()]\n\nif \"velocity\" in df.columns:\n    df = df[df[\"velocity\"] &gt;= 0]\nif \"geo_altitude\" in df.columns:\n    df = df[df[\"geo_altitude\"] &gt;= 0]\n\n# ----------------------------\n# 2) Build flight-level features (your requested approach)\n# ----------------------------\nrequired_cols = {\"icao24\", \"velocity\", \"geo_altitude\", \"vertical_rate\"}\nmissing = required_cols - set(df.columns)\nif missing:\n    raise ValueError(f\"Missing required columns for feature build: {missing}\")\n\nflight_features = df.groupby(\"icao24\").agg({\n    \"velocity\": [\"mean\", \"max\", \"std\"],\n    \"geo_altitude\": [\"mean\", \"max\"],\n    \"vertical_rate\": [\"mean\", \"std\"],\n})\n\n# Flatten columns: (\"velocity\",\"mean\") -&gt; \"velocity_mean\"\nflight_features.columns = [\"_\".join(col) for col in flight_features.columns]\n\n# Drop aircraft with insufficient samples (std becomes NaN if only 1 point)\nflight_features = flight_features.dropna().copy()\n\n# ----------------------------\n# 3) Create a demo target label (replace with your real label later)\n#    Example: \"high_altitude\" if mean geo_altitude &gt; median\n# ----------------------------\nthreshold = flight_features[\"geo_altitude_mean\"].median()\nflight_features[\"high_altitude\"] = (flight_features[\"geo_altitude_mean\"] &gt; threshold).astype(int)\n\nX = flight_features.drop(columns=[\"high_altitude\"])\ny = flight_features[\"high_altitude\"]\n\n# ----------------------------\n# 4) Train/test split\n# ----------------------------\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y,\n    test_size=0.30,\n    random_state=42,\n    stratify=y\n)\n\n# ----------------------------\n# 5) Models\n# ----------------------------\n# Logistic Regression (scaled)\nlog_model = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"model\", LogisticRegression(max_iter=2000))\n])\n\n# Random Forest (no scaling needed)\nrf_model = RandomForestClassifier(\n    n_estimators=300,\n    max_depth=8,\n    random_state=42,\n    n_jobs=-1\n)\n\nlog_model.fit(X_train, y_train)\nrf_model.fit(X_train, y_train)\n\n# ----------------------------\n# 6) Quick metrics\n# ----------------------------\nlog_pred = log_model.predict(X_test)\nrf_pred = rf_model.predict(X_test)\n\nprint(\"\\n--- Accuracy ---\")\nprint(\"Logistic Regression:\", round(accuracy_score(y_test, log_pred), 4))\nprint(\"Random Forest      :\", round(accuracy_score(y_test, rf_pred), 4))\n\n# ----------------------------\n# 7) Plots: Confusion Matrices\n# ----------------------------\nfig, ax = plt.subplots(1, 2, figsize=(12, 5))\n\nConfusionMatrixDisplay.from_estimator(log_model, X_test, y_test, ax=ax[0])\nax[0].set_title(\"Confusion Matrix: Logistic Regression\")\n\nConfusionMatrixDisplay.from_estimator(rf_model, X_test, y_test, ax=ax[1])\nax[1].set_title(\"Confusion Matrix: Random Forest\")\n\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 8) Plots: ROC Curves\n# ----------------------------\nplt.figure(figsize=(8, 6))\nRocCurveDisplay.from_estimator(log_model, X_test, y_test, name=\"Logistic Regression\")\nRocCurveDisplay.from_estimator(rf_model, X_test, y_test, name=\"Random Forest\")\nplt.title(\"ROC Curve Comparison\")\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 9) Plot: Random Forest Feature Importance\n# ----------------------------\nimportances = pd.Series(rf_model.feature_importances_, index=X.columns).sort_values()\n\nplt.figure(figsize=(10, 6))\nimportances.plot(kind=\"barh\")\nplt.title(\"Random Forest Feature Importance\")\nplt.xlabel(\"Importance\")\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 10) Optional: Logistic Regression coefficients (interpretability)\n# ----------------------------\ncoef = pd.Series(log_model.named_steps[\"model\"].coef_[0], index=X.columns).sort_values()\n\nplt.figure(figsize=(10, 6))\ncoef.plot(kind=\"barh\")\nplt.title(\"Logistic Regression Coefficients (scaled features)\")\nplt.xlabel(\"Coefficient\")\nplt.tight_layout()\nplt.show()\n\nprint(\"\\nTarget definition used for demo:\")\nprint(f\"high_altitude = 1 if geo_altitude_mean &gt; median ({threshold:.2f}), else 0\")\n\n\n--- Accuracy ---\nLogistic Regression: 0.6667\nRandom Forest      : 1.0\n\n\n\n\n\n\n\n\n\n&lt;Figure size 800x600 with 0 Axes&gt;\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTarget definition used for demo:\nhigh_altitude = 1 if geo_altitude_mean &gt; median (508.63), else 0",
+    "crumbs": [
+      "Shared Notebooks",
+      "Jon",
+      "Jon",
+      "Python",
+      "Opensky Baseline Modeling"
+    ]
   },
   {
-    "objectID": "about.html#irena-lastname",
-    "href": "about.html#irena-lastname",
-    "title": "About Us",
+    "objectID": "shared-notebooks/notebooks/jon/python/opensky_eda.html",
+    "href": "shared-notebooks/notebooks/jon/python/opensky_eda.html",
+    "title": "OR 568 Machine Learning Project",
     "section": "",
-    "text": "Irena\n\n\n\nIrena is a member of the OR 568 Machine Learning Project team. Add a short biography here covering educational background, analytical strengths, professional experience, and contributions to the project. This section can also highlight areas such as modeling, data analysis, visualization, or machine learning interests."
+    "text": "from pathlib import Path\nimport pandas as pd\n\nBASE_DIR = Path.cwd()\n\nfile_path = BASE_DIR / \"..\" / \"..\" / \"data\" / \"iad_dca_states_smoketest.parquet\"\n\ndf = pd.read_parquet(file_path)\n\n# Convert to datetime\ndf[\"snapshot_time\"] = pd.to_datetime(df[\"snapshot_time\"], utc=True)\n\n# Sort first\ndf = df.sort_values([\"icao24\", \"snapshot_time\"])\n\n# Remove duplicates while snapshot_time is still a column\ndf = df.drop_duplicates(subset=[\"icao24\", \"snapshot_time\"])\n\n# NOW set index\ndf = df.set_index(\"snapshot_time\")\n\n\ndf = df.ffill()\ndf = df[df[\"velocity\"] &gt;= 0]\ndf = df[df[\"geo_altitude\"] &gt;= 0]\n\n\n\n# 10-second digital twin dataset\ndf_resampled = (\n    df.groupby(\"icao24\")\n      .resample(\"10s\")\n      .agg({\n          \"latitude\": \"mean\",\n          \"longitude\": \"mean\",\n          \"velocity\": \"mean\",\n          \"geo_altitude\": \"mean\",\n          \"vertical_rate\": \"mean\",\n          \"true_track\": \"mean\"\n      })\n      .reset_index()\n)\n\n# 1-minute ML dataset\ndf_minute = (\n    df.groupby(\"icao24\")\n      .resample(\"1min\")\n      .agg({\n          \"velocity\": \"mean\",\n          \"geo_altitude\": \"mean\",\n          \"vertical_rate\": \"mean\"\n      })\n      .reset_index()\n)\n\nprint(df_resampled.head())\nprint(df_minute.head())\n\n   icao24             snapshot_time  latitude  longitude  velocity  \\\n0  a01097 2026-02-16 21:27:10+00:00   39.0827   -77.4145    158.41   \n1  a0b845 2026-02-16 21:27:10+00:00   38.8418   -77.0379      0.00   \n2  a0b845 2026-02-16 21:27:20+00:00       NaN        NaN       NaN   \n3  a0b845 2026-02-16 21:27:30+00:00       NaN        NaN       NaN   \n4  a0b845 2026-02-16 21:27:40+00:00       NaN        NaN       NaN   \n\n   geo_altitude  vertical_rate  true_track  \n0       3970.02           6.83      337.27  \n1       3970.02           6.83      101.25  \n2           NaN            NaN         NaN  \n3           NaN            NaN         NaN  \n4           NaN            NaN         NaN  \n   icao24             snapshot_time  velocity  geo_altitude  vertical_rate\n0  a01097 2026-02-16 21:27:00+00:00    158.41       3970.02           6.83\n1  a0b845 2026-02-16 21:27:00+00:00      0.00       3970.02           6.83\n2  a0b845 2026-02-16 21:28:00+00:00     23.66       3970.02           6.83\n3  a0b845 2026-02-16 21:29:00+00:00     89.11        541.02          16.58\n4  a12322 2026-02-16 21:27:00+00:00      0.00        541.02          16.58\n\n\n\nimport matplotlib.pyplot as plt\n\naircraft = df[df[\"icao24\"] == \"a0b845\"]\n\nplt.plot(aircraft.index, aircraft[\"geo_altitude\"])\nplt.title(\"Altitude over time\")\nplt.show()\n\n\n\n\n\n\n\n\n\ndf[\"velocity\"].hist(bins=50)\n\n\n\n\n\n\n\n\n\nplt.scatter(df[\"longitude\"], df[\"latitude\"], s=1)\n\n\n\n\n\n\n\n\n\n# Feature Engineering  \n# Lag Feature \ndf[\"velocity_lag1\"] = df.groupby(\"icao24\")[\"velocity\"].shift(1)\n\ndf[\"velocity_rolling_mean\"] = (\n    df.groupby(\"icao24\")[\"velocity\"]\n      .rolling(window=5)\n      .mean()\n      .reset_index(level=0, drop=True)\n)\n\ndf[\"acceleration\"] = (\n    df.groupby(\"icao24\")[\"velocity\"].diff()\n)\n\ndf[\"altitude_rate\"] = (\n    df.groupby(\"icao24\")[\"geo_altitude\"].diff()\n)\n\n\n\nflight_features = df.groupby(\"icao24\").agg({\n\n    \"velocity\": [\"mean\", \"max\", \"std\"],\n    \"geo_altitude\": [\"mean\", \"max\"],\n    \"vertical_rate\": [\"mean\", \"std\"],\n    \n})\n\nprint(flight_features)\n\n          velocity                    geo_altitude           vertical_rate  \\\n              mean     max        std         mean       max          mean   \nicao24                                                                       \na01097  158.410000  158.41        NaN      3970.02   3970.02      6.830000   \na0b845   37.590000   89.11  46.159308      2827.02   3970.02     10.080000   \na12322    0.000000    0.00   0.000000       541.02    541.02     16.580000   \na12aa5    2.076667    6.17   3.545058       541.02    541.02     16.580000   \na12ac9   91.695000  100.54  12.508719       567.69    571.50      0.165000   \na12e57    0.000000    0.00   0.000000       571.50    571.50      0.000000   \na1afde    2.830000    6.43   3.283428       571.50    571.50      0.000000   \na203a9  105.103333  128.64  25.364149       777.24   1455.42     14.630000   \na240dc   80.306667   88.74   8.800508       579.12    708.66     -2.816667   \na29aff    4.890000    4.89        NaN       419.10    419.10     -4.550000   \na2b10b    1.153333    3.34   1.893709       419.10    419.10     -4.550000   \na2bc9e    0.060000    0.06   0.000000       419.10    419.10     -4.550000   \na2e2cd   45.110000   46.53   1.347145       378.46    563.88      3.686667   \na33d97  232.665000  233.61   1.336432      9147.81   9151.62      0.000000   \na369af  118.993333  133.40  18.864955      1328.42   1950.72     12.896667   \na3afe1    7.030000    7.72   0.788860      1950.72   1950.72      5.200000   \na406e3    7.290000    7.72   0.535630      1950.72   1950.72      5.200000   \na4095f   80.433333   85.42   4.326400       449.58    693.42     -4.120000   \na43ce3   46.106667   51.44   5.747150       294.64    335.28      1.406667   \na4491d   78.893333   87.48   7.454430       312.42    548.64     -4.226667   \na4798f    4.120000    4.12   0.000000        83.82     83.82     -3.250000   \na4f7cb    2.830000    2.83   0.000000        83.82     83.82     -3.250000   \na59b2b  206.743333  212.80   5.830046     10350.50  10972.80     -8.560000   \na5cf3f    1.290000    1.29        NaN      9753.60   9753.60     -3.900000   \na63388    1.716667    2.06   0.391706      9753.60   9753.60     -3.900000   \na65b64  129.716667  136.51   8.819123      2367.28   3192.78     13.330000   \na66174    5.400000    5.40        NaN      3192.78   3192.78     13.980000   \na668eb   60.076667   65.39   6.678266       342.90    381.00     -1.410000   \na6c71c  170.490000  188.94  18.550809      3274.06   3741.42      9.973333   \na6eeb9    0.770000    0.77   0.000000      3741.42   3741.42      8.130000   \na73d54   40.240000   49.46   8.750583       203.20    312.42      1.300000   \na7b133    1.540000    1.54   0.000000       312.42    312.42      1.950000   \na845f4    0.000000    0.00   0.000000       312.42    312.42      1.950000   \na8b5fc   19.376667   29.32   8.852990       312.42    312.42      1.950000   \na8dffc    0.000000    0.00   0.000000       312.42    312.42      1.950000   \na8fc72  123.820000  123.82        NaN      1043.94   1043.94     13.000000   \na9739c   71.416667   74.38   2.578960       200.66    419.10     -3.903333   \na9ea96   89.760000   89.76        NaN       716.28    716.28      0.000000   \naa7dad    0.000000    0.00   0.000000       716.28    716.28      0.000000   \naa7e56  228.980000  228.98        NaN     10927.08  10927.08      0.000000   \naa7ebc  144.460000  144.46        NaN      2049.78   2049.78      6.180000   \nab9968   29.280000   29.28   0.000000       106.68    106.68     -2.930000   \nab9e5a   56.763333   62.25   6.634345       121.92    251.46     -2.060000   \nabcb63   74.196667   77.07   2.880023       632.46    670.56      0.216667   \nac4ace    2.060000    2.06        NaN       670.56    670.56     -0.330000   \nac6c2c  100.725000  104.65   5.550788       967.74   1059.18     -3.090000   \nade8fa    5.573333    6.43   0.784496       876.30    876.30     -1.950000   \nae481f   59.926667   62.90   3.492869       411.48    419.10     -0.650000   \nc05d08    2.100000    2.83   1.264397       419.10    419.10      0.000000   \nc07572    0.000000    0.00   0.000000       419.10    419.10      0.000000   \n\n                  \n             std  \nicao24            \na01097       NaN  \na0b845  5.629165  \na12322  0.000000  \na12aa5  0.000000  \na12ac9  0.233345  \na12e57  0.000000  \na1afde  0.000000  \na203a9  1.492615  \na240dc  2.460860  \na29aff       NaN  \na2b10b  0.000000  \na2bc9e  0.000000  \na2e2cd  1.538712  \na33d97  0.000000  \na369af  6.824605  \na3afe1  0.000000  \na406e3  0.000000  \na4095f  0.190526  \na43ce3  2.727202  \na4491d  0.861762  \na4798f  0.000000  \na4f7cb  0.000000  \na59b2b  4.038849  \na5cf3f       NaN  \na63388  0.000000  \na65b64  2.343608  \na66174       NaN  \na668eb  2.464386  \na6c71c  3.192747  \na6eeb9  0.000000  \na73d54  3.303317  \na7b133  0.000000  \na845f4  0.000000  \na8b5fc  0.000000  \na8dffc  0.000000  \na8fc72       NaN  \na9739c  0.325013  \na9ea96       NaN  \naa7dad  0.000000  \naa7e56       NaN  \naa7ebc       NaN  \nab9968  0.000000  \nab9e5a  1.313887  \nabcb63  1.234396  \nac4ace       NaN  \nac6c2c  1.612203  \nade8fa  0.000000  \nae481f  1.125833  \nc05d08  0.000000  \nc07572  0.000000  \n\n\n\nflight_features.columns = [\n    \"_\".join(col) for col in flight_features.columns\n]\nflight_features = flight_features.dropna()",
+    "crumbs": [
+      "Shared Notebooks",
+      "Jon",
+      "Jon",
+      "Python",
+      "Opensky Eda"
+    ]
   },
   {
-    "objectID": "about.html#val-lastname",
-    "href": "about.html#val-lastname",
-    "title": "About Us",
-    "section": "",
-    "text": "Val\n\n\n\nVal is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths."
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html",
-    "href": "shared-notebooks/notebooks/karan/r/01_report.html",
+    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html",
+    "href": "shared-notebooks/notebooks/irena/r/01_report.html",
     "title": "Example Report (R / Quarto)",
     "section": "",
     "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Karan",
-      "Karan",
+      "Irena",
+      "Irena",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#load-the-dataset",
-    "href": "shared-notebooks/notebooks/karan/r/01_report.html#load-the-dataset",
+    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#load-the-dataset",
+    "href": "shared-notebooks/notebooks/irena/r/01_report.html#load-the-dataset",
     "title": "Example Report (R / Quarto)",
     "section": "",
     "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Karan",
-      "Karan",
+      "Irena",
+      "Irena",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#why-this-works-better",
-    "href": "shared-notebooks/notebooks/karan/r/01_report.html#why-this-works-better",
+    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#why-this-works-better",
+    "href": "shared-notebooks/notebooks/irena/r/01_report.html#why-this-works-better",
     "title": "Example Report (R / Quarto)",
     "section": "Why this works better",
     "text": "Why this works better\nUsing iris gives you: - no local file dependency - no path issues during quarto render - lightweight example notebooks that always work - a familiar dataset for both Python and R",
     "crumbs": [
       "Shared Notebooks",
-      "Karan",
-      "Karan",
+      "Irena",
+      "Irena",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
-    "href": "shared-notebooks/notebooks/karan/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "href": "shared-notebooks/notebooks/irena/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
     "title": "Example Report (R / Quarto)",
     "section": "If you want the Python notebook as Quarto-friendly too",
     "text": "If you want the Python notebook as Quarto-friendly too\nIf your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:\nfrom sklearn.datasets import load_iris\nimport pandas as pd\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\ndf.head()",
     "crumbs": [
       "Shared Notebooks",
-      "Karan",
-      "Karan",
+      "Irena",
+      "Irena",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/jon/python/states_eda.html",
-    "href": "shared-notebooks/notebooks/jon/python/states_eda.html",
-    "title": "OR 568 Machine Learning Project",
+    "objectID": "shared-notebooks/notebooks/val/r/01_report.html",
+    "href": "shared-notebooks/notebooks/val/r/01_report.html",
+    "title": "Example Report (R / Quarto)",
     "section": "",
-    "text": "# ============================================\n# OpenSky EDA Script (Polars Version)\n# ============================================\n\nfrom pathlib import Path\n\nimport polars as pl\nimport matplotlib.pyplot as plt\n\npl.Config.set_tbl_cols(-1)          # show all columns\npl.Config.set_tbl_rows(1000)         # number of visible rows\npl.Config.set_tbl_width_chars(200)  # wider table\n\nBASE_DIR = Path.cwd()\n\ndata_dir = BASE_DIR / \"..\" / \"..\" / \"..\" / \"data_pipeline\" / \"raw_data\"\n# extract_dir = BASE_DIR / \"raw_data\" / \"extracted\"\n\n# INPUT_FILE = \"bwi_states_smoothed_resampled.csv\"\n\nINPUT_FILE = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/raw_data/bwi_states_2022_06_27_raw.csv\"\n\n# --------------------------------------------\n# LOAD DATA\n# --------------------------------------------\ndf = pl.read_csv(INPUT_FILE, try_parse_dates=True)\n\nprint(\"\\n===== BASIC INFO =====\")\nprint(\"Rows:\", df.height)\nprint(\"Columns:\", len(df.columns))\n\n# --------------------------------------------\n# TIME RANGE\n# --------------------------------------------\nprint(\"\\n===== TIME RANGE =====\")\nprint(df.select([\n    pl.col(\"time\").min().alias(\"start_time\"),\n    pl.col(\"time\").max().alias(\"end_time\")\n]))\n\n# --------------------------------------------\n# UNIQUE AIRCRAFT\n# --------------------------------------------\nprint(\"\\nUnique aircraft:\", df.select(pl.col(\"icao24\").n_unique()).item())\n\n# --------------------------------------------\n# NULL COUNTS\n# --------------------------------------------\nprint(\"\\n===== MISSING VALUES =====\")\nnulls = df.select([\n    pl.all().null_count()\n])\nprint(nulls)\n\n# ============================================\n# SQUAWK FREQUENCY DISTRIBUTION\n# ============================================\n\nprint(\"\\n===== SQUAWK FREQUENCY =====\")\n\n# -----------------------------------\n# Frequency table\n# -----------------------------------\nsquawk_freq = (\n    df.filter(pl.col(\"squawk\").is_not_null())\n      .group_by(\"squawk\")\n      .len()\n      .sort(\"len\", descending=True)\n)\n\nprint(squawk_freq.head(20))\n\ntop_sq = squawk_freq.head(20)\n\n# -----------------------------------\n# Highlight logic\n# -----------------------------------\n\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\nIMPORTANT_CODES = {\"1200\", \"7000\"}\n\ncolors = []\n\nfor sq in top_sq[\"squawk\"].cast(str):\n    if sq in EMERGENCY_CODES:\n        colors.append(\"red\")          # emergencies\n    elif sq in IMPORTANT_CODES:\n        colors.append(\"orange\")       # operational baseline\n    else:\n        colors.append(\"steelblue\")    # normal\n\n# -----------------------------------\n# Plot\n# -----------------------------------\n\nplt.figure(figsize=(12,6))\n\nplt.bar(\n    top_sq[\"squawk\"].cast(str),\n    top_sq[\"len\"],\n    color=colors\n)\n\nplt.title(\"Top Squawk Codes Frequency (Emergencies Highlighted)\")\nplt.xlabel(\"Squawk Code\")\nplt.ylabel(\"Count\")\n\nplt.xticks(rotation=45)\n\n# legend\nimport matplotlib.patches as mpatches\n\nlegend_handles = [\n    mpatches.Patch(color=\"red\", label=\"Emergency (7500/7600/7700)\"),\n    mpatches.Patch(color=\"orange\", label=\"Operational Baseline (1200/7000)\"),\n    mpatches.Patch(color=\"steelblue\", label=\"Other\")\n]\n\nplt.legend(handles=legend_handles)\n\nplt.tight_layout()\nplt.show()\n\n# # ============================================\n# # MOVEMENT STATISTICS\n# # ============================================\n\n# print(\"\\n===== NUMERIC SUMMARY =====\")\n\n# numeric_cols = [\n#     \"velocity\",\n#     \"geoaltitude\",\n#     \"baroaltitude\",\n#     \"vertrate\",\n#     \"heading\"\n# ]\n\n# summary = df.select([\n#     pl.col(c).mean().alias(f\"{c}_mean\") for c in numeric_cols\n# ] + [\n#     pl.col(c).std().alias(f\"{c}_std\") for c in numeric_cols\n# ] + [\n#     pl.col(c).min().alias(f\"{c}_min\") for c in numeric_cols\n# ] + [\n#     pl.col(c).max().alias(f\"{c}_max\") for c in numeric_cols\n# ])\n\n# print(summary)\n\n# # ============================================\n# # OPERATIONAL FLAGS\n# # ============================================\n\n# print(\"\\n===== OPERATIONAL FLAGS =====\")\n\n# flags = df.select([\n#     (pl.col(\"onground\") == True).mean().alias(\"pct_onground\"),\n#     (pl.col(\"alert\") == True).mean().alias(\"pct_alert\"),\n#     (pl.col(\"spi\") == True).mean().alias(\"pct_spi\")\n# ])\n\n# print(flags)\n\n# # ============================================\n# # PER AIRCRAFT SUMMARY (ML READY)\n# # ============================================\n\n# print(\"\\n===== AIRCRAFT LEVEL SUMMARY =====\")\n\n# aircraft_summary = (\n#     df.group_by(\"icao24\")\n#       .agg([\n#           pl.col(\"velocity\").mean().alias(\"avg_velocity\"),\n#           pl.col(\"geoaltitude\").max().alias(\"max_altitude\"),\n#           pl.col(\"time\").min().alias(\"start_time\"),\n#           pl.col(\"time\").max().alias(\"end_time\"),\n#           pl.len().alias(\"samples\")\n#       ])\n# )\n\n# print(aircraft_summary.head())\n\n# # Optional save for ML\n# aircraft_summary.write_csv(\"aircraft_summary.csv\")\n\n# print(\"\\nSaved aircraft summary → aircraft_summary.csv\")\n\n\n===== BASIC INFO =====\nRows: 67831\nColumns: 16\n\n===== TIME RANGE =====\nshape: (1, 2)\n┌────────────┬────────────┐\n│ start_time ┆ end_time   │\n│ ---        ┆ ---        │\n│ i64        ┆ i64        │\n╞════════════╪════════════╡\n│ 1656288010 ┆ 1656374390 │\n└────────────┴────────────┘\n\nUnique aircraft: 1068\n\n===== MISSING VALUES =====\nshape: (1, 16)\n┌──────┬────────┬─────┬─────┬──────────┬─────────┬──────────┬──────────┬──────────┬───────┬─────┬────────┬──────────────┬─────────────┬───────────────┬─────────────┐\n│ time ┆ icao24 ┆ lat ┆ lon ┆ velocity ┆ heading ┆ vertrate ┆ callsign ┆ onground ┆ alert ┆ spi ┆ squawk ┆ baroaltitude ┆ geoaltitude ┆ lastposupdate ┆ lastcontact │\n│ ---  ┆ ---    ┆ --- ┆ --- ┆ ---      ┆ ---     ┆ ---      ┆ ---      ┆ ---      ┆ ---   ┆ --- ┆ ---    ┆ ---          ┆ ---         ┆ ---           ┆ ---         │\n│ u32  ┆ u32    ┆ u32 ┆ u32 ┆ u32      ┆ u32     ┆ u32      ┆ u32      ┆ u32      ┆ u32   ┆ u32 ┆ u32    ┆ u32          ┆ u32         ┆ u32           ┆ u32         │\n╞══════╪════════╪═════╪═════╪══════════╪═════════╪══════════╪══════════╪══════════╪═══════╪═════╪════════╪══════════════╪═════════════╪═══════════════╪═════════════╡\n│ 0    ┆ 0      ┆ 0   ┆ 0   ┆ 2451     ┆ 2451    ┆ 2451     ┆ 1395     ┆ 0        ┆ 0     ┆ 0   ┆ 5627   ┆ 3164         ┆ 3729        ┆ 0             ┆ 0           │\n└──────┴────────┴─────┴─────┴──────────┴─────────┴──────────┴──────────┴──────────┴───────┴─────┴────────┴──────────────┴─────────────┴───────────────┴─────────────┘\n\n===== SQUAWK FREQUENCY =====\nshape: (20, 2)\n┌────────┬──────┐\n│ squawk ┆ len  │\n│ ---    ┆ ---  │\n│ i64    ┆ u32  │\n╞════════╪══════╡\n│ 1200   ┆ 2721 │\n│ 5154   ┆ 1044 │\n│ 5113   ┆ 652  │\n│ 5163   ┆ 490  │\n│ 5101   ┆ 437  │\n│ 371    ┆ 244  │\n│ 5102   ┆ 231  │\n│ 5214   ┆ 230  │\n│ 4643   ┆ 220  │\n│ 2132   ┆ 208  │\n│ 3634   ┆ 207  │\n│ 5322   ┆ 202  │\n│ 5166   ┆ 199  │\n│ 1431   ┆ 193  │\n│ 4630   ┆ 184  │\n│ 5107   ┆ 184  │\n│ 2122   ┆ 176  │\n│ 6216   ┆ 168  │\n│ 7037   ┆ 164  │\n│ 1063   ┆ 161  │\n└────────┴──────┘\n\n\n\n\n\n\n\n\n\n\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\n\nemergency_df = (\n    df.filter(\n        pl.col(\"squawk\")\n          .cast(pl.Utf8)\n          .is_in(EMERGENCY_CODES)\n    )\n)\n\nprint(emergency_df)\n\nshape: (25, 16)\n┌────────────┬────────┬───────────┬────────────┬────────────┬────────────┬───────────┬──────────┬──────────┬───────┬───────┬────────┬──────────────┬─────────────┬───────────────┬─────────────┐\n│ time       ┆ icao24 ┆ lat       ┆ lon        ┆ velocity   ┆ heading    ┆ vertrate  ┆ callsign ┆ onground ┆ alert ┆ spi   ┆ squawk ┆ baroaltitude ┆ geoaltitude ┆ lastposupdate ┆ lastcontact │\n│ ---        ┆ ---    ┆ ---       ┆ ---        ┆ ---        ┆ ---        ┆ ---       ┆ ---      ┆ ---      ┆ ---   ┆ ---   ┆ ---    ┆ ---          ┆ ---         ┆ ---           ┆ ---         │\n│ i64        ┆ str    ┆ f64       ┆ f64        ┆ f64        ┆ f64        ┆ f64       ┆ str      ┆ bool     ┆ bool  ┆ bool  ┆ i64    ┆ f64          ┆ f64         ┆ f64           ┆ f64         │\n╞════════════╪════════╪═══════════╪════════════╪════════════╪════════════╪═══════════╪══════════╪══════════╪═══════╪═══════╪════════╪══════════════╪═════════════╪═══════════════╪═════════════╡\n│ 1656297100 ┆ a97d63 ┆ 38.965899 ┆ -76.712097 ┆ 182.439135 ┆ 42.3715    ┆ 9.42848   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 3977.64      ┆ 4175.76     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297110 ┆ a97d63 ┆ 38.978375 ┆ -76.697571 ┆ 184.691128 ┆ 41.951625  ┆ 9.42848   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4061.46      ┆ 4267.2      ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297120 ┆ a97d63 ┆ 38.990851 ┆ -76.683228 ┆ 186.870677 ┆ 41.987212  ┆ 9.10336   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4152.9       ┆ 4366.26     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297130 ┆ a97d63 ┆ 39.003373 ┆ -76.668762 ┆ 187.979837 ┆ 41.893973  ┆ 11.05408  ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4251.96      ┆ 4472.94     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297140 ┆ a97d63 ┆ 39.015793 ┆ -76.654179 ┆ 190.663801 ┆ 43.688112  ┆ 7.47776   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4335.78      ┆ 4556.76     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656350000 ┆ abbe71 ┆ 38.93955  ┆ -76.354492 ┆ 244.404759 ┆ 23.705339  ┆ -9.7536   ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8237.22      ┆ 8663.94     ┆ 1.6563e9      ┆ 1.6564e9    │\n│ 1656350010 ┆ abbe71 ┆ 38.958984 ┆ -76.343516 ┆ 242.784868 ┆ 23.740605  ┆ -10.07872 ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8145.78      ┆ 8572.5      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656350020 ┆ abbe71 ┆ 38.979721 ┆ -76.331873 ┆ 241.63594  ┆ 23.727164  ┆ -9.7536   ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8054.34      ┆ 8473.44     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656350030 ┆ abbe71 ┆ 38.998672 ┆ -76.320947 ┆ 240.685032 ┆ 25.579179  ┆ -10.07872 ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 7962.9       ┆ 8382.0      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352940 ┆ ac508b ┆ 39.318067 ┆ -76.64801  ┆ 251.643058 ┆ 22.475702  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352950 ┆ ac508b ┆ 39.338177 ┆ -76.637329 ┆ 251.44684  ┆ 22.367383  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352960 ┆ ac508b ┆ 39.358978 ┆ -76.626295 ┆ 252.118502 ┆ 22.431008  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352970 ┆ ac508b ┆ 39.38026  ┆ -76.61499  ┆ 251.922654 ┆ 22.322858  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352980 ┆ ac508b ┆ 39.401321 ┆ -76.603845 ┆ 251.922654 ┆ 22.322858  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364440 ┆ a4bb8a ┆ 39.068686 ┆ -76.880371 ┆ 219.387899 ┆ 223.954919 ┆ -0.32512  ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364450 ┆ a4bb8a ┆ 39.054657 ┆ -76.89761  ┆ 219.387899 ┆ 223.954919 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10363.2      ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364460 ┆ a4bb8a ┆ 39.040662 ┆ -76.914856 ┆ 219.402375 ┆ 223.764959 ┆ 0.32512   ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10881.36    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364470 ┆ a4bb8a ┆ 39.026367 ┆ -76.932479 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10363.2      ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364480 ┆ a4bb8a ┆ 39.012032 ┆ -76.950073 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364490 ┆ a4bb8a ┆ 38.997648 ┆ -76.967773 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364500 ┆ a4bb8a ┆ 38.983475 ┆ -76.985142 ┆ 219.758531 ┆ 223.861823 ┆ -0.32512  ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10896.6     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367660 ┆ abd19e ┆ 38.931683 ┆ -76.544434 ┆ 133.375994 ┆ 350.900994 ┆ -4.8768   ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1280.16      ┆ 1318.26     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367670 ┆ abd19e ┆ 38.943146 ┆ -76.546823 ┆ 131.852308 ┆ 350.794937 ┆ -5.20192  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1226.82      ┆ 1264.92     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367680 ┆ abd19e ┆ 38.954865 ┆ -76.549331 ┆ 130.499548 ┆ 350.240619 ┆ -4.55168  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1181.1       ┆ 1219.2      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367690 ┆ abd19e ┆ 38.966309 ┆ -76.551779 ┆ 128.215298 ┆ 350.764441 ┆ -2.60096  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1143.0       ┆ 1181.1      ┆ 1.6564e9      ┆ 1.6564e9    │\n└────────────┴────────┴───────────┴────────────┴────────────┴────────────┴───────────┴──────────┴──────────┴───────┴───────┴────────┴──────────────┴─────────────┴───────────────┴─────────────┘\n\n\n\n# ----------------------------------------\n# 1. Define emergency squawk codes\n# ----------------------------------------\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\n\n# ----------------------------------------\n# 2. Filter emergency rows\n# ----------------------------------------\nemergency_df = (\n    df.filter(\n        pl.col(\"squawk\")\n          .cast(pl.Utf8)\n          .is_in(EMERGENCY_CODES)\n    )\n)\n\n# ----------------------------------------\n# 3. Frequency count per code\n# ----------------------------------------\nfreq_df = (\n    emergency_df\n    .with_columns(pl.col(\"squawk\").cast(pl.Utf8))\n    .group_by(\"squawk\")\n    .count()\n    .sort(\"count\", descending=True)\n)\n\nprint(freq_df)\n\n# ----------------------------------------\n# 4. Plot frequency graph\n# ----------------------------------------\nplot_df = freq_df.to_pandas()\n\nplt.figure(figsize=(6,4))\nplt.bar(plot_df[\"squawk\"], plot_df[\"count\"])\nplt.title(\"Frequency of Emergency Squawk Codes\")\nplt.xlabel(\"Squawk Code\")\nplt.ylabel(\"Count\")\nplt.grid(axis=\"y\", alpha=0.3)\n\nplt.show()\n\n/tmp/ipykernel_56177/402016319.py:24: DeprecationWarning: `GroupBy.count` was renamed; use `GroupBy.len` instead\n  .count()\n\n\nshape: (2, 2)\n┌────────┬───────┐\n│ squawk ┆ count │\n│ ---    ┆ ---   │\n│ str    ┆ u32   │\n╞════════╪═══════╡\n│ 7500   ┆ 17    │\n│ 7700   ┆ 8     │\n└────────┴───────┘",
+    "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Jon",
-      "Jon",
-      "Python",
-      "States Eda"
+      "Val",
+      "Val",
+      "R",
+      "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/jon/python/filter_data.html",
-    "href": "shared-notebooks/notebooks/jon/python/filter_data.html",
-    "title": "OR 568 Machine Learning Project",
+    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#load-the-dataset",
+    "href": "shared-notebooks/notebooks/val/r/01_report.html#load-the-dataset",
+    "title": "Example Report (R / Quarto)",
     "section": "",
-    "text": "from pathlib import Path\nimport polars as pl\nimport matplotlib.pyplot as plt\nfrom IPython.display import display, HTML\n\nBASE_DIR = Path.cwd()  \nPARQUET_PATH = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_asof.parquet\"\nCSV_OUT    = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.csv\"\nPARQUET_OUT= \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.parquet\"\n\nOUT_DIR = BASE_DIR / \"plots\"\nOUT_DIR.mkdir(exist_ok=True)\n\nPARQUET_PATH, OUT_DIR\npl.Config.set_tbl_cols(-1)\n\npolars.config.Config\n\n\n\ndf = pl.scan_parquet(PARQUET_PATH)\ndf.head(3).collect()\n\n\nshape: (3, 226)\n\n\n\nYear\nQuarter\nMonth\nDayofMonth\nDayOfWeek\nFlightDate\nReporting_Airline\nDOT_ID_Reporting_Airline\nIATA_CODE_Reporting_Airline\nTail_Number\nFlight_Number_Reporting_Airline\nOriginAirportID\nOriginAirportSeqID\nOriginCityMarketID\nOrigin\nOriginCityName\nOriginState\nOriginStateFips\nOriginStateName\nOriginWac\nDestAirportID\nDestAirportSeqID\nDestCityMarketID\nDest\nDestCityName\nDestState\nDestStateFips\nDestStateName\nDestWac\nCRSDepTime\nDepTime\nDepDelay\nDepDelayMinutes\nDepDel15\nDepartureDelayGroups\nDepTimeBlk\nTaxiOut\nWheelsOff\nWheelsOn\nTaxiIn\nCRSArrTime\nArrTime\nArrDelay\nArrDelayMinutes\nArrDel15\nArrivalDelayGroups\nArrTimeBlk\nCancelled\nCancellationCode\nDiverted\nCRSElapsedTime\nActualElapsedTime\nAirTime\nFlights\nDistance\nDistanceGroup\nCarrierDelay\nWeatherDelay\nNASDelay\nSecurityDelay\nLateAircraftDelay\nFirstDepTime\nTotalAddGTime\nLongestAddGTime\nDivAirportLandings\nDivReachedDest\nDivActualElapsedTime\nDivArrDelay\nDivDistance\nDiv1Airport\nDiv1AirportID\nDiv1AirportSeqID\nDiv1WheelsOn\nDiv1TotalGTime\nDiv1LongestGTime\nDiv1WheelsOff\nDiv1TailNum\nDiv2Airport\nDiv2AirportID\nDiv2AirportSeqID\nDiv2WheelsOn\nDiv2TotalGTime\nDiv2LongestGTime\nDiv2WheelsOff\nDiv2TailNum\nDiv3Airport\nDiv3AirportID\nDiv3AirportSeqID\nDiv3WheelsOn\nDiv3TotalGTime\nDiv3LongestGTime\nDiv3WheelsOff\nDiv3TailNum\nDiv4Airport\nDiv4AirportID\nDiv4AirportSeqID\nDiv4WheelsOn\nDiv4TotalGTime\nDiv4LongestGTime\nDiv4WheelsOff\nDiv4TailNum\nDiv5Airport\nDiv5AirportID\nDiv5AirportSeqID\nDiv5WheelsOn\nDiv5TotalGTime\nDiv5LongestGTime\nDiv5WheelsOff\nDiv5TailNum\n...110\nflight_date\ncrs_arr_date\nact_arr_date\ndep_ts_sched\narr_ts_sched\ndep_ts_actual\narr_ts_actual\ndep_valid\ndep_lon\ndep_lat\ndep_elevation\ndep_tmpf\ndep_dwpf\ndep_relh\ndep_drct\ndep_sknt\ndep_p01i\ndep_alti\ndep_mslp\ndep_vsby\ndep_gust\ndep_skyc1\ndep_skyc2\ndep_skyc3\ndep_skyc4\ndep_skyl1\ndep_skyl2\ndep_skyl3\ndep_skyl4\ndep_wxcodes\ndep_ice_accretion_1hr\ndep_ice_accretion_3hr\ndep_ice_accretion_6hr\ndep_peak_wind_gust\ndep_peak_wind_drct\ndep_peak_wind_time\ndep_feel\ndep_metar\ndep_snowdepth\narr_valid\narr_lon\narr_lat\narr_elevation\narr_tmpf\narr_dwpf\narr_relh\narr_drct\narr_sknt\narr_p01i\narr_alti\narr_mslp\narr_vsby\narr_gust\narr_skyc1\narr_skyc2\narr_skyc3\narr_skyc4\narr_skyl1\narr_skyl2\narr_skyl3\narr_skyl4\narr_wxcodes\narr_ice_accretion_1hr\narr_ice_accretion_3hr\narr_ice_accretion_6hr\narr_peak_wind_gust\narr_peak_wind_drct\narr_peak_wind_time\narr_feel\narr_metar\narr_snowdepth\ndep_weather_severity\narr_weather_severity\ndep_wx_intensity\ndep_wx_has_ra\ndep_wx_has_ts\ndep_wx_has_sn\ndep_wx_has_fg\ndep_wx_has_br\ndep_wx_has_hz\narr_wx_intensity\narr_wx_has_ra\narr_wx_has_ts\narr_wx_has_sn\narr_wx_has_fg\narr_wx_has_br\narr_wx_has_hz\nicao24\nunique_regulatory_id\nstatus\nlast_action_date\ncertificate_issue_date\nexpiration_date\nairworthiness_date\naircraft_code\naircraft_manufacturer\naircraft_model\naircraft_type\naircraft_category\naircraft_certification\nweight_category\nnum_engines\nnum_seats\ncruising_speed_mph\nengine_code\nengine_type\nengine_manufacturer\nengine_model\nengine_power_hp\nengine_thrust_lbf\nmanufacturing_year\nregistrant_type\nregistrant_name\nregistrant_city\nregistrant_state\nregistrant_country\n\n\ni64\ni64\ni64\ni64\ni64\nstr\nstr\ni64\nstr\nstr\ni64\ni64\ni64\ni64\nstr\nstr\nstr\ni64\nstr\ni64\ni64\ni64\ni64\nstr\nstr\nstr\ni64\nstr\ni64\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\ni64\ni64\nstr\nstr\ni64\ni64\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ndate\ndate\ndate\ndatetime[μs]\ndatetime[μs]\ndatetime[μs]\ndatetime[μs]\nstr\nstr\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nstr\nstr\nf64\nf64\nstr\nstr\nstr\nstr\nf64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nstr\nstr\nf64\nf64\nstr\nstr\nstr\nstr\nf64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nf64\nf64\nstr\nbool\nbool\nbool\nbool\nbool\nbool\nstr\nbool\nbool\nbool\nbool\nbool\nbool\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\n\n\n\n\n2019\n2\n4\n19\n5\n\"2019-04-19\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n413\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n1314\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"1300-1359\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n1442\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"1400-1459\"\n1\n\"B\"\n0\n88\n\"NA\"\n\"NA\"\n1\n361\n2\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-04-19\n2019-04-19\n2019-04-19\n2019-04-19 13:14:00\n2019-04-19 14:42:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n0.0\n0.0\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n2019\n1\n1\n5\n6\n\"2019-01-05\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n1800\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n2051\n\"2114\"\n\"23\"\n\"23\"\n\"1\"\n\"1\"\n\"2000-2059\"\n\"16\"\n\"2130\"\n\"2227\"\n\"6\"\n2212\n\"2233\"\n\"21\"\n\"21\"\n\"1\"\n\"1\"\n\"2200-2259\"\n0\n\"NA\"\n0\n81\n\"79\"\n\"57\"\n1\n361\n2\n\"0\"\n\"0\"\n\"0\"\n\"0\"\n\"21\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-01-05\n2019-01-05\n2019-01-05\n2019-01-05 20:51:00\n2019-01-05 22:12:00\n2019-01-05 21:14:00\n2019-01-05 22:33:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n\"5/1/2019 22:08\"\n\"-76.6841\"\n\"39.1733\"\n\"42\"\n62.0\n58.0\n86.11\n80.0\n6.0\n0.0\n\"30.19\"\nnull\n10.0\nnull\n\"OVC\"\nnull\nnull\nnull\n900.0\nnull\nnull\nnull\n\"\"\nnull\nnull\nnull\nnull\nnull\nnull\n\"62.1\"\n\"KBWI 020208Z 08006KT 10SM OVC0…\nnull\n0.0\n1.2\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n2019\n1\n1\n20\n7\n\"2019-01-20\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n813\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n941\n\"0945\"\n\"4\"\n\"4\"\n\"0\"\n\"0\"\n\"0900-0959\"\n\"9\"\n\"0954\"\n\"1043\"\n\"5\"\n1117\n\"1048\"\n\"-29\"\n\"0\"\n\"0\"\n\"-2\"\n\"1100-1159\"\n0\n\"NA\"\n0\n96\n\"63\"\n\"49\"\n1\n361\n2\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-01-20\n2019-01-20\n2019-01-20\n2019-01-20 09:41:00\n2019-01-20 11:17:00\n2019-01-20 09:45:00\n2019-01-20 10:48:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n\"12/1/2019 23:54\"\n\"-76.6841\"\n\"39.1733\"\n\"42\"\n39.0\n36.0\n88.87\nnull\n6.0\n0.0\n\"29.52\"\n\"999.7\"\n9.0\nnull\n\"OVC\"\nnull\nnull\nnull\n800.0\nnull\nnull\nnull\n\"\"\nnull\nnull\nnull\nnull\nnull\nnull\n\"33.96\"\n\"KBWI 020454Z VRB06KT 9SM OVC00…\nnull\n0.0\n1.3\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n\n\n\n\n\n\n\nfiltered = df.select([\n    \"FlightDate\",\n    \"Tail_Number\",\n\n    \"Origin\",\n    \"OriginState\",\n    \"OriginStateFips\",\n    \"OriginWac\",\n\n    \"Dest\",\n    \"DestState\",\n    \"DestStateFips\",\n    \"DestWac\",\n                                \n    \"CRSDepTime\",\n    \"DepTime\",\n    \"DepDelay\",\n    \"DepDelayMinutes\",\n    \"DepDel15\",\n    \"DepartureDelayGroups\",\n\n    \"CRSArrTime\",\n    \"ArrTime\",\n    \"ArrDelay\",\n    \"ArrDelayMinutes\",\n    \"ArrDel15\",\n    \"ArrivalDelayGroups\",\n\n    \"TaxiOut\",\n    \"WheelsOff\",\n    \"WheelsOn\",\n    \"TaxiIn\",\n\n    \"Cancelled\",\n    \"CancellationCode\",\n    \"Diverted\",\n    \"CRSElapsedTime\",\n    \"ActualElapsedTime\",\n    \"AirTime\",\n    \"Flights\",\n    \"Distance\",\n    \"DistanceGroup\",\n    \"CarrierDelay\",\n    \"WeatherDelay\",\n    \"NASDelay\",\n    \"SecurityDelay\",\n    \"LateAircraftDelay\",\n\n    # Weather \n    \"crs_arr_date\",\n    \"act_arr_date\",\n    \"dep_ts_sched\",\n    \"arr_ts_sched\",\n    \"dep_ts_actual\",\n    \"arr_ts_actual\",\n\n    \"dep_drct\",\n    \"dep_sknt\",\n    \"dep_p01i\",\n    \"dep_vsby\",\n    \"dep_gust\",\n    \"dep_wxcodes\",\n    \"dep_ice_accretion_1hr\",\n    \"dep_ice_accretion_3hr\",\n    \"dep_ice_accretion_6hr\",\n    \"dep_peak_wind_gust\",\n    \"dep_peak_wind_drct\",\n    \"dep_peak_wind_time\",\n    \"dep_weather_severity\",\n    \"dep_wx_intensity\",\n    \"dep_wx_has_ra\",\n    \"dep_wx_has_ts\",\n    \"dep_wx_has_sn\",\n    \"dep_wx_has_fg\",\n    \"dep_wx_has_br\",\n    \"dep_wx_has_hz\",\n            \n    \"arr_drct\",\n    \"arr_sknt\",\n    \"arr_p01i\",\n    \"arr_vsby\",\n    \"arr_gust\",\n    \"arr_wxcodes\",\n    \"arr_ice_accretion_1hr\",\n    \"arr_ice_accretion_3hr\",\n    \"arr_ice_accretion_6hr\",\n    \"arr_peak_wind_gust\",\n    \"arr_peak_wind_drct\",\n    \"arr_peak_wind_time\",\n    \"arr_weather_severity\",\n    \"arr_wx_intensity\",\n    \"arr_wx_has_ra\",\n    \"arr_wx_has_ts\",\n    \"arr_wx_has_sn\",\n    \"arr_wx_has_fg\",\n    \"arr_wx_has_br\",\n    \"arr_wx_has_hz\",\n\n    # FAA Flight Registry\n    \"icao24\",\n    \"aircraft_model\",\n    \"aircraft_type\",\n    \"weight_category\",\n    \"num_seats\",\n]).collect()\n\nfiltered.write_csv(CSV_OUT)\nfiltered.write_parquet(PARQUET_OUT)",
+    "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Jon",
-      "Jon",
+      "Val",
+      "Val",
+      "R",
+      "Example Report (R / Quarto)"
+    ]
+  },
+  {
+    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#why-this-works-better",
+    "href": "shared-notebooks/notebooks/val/r/01_report.html#why-this-works-better",
+    "title": "Example Report (R / Quarto)",
+    "section": "Why this works better",
+    "text": "Why this works better\nUsing iris gives you: - no local file dependency - no path issues during quarto render - lightweight example notebooks that always work - a familiar dataset for both Python and R",
+    "crumbs": [
+      "Shared Notebooks",
+      "Val",
+      "Val",
+      "R",
+      "Example Report (R / Quarto)"
+    ]
+  },
+  {
+    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "href": "shared-notebooks/notebooks/val/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "title": "Example Report (R / Quarto)",
+    "section": "If you want the Python notebook as Quarto-friendly too",
+    "text": "If you want the Python notebook as Quarto-friendly too\nIf your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:\nfrom sklearn.datasets import load_iris\nimport pandas as pd\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\ndf.head()",
+    "crumbs": [
+      "Shared Notebooks",
+      "Val",
+      "Val",
+      "R",
+      "Example Report (R / Quarto)"
+    ]
+  },
+  {
+    "objectID": "shared-notebooks/notebooks/val/python/01_eda_model.html",
+    "href": "shared-notebooks/notebooks/val/python/01_eda_model.html",
+    "title": "Example Jupyter Notebook",
+    "section": "",
+    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
+    "crumbs": [
+      "Shared Notebooks",
+      "Val",
+      "Val",
       "Python",
-      "Filter Data"
+      "Example Jupyter Notebook"
+    ]
+  },
+  {
+    "objectID": "shared-notebooks/notebooks/irena/python/01_eda_model.html",
+    "href": "shared-notebooks/notebooks/irena/python/01_eda_model.html",
+    "title": "Example Jupyter Notebook",
+    "section": "",
+    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
+    "crumbs": [
+      "Shared Notebooks",
+      "Irena",
+      "Irena",
+      "Python",
+      "Example Jupyter Notebook"
     ]
   },
   {
@@ -371,214 +470,220 @@
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/irena/python/01_eda_model.html",
-    "href": "shared-notebooks/notebooks/irena/python/01_eda_model.html",
-    "title": "Example Jupyter Notebook",
+    "objectID": "shared-notebooks/notebooks/jon/python/filter_data.html",
+    "href": "shared-notebooks/notebooks/jon/python/filter_data.html",
+    "title": "OR 568 Machine Learning Project",
     "section": "",
-    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
+    "text": "from pathlib import Path\nimport polars as pl\nimport matplotlib.pyplot as plt\nfrom IPython.display import display, HTML\n\nBASE_DIR = Path.cwd()  \nPARQUET_PATH = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_asof.parquet\"\nCSV_OUT    = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.csv\"\nPARQUET_OUT= \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.parquet\"\n\nOUT_DIR = BASE_DIR / \"plots\"\nOUT_DIR.mkdir(exist_ok=True)\n\nPARQUET_PATH, OUT_DIR\npl.Config.set_tbl_cols(-1)\n\npolars.config.Config\n\n\n\ndf = pl.scan_parquet(PARQUET_PATH)\ndf.head(3).collect()\n\n\nshape: (3, 226)\n\n\n\nYear\nQuarter\nMonth\nDayofMonth\nDayOfWeek\nFlightDate\nReporting_Airline\nDOT_ID_Reporting_Airline\nIATA_CODE_Reporting_Airline\nTail_Number\nFlight_Number_Reporting_Airline\nOriginAirportID\nOriginAirportSeqID\nOriginCityMarketID\nOrigin\nOriginCityName\nOriginState\nOriginStateFips\nOriginStateName\nOriginWac\nDestAirportID\nDestAirportSeqID\nDestCityMarketID\nDest\nDestCityName\nDestState\nDestStateFips\nDestStateName\nDestWac\nCRSDepTime\nDepTime\nDepDelay\nDepDelayMinutes\nDepDel15\nDepartureDelayGroups\nDepTimeBlk\nTaxiOut\nWheelsOff\nWheelsOn\nTaxiIn\nCRSArrTime\nArrTime\nArrDelay\nArrDelayMinutes\nArrDel15\nArrivalDelayGroups\nArrTimeBlk\nCancelled\nCancellationCode\nDiverted\nCRSElapsedTime\nActualElapsedTime\nAirTime\nFlights\nDistance\nDistanceGroup\nCarrierDelay\nWeatherDelay\nNASDelay\nSecurityDelay\nLateAircraftDelay\nFirstDepTime\nTotalAddGTime\nLongestAddGTime\nDivAirportLandings\nDivReachedDest\nDivActualElapsedTime\nDivArrDelay\nDivDistance\nDiv1Airport\nDiv1AirportID\nDiv1AirportSeqID\nDiv1WheelsOn\nDiv1TotalGTime\nDiv1LongestGTime\nDiv1WheelsOff\nDiv1TailNum\nDiv2Airport\nDiv2AirportID\nDiv2AirportSeqID\nDiv2WheelsOn\nDiv2TotalGTime\nDiv2LongestGTime\nDiv2WheelsOff\nDiv2TailNum\nDiv3Airport\nDiv3AirportID\nDiv3AirportSeqID\nDiv3WheelsOn\nDiv3TotalGTime\nDiv3LongestGTime\nDiv3WheelsOff\nDiv3TailNum\nDiv4Airport\nDiv4AirportID\nDiv4AirportSeqID\nDiv4WheelsOn\nDiv4TotalGTime\nDiv4LongestGTime\nDiv4WheelsOff\nDiv4TailNum\nDiv5Airport\nDiv5AirportID\nDiv5AirportSeqID\nDiv5WheelsOn\nDiv5TotalGTime\nDiv5LongestGTime\nDiv5WheelsOff\nDiv5TailNum\n...110\nflight_date\ncrs_arr_date\nact_arr_date\ndep_ts_sched\narr_ts_sched\ndep_ts_actual\narr_ts_actual\ndep_valid\ndep_lon\ndep_lat\ndep_elevation\ndep_tmpf\ndep_dwpf\ndep_relh\ndep_drct\ndep_sknt\ndep_p01i\ndep_alti\ndep_mslp\ndep_vsby\ndep_gust\ndep_skyc1\ndep_skyc2\ndep_skyc3\ndep_skyc4\ndep_skyl1\ndep_skyl2\ndep_skyl3\ndep_skyl4\ndep_wxcodes\ndep_ice_accretion_1hr\ndep_ice_accretion_3hr\ndep_ice_accretion_6hr\ndep_peak_wind_gust\ndep_peak_wind_drct\ndep_peak_wind_time\ndep_feel\ndep_metar\ndep_snowdepth\narr_valid\narr_lon\narr_lat\narr_elevation\narr_tmpf\narr_dwpf\narr_relh\narr_drct\narr_sknt\narr_p01i\narr_alti\narr_mslp\narr_vsby\narr_gust\narr_skyc1\narr_skyc2\narr_skyc3\narr_skyc4\narr_skyl1\narr_skyl2\narr_skyl3\narr_skyl4\narr_wxcodes\narr_ice_accretion_1hr\narr_ice_accretion_3hr\narr_ice_accretion_6hr\narr_peak_wind_gust\narr_peak_wind_drct\narr_peak_wind_time\narr_feel\narr_metar\narr_snowdepth\ndep_weather_severity\narr_weather_severity\ndep_wx_intensity\ndep_wx_has_ra\ndep_wx_has_ts\ndep_wx_has_sn\ndep_wx_has_fg\ndep_wx_has_br\ndep_wx_has_hz\narr_wx_intensity\narr_wx_has_ra\narr_wx_has_ts\narr_wx_has_sn\narr_wx_has_fg\narr_wx_has_br\narr_wx_has_hz\nicao24\nunique_regulatory_id\nstatus\nlast_action_date\ncertificate_issue_date\nexpiration_date\nairworthiness_date\naircraft_code\naircraft_manufacturer\naircraft_model\naircraft_type\naircraft_category\naircraft_certification\nweight_category\nnum_engines\nnum_seats\ncruising_speed_mph\nengine_code\nengine_type\nengine_manufacturer\nengine_model\nengine_power_hp\nengine_thrust_lbf\nmanufacturing_year\nregistrant_type\nregistrant_name\nregistrant_city\nregistrant_state\nregistrant_country\n\n\ni64\ni64\ni64\ni64\ni64\nstr\nstr\ni64\nstr\nstr\ni64\ni64\ni64\ni64\nstr\nstr\nstr\ni64\nstr\ni64\ni64\ni64\ni64\nstr\nstr\nstr\ni64\nstr\ni64\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\ni64\ni64\nstr\nstr\ni64\ni64\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ni64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\ndate\ndate\ndate\ndatetime[μs]\ndatetime[μs]\ndatetime[μs]\ndatetime[μs]\nstr\nstr\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nstr\nstr\nf64\nf64\nstr\nstr\nstr\nstr\nf64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nstr\nstr\nf64\nf64\nstr\nstr\nstr\nstr\nf64\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nf64\nf64\nstr\nbool\nbool\nbool\nbool\nbool\nbool\nstr\nbool\nbool\nbool\nbool\nbool\nbool\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\nstr\n\n\n\n\n2019\n2\n4\n19\n5\n\"2019-04-19\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n413\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n1314\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"1300-1359\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n1442\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"1400-1459\"\n1\n\"B\"\n0\n88\n\"NA\"\n\"NA\"\n1\n361\n2\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-04-19\n2019-04-19\n2019-04-19\n2019-04-19 13:14:00\n2019-04-19 14:42:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n0.0\n0.0\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n2019\n1\n1\n5\n6\n\"2019-01-05\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n1800\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n2051\n\"2114\"\n\"23\"\n\"23\"\n\"1\"\n\"1\"\n\"2000-2059\"\n\"16\"\n\"2130\"\n\"2227\"\n\"6\"\n2212\n\"2233\"\n\"21\"\n\"21\"\n\"1\"\n\"1\"\n\"2200-2259\"\n0\n\"NA\"\n0\n81\n\"79\"\n\"57\"\n1\n361\n2\n\"0\"\n\"0\"\n\"0\"\n\"0\"\n\"21\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-01-05\n2019-01-05\n2019-01-05\n2019-01-05 20:51:00\n2019-01-05 22:12:00\n2019-01-05 21:14:00\n2019-01-05 22:33:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n\"5/1/2019 22:08\"\n\"-76.6841\"\n\"39.1733\"\n\"42\"\n62.0\n58.0\n86.11\n80.0\n6.0\n0.0\n\"30.19\"\nnull\n10.0\nnull\n\"OVC\"\nnull\nnull\nnull\n900.0\nnull\nnull\nnull\n\"\"\nnull\nnull\nnull\nnull\nnull\nnull\n\"62.1\"\n\"KBWI 020208Z 08006KT 10SM OVC0…\nnull\n0.0\n1.2\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n2019\n1\n1\n20\n7\n\"2019-01-20\"\n\"AA\"\n19805\n\"AA\"\n\"N111US\"\n813\n11057\n1105703\n31057\n\"CLT\"\n\"Charlotte, NC\"\n\"NC\"\n37\n\"North Carolina\"\n36\n10821\n1082106\n30852\n\"BWI\"\n\"Baltimore, MD\"\n\"MD\"\n24\n\"Maryland\"\n35\n941\n\"0945\"\n\"4\"\n\"4\"\n\"0\"\n\"0\"\n\"0900-0959\"\n\"9\"\n\"0954\"\n\"1043\"\n\"5\"\n1117\n\"1048\"\n\"-29\"\n\"0\"\n\"0\"\n\"-2\"\n\"1100-1159\"\n0\n\"NA\"\n0\n96\n\"63\"\n\"49\"\n1\n361\n2\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n0\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n\"NA\"\n2019-01-20\n2019-01-20\n2019-01-20\n2019-01-20 09:41:00\n2019-01-20 11:17:00\n2019-01-20 09:45:00\n2019-01-20 10:48:00\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\nnull\n\"12/1/2019 23:54\"\n\"-76.6841\"\n\"39.1733\"\n\"42\"\n39.0\n36.0\n88.87\nnull\n6.0\n0.0\n\"29.52\"\n\"999.7\"\n9.0\nnull\n\"OVC\"\nnull\nnull\nnull\n800.0\nnull\nnull\nnull\n\"\"\nnull\nnull\nnull\nnull\nnull\nnull\n\"33.96\"\n\"KBWI 020454Z VRB06KT 9SM OVC00…\nnull\n0.0\n1.3\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"M\"\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n\"a031bd\"\n\"00276062\"\n\"Valid Registration\"\n\"2023-07-01\"\n\"2015-12-30\"\n\"2028-12-31\"\n\"1999-12-27\"\n\"3930316\"\n\"AIRBUS INDUSTRIE\"\n\"A320-214\"\n\"Fixed wing multi engine\"\n\"Land\"\n\"Type Certificated\"\n\"20,000 and over.\"\n\"2.0\"\n\"182.0\"\n\"Registry Not Found\"\n\"13802\"\n\"Turbo-fan\"\n\"CFM INTL.\"\n\"CFM56 SERIES\"\n\"2200.0\"\n\"Registry Not Found\"\n\"1999.0\"\n\"Corporation\"\n\"AMERICAN AIRLINES INC\"\n\"FORT WORTH\"\n\"TX\"\n\"US\"\n\n\n\n\n\n\n\n\n\nfiltered = df.select([\n    \"FlightDate\",\n    \"Tail_Number\",\n\n    \"Origin\",\n    \"OriginState\",\n    \"OriginStateFips\",\n    \"OriginWac\",\n\n    \"Dest\",\n    \"DestState\",\n    \"DestStateFips\",\n    \"DestWac\",\n                                \n    \"CRSDepTime\",\n    \"DepTime\",\n    \"DepDelay\",\n    \"DepDelayMinutes\",\n    \"DepDel15\",\n    \"DepartureDelayGroups\",\n\n    \"CRSArrTime\",\n    \"ArrTime\",\n    \"ArrDelay\",\n    \"ArrDelayMinutes\",\n    \"ArrDel15\",\n    \"ArrivalDelayGroups\",\n\n    \"TaxiOut\",\n    \"WheelsOff\",\n    \"WheelsOn\",\n    \"TaxiIn\",\n\n    \"Cancelled\",\n    \"CancellationCode\",\n    \"Diverted\",\n    \"CRSElapsedTime\",\n    \"ActualElapsedTime\",\n    \"AirTime\",\n    \"Flights\",\n    \"Distance\",\n    \"DistanceGroup\",\n    \"CarrierDelay\",\n    \"WeatherDelay\",\n    \"NASDelay\",\n    \"SecurityDelay\",\n    \"LateAircraftDelay\",\n\n    # Weather \n    \"crs_arr_date\",\n    \"act_arr_date\",\n    \"dep_ts_sched\",\n    \"arr_ts_sched\",\n    \"dep_ts_actual\",\n    \"arr_ts_actual\",\n\n    \"dep_drct\",\n    \"dep_sknt\",\n    \"dep_p01i\",\n    \"dep_vsby\",\n    \"dep_gust\",\n    \"dep_wxcodes\",\n    \"dep_ice_accretion_1hr\",\n    \"dep_ice_accretion_3hr\",\n    \"dep_ice_accretion_6hr\",\n    \"dep_peak_wind_gust\",\n    \"dep_peak_wind_drct\",\n    \"dep_peak_wind_time\",\n    \"dep_weather_severity\",\n    \"dep_wx_intensity\",\n    \"dep_wx_has_ra\",\n    \"dep_wx_has_ts\",\n    \"dep_wx_has_sn\",\n    \"dep_wx_has_fg\",\n    \"dep_wx_has_br\",\n    \"dep_wx_has_hz\",\n            \n    \"arr_drct\",\n    \"arr_sknt\",\n    \"arr_p01i\",\n    \"arr_vsby\",\n    \"arr_gust\",\n    \"arr_wxcodes\",\n    \"arr_ice_accretion_1hr\",\n    \"arr_ice_accretion_3hr\",\n    \"arr_ice_accretion_6hr\",\n    \"arr_peak_wind_gust\",\n    \"arr_peak_wind_drct\",\n    \"arr_peak_wind_time\",\n    \"arr_weather_severity\",\n    \"arr_wx_intensity\",\n    \"arr_wx_has_ra\",\n    \"arr_wx_has_ts\",\n    \"arr_wx_has_sn\",\n    \"arr_wx_has_fg\",\n    \"arr_wx_has_br\",\n    \"arr_wx_has_hz\",\n\n    # FAA Flight Registry\n    \"icao24\",\n    \"aircraft_model\",\n    \"aircraft_type\",\n    \"weight_category\",\n    \"num_seats\",\n]).collect()\n\nfiltered.write_csv(CSV_OUT)\nfiltered.write_parquet(PARQUET_OUT)",
     "crumbs": [
       "Shared Notebooks",
-      "Irena",
-      "Irena",
+      "Jon",
+      "Jon",
       "Python",
-      "Example Jupyter Notebook"
+      "Filter Data"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/val/python/01_eda_model.html",
-    "href": "shared-notebooks/notebooks/val/python/01_eda_model.html",
-    "title": "Example Jupyter Notebook",
+    "objectID": "shared-notebooks/notebooks/jon/python/states_eda.html",
+    "href": "shared-notebooks/notebooks/jon/python/states_eda.html",
+    "title": "OR 568 Machine Learning Project",
     "section": "",
-    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
+    "text": "# ============================================\n# OpenSky EDA Script (Polars Version)\n# ============================================\n\nfrom pathlib import Path\n\nimport polars as pl\nimport matplotlib.pyplot as plt\n\npl.Config.set_tbl_cols(-1)          # show all columns\npl.Config.set_tbl_rows(1000)         # number of visible rows\npl.Config.set_tbl_width_chars(200)  # wider table\n\nBASE_DIR = Path.cwd()\n\ndata_dir = BASE_DIR / \"..\" / \"..\" / \"..\" / \"data_pipeline\" / \"raw_data\"\n# extract_dir = BASE_DIR / \"raw_data\" / \"extracted\"\n\n# INPUT_FILE = \"bwi_states_smoothed_resampled.csv\"\n\nINPUT_FILE = \"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/raw_data/bwi_states_2022_06_27_raw.csv\"\n\n# --------------------------------------------\n# LOAD DATA\n# --------------------------------------------\ndf = pl.read_csv(INPUT_FILE, try_parse_dates=True)\n\nprint(\"\\n===== BASIC INFO =====\")\nprint(\"Rows:\", df.height)\nprint(\"Columns:\", len(df.columns))\n\n# --------------------------------------------\n# TIME RANGE\n# --------------------------------------------\nprint(\"\\n===== TIME RANGE =====\")\nprint(df.select([\n    pl.col(\"time\").min().alias(\"start_time\"),\n    pl.col(\"time\").max().alias(\"end_time\")\n]))\n\n# --------------------------------------------\n# UNIQUE AIRCRAFT\n# --------------------------------------------\nprint(\"\\nUnique aircraft:\", df.select(pl.col(\"icao24\").n_unique()).item())\n\n# --------------------------------------------\n# NULL COUNTS\n# --------------------------------------------\nprint(\"\\n===== MISSING VALUES =====\")\nnulls = df.select([\n    pl.all().null_count()\n])\nprint(nulls)\n\n# ============================================\n# SQUAWK FREQUENCY DISTRIBUTION\n# ============================================\n\nprint(\"\\n===== SQUAWK FREQUENCY =====\")\n\n# -----------------------------------\n# Frequency table\n# -----------------------------------\nsquawk_freq = (\n    df.filter(pl.col(\"squawk\").is_not_null())\n      .group_by(\"squawk\")\n      .len()\n      .sort(\"len\", descending=True)\n)\n\nprint(squawk_freq.head(20))\n\ntop_sq = squawk_freq.head(20)\n\n# -----------------------------------\n# Highlight logic\n# -----------------------------------\n\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\nIMPORTANT_CODES = {\"1200\", \"7000\"}\n\ncolors = []\n\nfor sq in top_sq[\"squawk\"].cast(str):\n    if sq in EMERGENCY_CODES:\n        colors.append(\"red\")          # emergencies\n    elif sq in IMPORTANT_CODES:\n        colors.append(\"orange\")       # operational baseline\n    else:\n        colors.append(\"steelblue\")    # normal\n\n# -----------------------------------\n# Plot\n# -----------------------------------\n\nplt.figure(figsize=(12,6))\n\nplt.bar(\n    top_sq[\"squawk\"].cast(str),\n    top_sq[\"len\"],\n    color=colors\n)\n\nplt.title(\"Top Squawk Codes Frequency (Emergencies Highlighted)\")\nplt.xlabel(\"Squawk Code\")\nplt.ylabel(\"Count\")\n\nplt.xticks(rotation=45)\n\n# legend\nimport matplotlib.patches as mpatches\n\nlegend_handles = [\n    mpatches.Patch(color=\"red\", label=\"Emergency (7500/7600/7700)\"),\n    mpatches.Patch(color=\"orange\", label=\"Operational Baseline (1200/7000)\"),\n    mpatches.Patch(color=\"steelblue\", label=\"Other\")\n]\n\nplt.legend(handles=legend_handles)\n\nplt.tight_layout()\nplt.show()\n\n# # ============================================\n# # MOVEMENT STATISTICS\n# # ============================================\n\n# print(\"\\n===== NUMERIC SUMMARY =====\")\n\n# numeric_cols = [\n#     \"velocity\",\n#     \"geoaltitude\",\n#     \"baroaltitude\",\n#     \"vertrate\",\n#     \"heading\"\n# ]\n\n# summary = df.select([\n#     pl.col(c).mean().alias(f\"{c}_mean\") for c in numeric_cols\n# ] + [\n#     pl.col(c).std().alias(f\"{c}_std\") for c in numeric_cols\n# ] + [\n#     pl.col(c).min().alias(f\"{c}_min\") for c in numeric_cols\n# ] + [\n#     pl.col(c).max().alias(f\"{c}_max\") for c in numeric_cols\n# ])\n\n# print(summary)\n\n# # ============================================\n# # OPERATIONAL FLAGS\n# # ============================================\n\n# print(\"\\n===== OPERATIONAL FLAGS =====\")\n\n# flags = df.select([\n#     (pl.col(\"onground\") == True).mean().alias(\"pct_onground\"),\n#     (pl.col(\"alert\") == True).mean().alias(\"pct_alert\"),\n#     (pl.col(\"spi\") == True).mean().alias(\"pct_spi\")\n# ])\n\n# print(flags)\n\n# # ============================================\n# # PER AIRCRAFT SUMMARY (ML READY)\n# # ============================================\n\n# print(\"\\n===== AIRCRAFT LEVEL SUMMARY =====\")\n\n# aircraft_summary = (\n#     df.group_by(\"icao24\")\n#       .agg([\n#           pl.col(\"velocity\").mean().alias(\"avg_velocity\"),\n#           pl.col(\"geoaltitude\").max().alias(\"max_altitude\"),\n#           pl.col(\"time\").min().alias(\"start_time\"),\n#           pl.col(\"time\").max().alias(\"end_time\"),\n#           pl.len().alias(\"samples\")\n#       ])\n# )\n\n# print(aircraft_summary.head())\n\n# # Optional save for ML\n# aircraft_summary.write_csv(\"aircraft_summary.csv\")\n\n# print(\"\\nSaved aircraft summary → aircraft_summary.csv\")\n\n\n===== BASIC INFO =====\nRows: 67831\nColumns: 16\n\n===== TIME RANGE =====\nshape: (1, 2)\n┌────────────┬────────────┐\n│ start_time ┆ end_time   │\n│ ---        ┆ ---        │\n│ i64        ┆ i64        │\n╞════════════╪════════════╡\n│ 1656288010 ┆ 1656374390 │\n└────────────┴────────────┘\n\nUnique aircraft: 1068\n\n===== MISSING VALUES =====\nshape: (1, 16)\n┌──────┬────────┬─────┬─────┬──────────┬─────────┬──────────┬──────────┬──────────┬───────┬─────┬────────┬──────────────┬─────────────┬───────────────┬─────────────┐\n│ time ┆ icao24 ┆ lat ┆ lon ┆ velocity ┆ heading ┆ vertrate ┆ callsign ┆ onground ┆ alert ┆ spi ┆ squawk ┆ baroaltitude ┆ geoaltitude ┆ lastposupdate ┆ lastcontact │\n│ ---  ┆ ---    ┆ --- ┆ --- ┆ ---      ┆ ---     ┆ ---      ┆ ---      ┆ ---      ┆ ---   ┆ --- ┆ ---    ┆ ---          ┆ ---         ┆ ---           ┆ ---         │\n│ u32  ┆ u32    ┆ u32 ┆ u32 ┆ u32      ┆ u32     ┆ u32      ┆ u32      ┆ u32      ┆ u32   ┆ u32 ┆ u32    ┆ u32          ┆ u32         ┆ u32           ┆ u32         │\n╞══════╪════════╪═════╪═════╪══════════╪═════════╪══════════╪══════════╪══════════╪═══════╪═════╪════════╪══════════════╪═════════════╪═══════════════╪═════════════╡\n│ 0    ┆ 0      ┆ 0   ┆ 0   ┆ 2451     ┆ 2451    ┆ 2451     ┆ 1395     ┆ 0        ┆ 0     ┆ 0   ┆ 5627   ┆ 3164         ┆ 3729        ┆ 0             ┆ 0           │\n└──────┴────────┴─────┴─────┴──────────┴─────────┴──────────┴──────────┴──────────┴───────┴─────┴────────┴──────────────┴─────────────┴───────────────┴─────────────┘\n\n===== SQUAWK FREQUENCY =====\nshape: (20, 2)\n┌────────┬──────┐\n│ squawk ┆ len  │\n│ ---    ┆ ---  │\n│ i64    ┆ u32  │\n╞════════╪══════╡\n│ 1200   ┆ 2721 │\n│ 5154   ┆ 1044 │\n│ 5113   ┆ 652  │\n│ 5163   ┆ 490  │\n│ 5101   ┆ 437  │\n│ 371    ┆ 244  │\n│ 5102   ┆ 231  │\n│ 5214   ┆ 230  │\n│ 4643   ┆ 220  │\n│ 2132   ┆ 208  │\n│ 3634   ┆ 207  │\n│ 5322   ┆ 202  │\n│ 5166   ┆ 199  │\n│ 1431   ┆ 193  │\n│ 4630   ┆ 184  │\n│ 5107   ┆ 184  │\n│ 2122   ┆ 176  │\n│ 6216   ┆ 168  │\n│ 7037   ┆ 164  │\n│ 1063   ┆ 161  │\n└────────┴──────┘\n\n\n\n\n\n\n\n\n\n\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\n\nemergency_df = (\n    df.filter(\n        pl.col(\"squawk\")\n          .cast(pl.Utf8)\n          .is_in(EMERGENCY_CODES)\n    )\n)\n\nprint(emergency_df)\n\nshape: (25, 16)\n┌────────────┬────────┬───────────┬────────────┬────────────┬────────────┬───────────┬──────────┬──────────┬───────┬───────┬────────┬──────────────┬─────────────┬───────────────┬─────────────┐\n│ time       ┆ icao24 ┆ lat       ┆ lon        ┆ velocity   ┆ heading    ┆ vertrate  ┆ callsign ┆ onground ┆ alert ┆ spi   ┆ squawk ┆ baroaltitude ┆ geoaltitude ┆ lastposupdate ┆ lastcontact │\n│ ---        ┆ ---    ┆ ---       ┆ ---        ┆ ---        ┆ ---        ┆ ---       ┆ ---      ┆ ---      ┆ ---   ┆ ---   ┆ ---    ┆ ---          ┆ ---         ┆ ---           ┆ ---         │\n│ i64        ┆ str    ┆ f64       ┆ f64        ┆ f64        ┆ f64        ┆ f64       ┆ str      ┆ bool     ┆ bool  ┆ bool  ┆ i64    ┆ f64          ┆ f64         ┆ f64           ┆ f64         │\n╞════════════╪════════╪═══════════╪════════════╪════════════╪════════════╪═══════════╪══════════╪══════════╪═══════╪═══════╪════════╪══════════════╪═════════════╪═══════════════╪═════════════╡\n│ 1656297100 ┆ a97d63 ┆ 38.965899 ┆ -76.712097 ┆ 182.439135 ┆ 42.3715    ┆ 9.42848   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 3977.64      ┆ 4175.76     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297110 ┆ a97d63 ┆ 38.978375 ┆ -76.697571 ┆ 184.691128 ┆ 41.951625  ┆ 9.42848   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4061.46      ┆ 4267.2      ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297120 ┆ a97d63 ┆ 38.990851 ┆ -76.683228 ┆ 186.870677 ┆ 41.987212  ┆ 9.10336   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4152.9       ┆ 4366.26     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297130 ┆ a97d63 ┆ 39.003373 ┆ -76.668762 ┆ 187.979837 ┆ 41.893973  ┆ 11.05408  ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4251.96      ┆ 4472.94     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656297140 ┆ a97d63 ┆ 39.015793 ┆ -76.654179 ┆ 190.663801 ┆ 43.688112  ┆ 7.47776   ┆ JIA5065  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 4335.78      ┆ 4556.76     ┆ 1.6563e9      ┆ 1.6563e9    │\n│ 1656350000 ┆ abbe71 ┆ 38.93955  ┆ -76.354492 ┆ 244.404759 ┆ 23.705339  ┆ -9.7536   ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8237.22      ┆ 8663.94     ┆ 1.6563e9      ┆ 1.6564e9    │\n│ 1656350010 ┆ abbe71 ┆ 38.958984 ┆ -76.343516 ┆ 242.784868 ┆ 23.740605  ┆ -10.07872 ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8145.78      ┆ 8572.5      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656350020 ┆ abbe71 ┆ 38.979721 ┆ -76.331873 ┆ 241.63594  ┆ 23.727164  ┆ -9.7536   ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 8054.34      ┆ 8473.44     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656350030 ┆ abbe71 ┆ 38.998672 ┆ -76.320947 ┆ 240.685032 ┆ 25.579179  ┆ -10.07872 ┆ WMN557   ┆ false    ┆ false ┆ false ┆ 7700   ┆ 7962.9       ┆ 8382.0      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352940 ┆ ac508b ┆ 39.318067 ┆ -76.64801  ┆ 251.643058 ┆ 22.475702  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352950 ┆ ac508b ┆ 39.338177 ┆ -76.637329 ┆ 251.44684  ┆ 22.367383  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352960 ┆ ac508b ┆ 39.358978 ┆ -76.626295 ┆ 252.118502 ┆ 22.431008  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352970 ┆ ac508b ┆ 39.38026  ┆ -76.61499  ┆ 251.922654 ┆ 22.322858  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656352980 ┆ ac508b ┆ 39.401321 ┆ -76.603845 ┆ 251.922654 ┆ 22.322858  ┆ 0.0       ┆ DAL1274  ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10058.4      ┆ 10576.56    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364440 ┆ a4bb8a ┆ 39.068686 ┆ -76.880371 ┆ 219.387899 ┆ 223.954919 ┆ -0.32512  ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364450 ┆ a4bb8a ┆ 39.054657 ┆ -76.89761  ┆ 219.387899 ┆ 223.954919 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10363.2      ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364460 ┆ a4bb8a ┆ 39.040662 ┆ -76.914856 ┆ 219.402375 ┆ 223.764959 ┆ 0.32512   ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10881.36    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364470 ┆ a4bb8a ┆ 39.026367 ┆ -76.932479 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10363.2      ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364480 ┆ a4bb8a ┆ 39.012032 ┆ -76.950073 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364490 ┆ a4bb8a ┆ 38.997648 ┆ -76.967773 ┆ 219.402375 ┆ 223.764959 ┆ 0.0       ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10888.98    ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656364500 ┆ a4bb8a ┆ 38.983475 ┆ -76.985142 ┆ 219.758531 ┆ 223.861823 ┆ -0.32512  ┆ AAL845   ┆ false    ┆ false ┆ false ┆ 7500   ┆ 10370.82     ┆ 10896.6     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367660 ┆ abd19e ┆ 38.931683 ┆ -76.544434 ┆ 133.375994 ┆ 350.900994 ┆ -4.8768   ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1280.16      ┆ 1318.26     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367670 ┆ abd19e ┆ 38.943146 ┆ -76.546823 ┆ 131.852308 ┆ 350.794937 ┆ -5.20192  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1226.82      ┆ 1264.92     ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367680 ┆ abd19e ┆ 38.954865 ┆ -76.549331 ┆ 130.499548 ┆ 350.240619 ┆ -4.55168  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1181.1       ┆ 1219.2      ┆ 1.6564e9      ┆ 1.6564e9    │\n│ 1656367690 ┆ abd19e ┆ 38.966309 ┆ -76.551779 ┆ 128.215298 ┆ 350.764441 ┆ -2.60096  ┆ SWA2748  ┆ false    ┆ false ┆ false ┆ 7700   ┆ 1143.0       ┆ 1181.1      ┆ 1.6564e9      ┆ 1.6564e9    │\n└────────────┴────────┴───────────┴────────────┴────────────┴────────────┴───────────┴──────────┴──────────┴───────┴───────┴────────┴──────────────┴─────────────┴───────────────┴─────────────┘\n\n\n\n# ----------------------------------------\n# 1. Define emergency squawk codes\n# ----------------------------------------\nEMERGENCY_CODES = {\"7500\", \"7600\", \"7700\"}\n\n# ----------------------------------------\n# 2. Filter emergency rows\n# ----------------------------------------\nemergency_df = (\n    df.filter(\n        pl.col(\"squawk\")\n          .cast(pl.Utf8)\n          .is_in(EMERGENCY_CODES)\n    )\n)\n\n# ----------------------------------------\n# 3. Frequency count per code\n# ----------------------------------------\nfreq_df = (\n    emergency_df\n    .with_columns(pl.col(\"squawk\").cast(pl.Utf8))\n    .group_by(\"squawk\")\n    .count()\n    .sort(\"count\", descending=True)\n)\n\nprint(freq_df)\n\n# ----------------------------------------\n# 4. Plot frequency graph\n# ----------------------------------------\nplot_df = freq_df.to_pandas()\n\nplt.figure(figsize=(6,4))\nplt.bar(plot_df[\"squawk\"], plot_df[\"count\"])\nplt.title(\"Frequency of Emergency Squawk Codes\")\nplt.xlabel(\"Squawk Code\")\nplt.ylabel(\"Count\")\nplt.grid(axis=\"y\", alpha=0.3)\n\nplt.show()\n\n/tmp/ipykernel_56177/402016319.py:24: DeprecationWarning: `GroupBy.count` was renamed; use `GroupBy.len` instead\n  .count()\n\n\nshape: (2, 2)\n┌────────┬───────┐\n│ squawk ┆ count │\n│ ---    ┆ ---   │\n│ str    ┆ u32   │\n╞════════╪═══════╡\n│ 7500   ┆ 17    │\n│ 7700   ┆ 8     │\n└────────┴───────┘",
     "crumbs": [
       "Shared Notebooks",
-      "Val",
-      "Val",
+      "Jon",
+      "Jon",
       "Python",
-      "Example Jupyter Notebook"
+      "States Eda"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/val/r/01_report.html",
-    "href": "shared-notebooks/notebooks/val/r/01_report.html",
+    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html",
+    "href": "shared-notebooks/notebooks/karan/r/01_report.html",
     "title": "Example Report (R / Quarto)",
     "section": "",
     "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Val",
-      "Val",
+      "Karan",
+      "Karan",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#load-the-dataset",
-    "href": "shared-notebooks/notebooks/val/r/01_report.html#load-the-dataset",
+    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#load-the-dataset",
+    "href": "shared-notebooks/notebooks/karan/r/01_report.html#load-the-dataset",
     "title": "Example Report (R / Quarto)",
     "section": "",
     "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
     "crumbs": [
       "Shared Notebooks",
-      "Val",
-      "Val",
+      "Karan",
+      "Karan",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#why-this-works-better",
-    "href": "shared-notebooks/notebooks/val/r/01_report.html#why-this-works-better",
+    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#why-this-works-better",
+    "href": "shared-notebooks/notebooks/karan/r/01_report.html#why-this-works-better",
     "title": "Example Report (R / Quarto)",
     "section": "Why this works better",
     "text": "Why this works better\nUsing iris gives you: - no local file dependency - no path issues during quarto render - lightweight example notebooks that always work - a familiar dataset for both Python and R",
     "crumbs": [
       "Shared Notebooks",
-      "Val",
-      "Val",
+      "Karan",
+      "Karan",
       "R",
       "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/notebooks/val/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
-    "href": "shared-notebooks/notebooks/val/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "objectID": "shared-notebooks/notebooks/karan/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
+    "href": "shared-notebooks/notebooks/karan/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
     "title": "Example Report (R / Quarto)",
     "section": "If you want the Python notebook as Quarto-friendly too",
     "text": "If you want the Python notebook as Quarto-friendly too\nIf your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:\nfrom sklearn.datasets import load_iris\nimport pandas as pd\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\ndf.head()",
     "crumbs": [
       "Shared Notebooks",
-      "Val",
-      "Val",
-      "R",
-      "Example Report (R / Quarto)"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html",
-    "href": "shared-notebooks/notebooks/irena/r/01_report.html",
-    "title": "Example Report (R / Quarto)",
-    "section": "",
-    "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
-    "crumbs": [
-      "Shared Notebooks",
-      "Irena",
-      "Irena",
-      "R",
-      "Example Report (R / Quarto)"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#load-the-dataset",
-    "href": "shared-notebooks/notebooks/irena/r/01_report.html#load-the-dataset",
-    "title": "Example Report (R / Quarto)",
-    "section": "",
-    "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   4.0.0     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\ndf &lt;- as_tibble(iris)\nglimpse(df)\n\nRows: 150\nColumns: 5\n$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…\n$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…\n$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…\n$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…\n$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…\n\nhead(df)\n\n# A tibble: 6 × 5\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  \n1          5.1         3.5          1.4         0.2 setosa \n2          4.9         3            1.4         0.2 setosa \n3          4.7         3.2          1.3         0.2 setosa \n4          4.6         3.1          1.5         0.2 setosa \n5          5           3.6          1.4         0.2 setosa \n6          5.4         3.9          1.7         0.4 setosa \n\n\n\ndf %&gt;%\n  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +\n  geom_point(alpha = 0.7, size = 2) +\n  labs(\n    title = \"Iris Dataset Example\",\n    x = \"Sepal Length\",\n    y = \"Sepal Width\",\n    color = \"Species\"\n  ) +\n  theme_minimal()",
-    "crumbs": [
-      "Shared Notebooks",
-      "Irena",
-      "Irena",
-      "R",
-      "Example Report (R / Quarto)"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#why-this-works-better",
-    "href": "shared-notebooks/notebooks/irena/r/01_report.html#why-this-works-better",
-    "title": "Example Report (R / Quarto)",
-    "section": "Why this works better",
-    "text": "Why this works better\nUsing iris gives you: - no local file dependency - no path issues during quarto render - lightweight example notebooks that always work - a familiar dataset for both Python and R",
-    "crumbs": [
-      "Shared Notebooks",
-      "Irena",
-      "Irena",
-      "R",
-      "Example Report (R / Quarto)"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/irena/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
-    "href": "shared-notebooks/notebooks/irena/r/01_report.html#if-you-want-the-python-notebook-as-quarto-friendly-too",
-    "title": "Example Report (R / Quarto)",
-    "section": "If you want the Python notebook as Quarto-friendly too",
-    "text": "If you want the Python notebook as Quarto-friendly too\nIf your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:\nfrom sklearn.datasets import load_iris\nimport pandas as pd\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\ndf.head()",
-    "crumbs": [
-      "Shared Notebooks",
-      "Irena",
-      "Irena",
-      "R",
-      "Example Report (R / Quarto)"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/jon/python/opensky_eda.html",
-    "href": "shared-notebooks/notebooks/jon/python/opensky_eda.html",
-    "title": "OR 568 Machine Learning Project",
-    "section": "",
-    "text": "from pathlib import Path\nimport pandas as pd\n\nBASE_DIR = Path.cwd()\n\nfile_path = BASE_DIR / \"..\" / \"..\" / \"data\" / \"iad_dca_states_smoketest.parquet\"\n\ndf = pd.read_parquet(file_path)\n\n# Convert to datetime\ndf[\"snapshot_time\"] = pd.to_datetime(df[\"snapshot_time\"], utc=True)\n\n# Sort first\ndf = df.sort_values([\"icao24\", \"snapshot_time\"])\n\n# Remove duplicates while snapshot_time is still a column\ndf = df.drop_duplicates(subset=[\"icao24\", \"snapshot_time\"])\n\n# NOW set index\ndf = df.set_index(\"snapshot_time\")\n\n\ndf = df.ffill()\ndf = df[df[\"velocity\"] &gt;= 0]\ndf = df[df[\"geo_altitude\"] &gt;= 0]\n\n\n\n# 10-second digital twin dataset\ndf_resampled = (\n    df.groupby(\"icao24\")\n      .resample(\"10s\")\n      .agg({\n          \"latitude\": \"mean\",\n          \"longitude\": \"mean\",\n          \"velocity\": \"mean\",\n          \"geo_altitude\": \"mean\",\n          \"vertical_rate\": \"mean\",\n          \"true_track\": \"mean\"\n      })\n      .reset_index()\n)\n\n# 1-minute ML dataset\ndf_minute = (\n    df.groupby(\"icao24\")\n      .resample(\"1min\")\n      .agg({\n          \"velocity\": \"mean\",\n          \"geo_altitude\": \"mean\",\n          \"vertical_rate\": \"mean\"\n      })\n      .reset_index()\n)\n\nprint(df_resampled.head())\nprint(df_minute.head())\n\n   icao24             snapshot_time  latitude  longitude  velocity  \\\n0  a01097 2026-02-16 21:27:10+00:00   39.0827   -77.4145    158.41   \n1  a0b845 2026-02-16 21:27:10+00:00   38.8418   -77.0379      0.00   \n2  a0b845 2026-02-16 21:27:20+00:00       NaN        NaN       NaN   \n3  a0b845 2026-02-16 21:27:30+00:00       NaN        NaN       NaN   \n4  a0b845 2026-02-16 21:27:40+00:00       NaN        NaN       NaN   \n\n   geo_altitude  vertical_rate  true_track  \n0       3970.02           6.83      337.27  \n1       3970.02           6.83      101.25  \n2           NaN            NaN         NaN  \n3           NaN            NaN         NaN  \n4           NaN            NaN         NaN  \n   icao24             snapshot_time  velocity  geo_altitude  vertical_rate\n0  a01097 2026-02-16 21:27:00+00:00    158.41       3970.02           6.83\n1  a0b845 2026-02-16 21:27:00+00:00      0.00       3970.02           6.83\n2  a0b845 2026-02-16 21:28:00+00:00     23.66       3970.02           6.83\n3  a0b845 2026-02-16 21:29:00+00:00     89.11        541.02          16.58\n4  a12322 2026-02-16 21:27:00+00:00      0.00        541.02          16.58\n\n\n\nimport matplotlib.pyplot as plt\n\naircraft = df[df[\"icao24\"] == \"a0b845\"]\n\nplt.plot(aircraft.index, aircraft[\"geo_altitude\"])\nplt.title(\"Altitude over time\")\nplt.show()\n\n\n\n\n\n\n\n\n\ndf[\"velocity\"].hist(bins=50)\n\n\n\n\n\n\n\n\n\nplt.scatter(df[\"longitude\"], df[\"latitude\"], s=1)\n\n\n\n\n\n\n\n\n\n# Feature Engineering  \n# Lag Feature \ndf[\"velocity_lag1\"] = df.groupby(\"icao24\")[\"velocity\"].shift(1)\n\ndf[\"velocity_rolling_mean\"] = (\n    df.groupby(\"icao24\")[\"velocity\"]\n      .rolling(window=5)\n      .mean()\n      .reset_index(level=0, drop=True)\n)\n\ndf[\"acceleration\"] = (\n    df.groupby(\"icao24\")[\"velocity\"].diff()\n)\n\ndf[\"altitude_rate\"] = (\n    df.groupby(\"icao24\")[\"geo_altitude\"].diff()\n)\n\n\n\nflight_features = df.groupby(\"icao24\").agg({\n\n    \"velocity\": [\"mean\", \"max\", \"std\"],\n    \"geo_altitude\": [\"mean\", \"max\"],\n    \"vertical_rate\": [\"mean\", \"std\"],\n    \n})\n\nprint(flight_features)\n\n          velocity                    geo_altitude           vertical_rate  \\\n              mean     max        std         mean       max          mean   \nicao24                                                                       \na01097  158.410000  158.41        NaN      3970.02   3970.02      6.830000   \na0b845   37.590000   89.11  46.159308      2827.02   3970.02     10.080000   \na12322    0.000000    0.00   0.000000       541.02    541.02     16.580000   \na12aa5    2.076667    6.17   3.545058       541.02    541.02     16.580000   \na12ac9   91.695000  100.54  12.508719       567.69    571.50      0.165000   \na12e57    0.000000    0.00   0.000000       571.50    571.50      0.000000   \na1afde    2.830000    6.43   3.283428       571.50    571.50      0.000000   \na203a9  105.103333  128.64  25.364149       777.24   1455.42     14.630000   \na240dc   80.306667   88.74   8.800508       579.12    708.66     -2.816667   \na29aff    4.890000    4.89        NaN       419.10    419.10     -4.550000   \na2b10b    1.153333    3.34   1.893709       419.10    419.10     -4.550000   \na2bc9e    0.060000    0.06   0.000000       419.10    419.10     -4.550000   \na2e2cd   45.110000   46.53   1.347145       378.46    563.88      3.686667   \na33d97  232.665000  233.61   1.336432      9147.81   9151.62      0.000000   \na369af  118.993333  133.40  18.864955      1328.42   1950.72     12.896667   \na3afe1    7.030000    7.72   0.788860      1950.72   1950.72      5.200000   \na406e3    7.290000    7.72   0.535630      1950.72   1950.72      5.200000   \na4095f   80.433333   85.42   4.326400       449.58    693.42     -4.120000   \na43ce3   46.106667   51.44   5.747150       294.64    335.28      1.406667   \na4491d   78.893333   87.48   7.454430       312.42    548.64     -4.226667   \na4798f    4.120000    4.12   0.000000        83.82     83.82     -3.250000   \na4f7cb    2.830000    2.83   0.000000        83.82     83.82     -3.250000   \na59b2b  206.743333  212.80   5.830046     10350.50  10972.80     -8.560000   \na5cf3f    1.290000    1.29        NaN      9753.60   9753.60     -3.900000   \na63388    1.716667    2.06   0.391706      9753.60   9753.60     -3.900000   \na65b64  129.716667  136.51   8.819123      2367.28   3192.78     13.330000   \na66174    5.400000    5.40        NaN      3192.78   3192.78     13.980000   \na668eb   60.076667   65.39   6.678266       342.90    381.00     -1.410000   \na6c71c  170.490000  188.94  18.550809      3274.06   3741.42      9.973333   \na6eeb9    0.770000    0.77   0.000000      3741.42   3741.42      8.130000   \na73d54   40.240000   49.46   8.750583       203.20    312.42      1.300000   \na7b133    1.540000    1.54   0.000000       312.42    312.42      1.950000   \na845f4    0.000000    0.00   0.000000       312.42    312.42      1.950000   \na8b5fc   19.376667   29.32   8.852990       312.42    312.42      1.950000   \na8dffc    0.000000    0.00   0.000000       312.42    312.42      1.950000   \na8fc72  123.820000  123.82        NaN      1043.94   1043.94     13.000000   \na9739c   71.416667   74.38   2.578960       200.66    419.10     -3.903333   \na9ea96   89.760000   89.76        NaN       716.28    716.28      0.000000   \naa7dad    0.000000    0.00   0.000000       716.28    716.28      0.000000   \naa7e56  228.980000  228.98        NaN     10927.08  10927.08      0.000000   \naa7ebc  144.460000  144.46        NaN      2049.78   2049.78      6.180000   \nab9968   29.280000   29.28   0.000000       106.68    106.68     -2.930000   \nab9e5a   56.763333   62.25   6.634345       121.92    251.46     -2.060000   \nabcb63   74.196667   77.07   2.880023       632.46    670.56      0.216667   \nac4ace    2.060000    2.06        NaN       670.56    670.56     -0.330000   \nac6c2c  100.725000  104.65   5.550788       967.74   1059.18     -3.090000   \nade8fa    5.573333    6.43   0.784496       876.30    876.30     -1.950000   \nae481f   59.926667   62.90   3.492869       411.48    419.10     -0.650000   \nc05d08    2.100000    2.83   1.264397       419.10    419.10      0.000000   \nc07572    0.000000    0.00   0.000000       419.10    419.10      0.000000   \n\n                  \n             std  \nicao24            \na01097       NaN  \na0b845  5.629165  \na12322  0.000000  \na12aa5  0.000000  \na12ac9  0.233345  \na12e57  0.000000  \na1afde  0.000000  \na203a9  1.492615  \na240dc  2.460860  \na29aff       NaN  \na2b10b  0.000000  \na2bc9e  0.000000  \na2e2cd  1.538712  \na33d97  0.000000  \na369af  6.824605  \na3afe1  0.000000  \na406e3  0.000000  \na4095f  0.190526  \na43ce3  2.727202  \na4491d  0.861762  \na4798f  0.000000  \na4f7cb  0.000000  \na59b2b  4.038849  \na5cf3f       NaN  \na63388  0.000000  \na65b64  2.343608  \na66174       NaN  \na668eb  2.464386  \na6c71c  3.192747  \na6eeb9  0.000000  \na73d54  3.303317  \na7b133  0.000000  \na845f4  0.000000  \na8b5fc  0.000000  \na8dffc  0.000000  \na8fc72       NaN  \na9739c  0.325013  \na9ea96       NaN  \naa7dad  0.000000  \naa7e56       NaN  \naa7ebc       NaN  \nab9968  0.000000  \nab9e5a  1.313887  \nabcb63  1.234396  \nac4ace       NaN  \nac6c2c  1.612203  \nade8fa  0.000000  \nae481f  1.125833  \nc05d08  0.000000  \nc07572  0.000000  \n\n\n\nflight_features.columns = [\n    \"_\".join(col) for col in flight_features.columns\n]\nflight_features = flight_features.dropna()",
-    "crumbs": [
-      "Shared Notebooks",
-      "Jon",
-      "Jon",
-      "Python",
-      "Opensky Eda"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html",
-    "href": "shared-notebooks/notebooks/jon/python/opensky_baseline_modeling.html",
-    "title": "OR 568 Machine Learning Project",
-    "section": "",
-    "text": "# --- Drop-in demo: flight-level features -&gt; Logistic Regression + Random Forest + plots ---\n\nfrom pathlib import Path\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import (\n    accuracy_score,\n    ConfusionMatrixDisplay,\n    RocCurveDisplay,\n)\n\n# ----------------------------\n# 1) Load data\n# ----------------------------\nBASE_DIR = Path.cwd()\nfile_path = BASE_DIR / \"..\" / \"..\" / \"data\" / \"iad_dca_states_smoketest.parquet\"\n\ndf = pd.read_parquet(file_path)\n\n# Ensure timestamp is datetime (UTC)\nif \"snapshot_time\" not in df.columns:\n    raise ValueError(f\"'snapshot_time' not found in columns: {list(df.columns)}\")\n\ndf[\"snapshot_time\"] = pd.to_datetime(df[\"snapshot_time\"], utc=True)\n\n# Basic cleaning (dedupe by aircraft+time, sort)\ndf = (\n    df.sort_values([\"icao24\", \"snapshot_time\"])\n      .drop_duplicates(subset=[\"icao24\", \"snapshot_time\"])\n)\n\n# Optional: filter out invalid values if columns exist\nfor col in [\"velocity\", \"geo_altitude\"]:\n    if col in df.columns:\n        df = df[df[col].notna()]\n\nif \"velocity\" in df.columns:\n    df = df[df[\"velocity\"] &gt;= 0]\nif \"geo_altitude\" in df.columns:\n    df = df[df[\"geo_altitude\"] &gt;= 0]\n\n# ----------------------------\n# 2) Build flight-level features (your requested approach)\n# ----------------------------\nrequired_cols = {\"icao24\", \"velocity\", \"geo_altitude\", \"vertical_rate\"}\nmissing = required_cols - set(df.columns)\nif missing:\n    raise ValueError(f\"Missing required columns for feature build: {missing}\")\n\nflight_features = df.groupby(\"icao24\").agg({\n    \"velocity\": [\"mean\", \"max\", \"std\"],\n    \"geo_altitude\": [\"mean\", \"max\"],\n    \"vertical_rate\": [\"mean\", \"std\"],\n})\n\n# Flatten columns: (\"velocity\",\"mean\") -&gt; \"velocity_mean\"\nflight_features.columns = [\"_\".join(col) for col in flight_features.columns]\n\n# Drop aircraft with insufficient samples (std becomes NaN if only 1 point)\nflight_features = flight_features.dropna().copy()\n\n# ----------------------------\n# 3) Create a demo target label (replace with your real label later)\n#    Example: \"high_altitude\" if mean geo_altitude &gt; median\n# ----------------------------\nthreshold = flight_features[\"geo_altitude_mean\"].median()\nflight_features[\"high_altitude\"] = (flight_features[\"geo_altitude_mean\"] &gt; threshold).astype(int)\n\nX = flight_features.drop(columns=[\"high_altitude\"])\ny = flight_features[\"high_altitude\"]\n\n# ----------------------------\n# 4) Train/test split\n# ----------------------------\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y,\n    test_size=0.30,\n    random_state=42,\n    stratify=y\n)\n\n# ----------------------------\n# 5) Models\n# ----------------------------\n# Logistic Regression (scaled)\nlog_model = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"model\", LogisticRegression(max_iter=2000))\n])\n\n# Random Forest (no scaling needed)\nrf_model = RandomForestClassifier(\n    n_estimators=300,\n    max_depth=8,\n    random_state=42,\n    n_jobs=-1\n)\n\nlog_model.fit(X_train, y_train)\nrf_model.fit(X_train, y_train)\n\n# ----------------------------\n# 6) Quick metrics\n# ----------------------------\nlog_pred = log_model.predict(X_test)\nrf_pred = rf_model.predict(X_test)\n\nprint(\"\\n--- Accuracy ---\")\nprint(\"Logistic Regression:\", round(accuracy_score(y_test, log_pred), 4))\nprint(\"Random Forest      :\", round(accuracy_score(y_test, rf_pred), 4))\n\n# ----------------------------\n# 7) Plots: Confusion Matrices\n# ----------------------------\nfig, ax = plt.subplots(1, 2, figsize=(12, 5))\n\nConfusionMatrixDisplay.from_estimator(log_model, X_test, y_test, ax=ax[0])\nax[0].set_title(\"Confusion Matrix: Logistic Regression\")\n\nConfusionMatrixDisplay.from_estimator(rf_model, X_test, y_test, ax=ax[1])\nax[1].set_title(\"Confusion Matrix: Random Forest\")\n\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 8) Plots: ROC Curves\n# ----------------------------\nplt.figure(figsize=(8, 6))\nRocCurveDisplay.from_estimator(log_model, X_test, y_test, name=\"Logistic Regression\")\nRocCurveDisplay.from_estimator(rf_model, X_test, y_test, name=\"Random Forest\")\nplt.title(\"ROC Curve Comparison\")\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 9) Plot: Random Forest Feature Importance\n# ----------------------------\nimportances = pd.Series(rf_model.feature_importances_, index=X.columns).sort_values()\n\nplt.figure(figsize=(10, 6))\nimportances.plot(kind=\"barh\")\nplt.title(\"Random Forest Feature Importance\")\nplt.xlabel(\"Importance\")\nplt.tight_layout()\nplt.show()\n\n# ----------------------------\n# 10) Optional: Logistic Regression coefficients (interpretability)\n# ----------------------------\ncoef = pd.Series(log_model.named_steps[\"model\"].coef_[0], index=X.columns).sort_values()\n\nplt.figure(figsize=(10, 6))\ncoef.plot(kind=\"barh\")\nplt.title(\"Logistic Regression Coefficients (scaled features)\")\nplt.xlabel(\"Coefficient\")\nplt.tight_layout()\nplt.show()\n\nprint(\"\\nTarget definition used for demo:\")\nprint(f\"high_altitude = 1 if geo_altitude_mean &gt; median ({threshold:.2f}), else 0\")\n\n\n--- Accuracy ---\nLogistic Regression: 0.6667\nRandom Forest      : 1.0\n\n\n\n\n\n\n\n\n\n&lt;Figure size 800x600 with 0 Axes&gt;\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTarget definition used for demo:\nhigh_altitude = 1 if geo_altitude_mean &gt; median (508.63), else 0",
-    "crumbs": [
-      "Shared Notebooks",
-      "Jon",
-      "Jon",
-      "Python",
-      "Opensky Baseline Modeling"
-    ]
-  },
-  {
-    "objectID": "shared-notebooks/notebooks/karan/python/01_eda_model.html",
-    "href": "shared-notebooks/notebooks/karan/python/01_eda_model.html",
-    "title": "Example Jupyter Notebook",
-    "section": "",
-    "text": "from sklearn.datasets import load_iris\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\niris = load_iris(as_frame=True)\ndf = iris.frame.copy()\ndf[\"species\"] = df[\"target\"].map(dict(enumerate(iris.target_names)))\n\nprint(df.head())\n\nfor species, group in df.groupby(\"species\"):\n    plt.scatter(group[\"sepal length (cm)\"], group[\"sepal width (cm)\"], label=species)\n\nplt.xlabel(\"Sepal Length (cm)\")\nplt.ylabel(\"Sepal Width (cm)\")\nplt.title(\"Iris Dataset Example\")\nplt.legend()\nplt.show()\n\n   sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \\\n0                5.1               3.5                1.4               0.2   \n1                4.9               3.0                1.4               0.2   \n2                4.7               3.2                1.3               0.2   \n3                4.6               3.1                1.5               0.2   \n4                5.0               3.6                1.4               0.2   \n\n   target species  \n0       0  setosa  \n1       0  setosa  \n2       0  setosa  \n3       0  setosa  \n4       0  setosa",
-    "crumbs": [
-      "Shared Notebooks",
       "Karan",
       "Karan",
-      "Python",
-      "Example Jupyter Notebook"
+      "R",
+      "Example Report (R / Quarto)"
     ]
   },
   {
-    "objectID": "shared-notebooks/index.html",
-    "href": "shared-notebooks/index.html",
-    "title": "Shared Notebooks",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About Us",
     "section": "",
-    "text": "Browse the team’s notebooks using the sidebar.\n\n\n\nJon\nKaran\nIrena\nVal",
-    "crumbs": [
-      "Home",
-      "Shared Notebooks"
-    ]
+    "text": "Jonathan Wilson\n\n\n\nI’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University.\n\n\n\n\n\n\n\nKaran\n\n\n\nKaran is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team.\n\n\n\n\n\n\n\nIrena\n\n\n\nIrena is a member of the OR 568 Machine Learning Project team. Add a short biography here covering educational background, analytical strengths, professional experience, and contributions to the project. This section can also highlight areas such as modeling, data analysis, visualization, or machine learning interests.\n\n\n\n\n\n\n\nVal\n\n\n\nVal is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths."
   },
   {
-    "objectID": "shared-notebooks/index.html#team-members",
-    "href": "shared-notebooks/index.html#team-members",
-    "title": "Shared Notebooks",
+    "objectID": "about.html#jonathan-wilson",
+    "href": "about.html#jonathan-wilson",
+    "title": "About Us",
     "section": "",
-    "text": "Jon\nKaran\nIrena\nVal",
-    "crumbs": [
-      "Home",
-      "Shared Notebooks"
-    ]
+    "text": "Jonathan Wilson\n\n\n\nI’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Home",
+    "objectID": "about.html#karan-lastname",
+    "href": "about.html#karan-lastname",
+    "title": "About Us",
     "section": "",
-    "text": "Welcome\nThis site contains all our team’s work as well as shared notebooks organized by team member."
+    "text": "Karan\n\n\n\nKaran is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team."
+  },
+  {
+    "objectID": "about.html#irena-lastname",
+    "href": "about.html#irena-lastname",
+    "title": "About Us",
+    "section": "",
+    "text": "Irena\n\n\n\nIrena is a member of the OR 568 Machine Learning Project team. Add a short biography here covering educational background, analytical strengths, professional experience, and contributions to the project. This section can also highlight areas such as modeling, data analysis, visualization, or machine learning interests."
+  },
+  {
+    "objectID": "about.html#val-lastname",
+    "href": "about.html#val-lastname",
+    "title": "About Us",
+    "section": "",
+    "text": "Val\n\n\n\nVal is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths."
+  },
+  {
+    "objectID": "paper.html",
+    "href": "paper.html",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "",
+    "text": "Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the BWI–EWR market pair using machine learning, exploratory data analysis, and engineered operational features.\nUsing Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised learning approaches including logistic regression, ridge regression, classification trees, random forests, and K-nearest neighbors.\nOur findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation."
+  },
+  {
+    "objectID": "paper.html#abstract",
+    "href": "paper.html#abstract",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "",
+    "text": "Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the BWI–EWR market pair using machine learning, exploratory data analysis, and engineered operational features.\nUsing Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised learning approaches including logistic regression, ridge regression, classification trees, random forests, and K-nearest neighbors.\nOur findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation."
+  },
+  {
+    "objectID": "paper.html#introduction-background",
+    "href": "paper.html#introduction-background",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "2 Introduction & Background",
+    "text": "2 Introduction & Background\n\n2.1 Motivation\nFlight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.\nUnderstanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.\n\n\n2.2 Why the BWI–EWR Market Pair\nThe BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.\nFlights between these airports are vulnerable to multiple sources of disruption:\n\nupstream aircraft delays\nweather disruptions\nairspace congestion\noperational scheduling constraints\n\n\n\n2.3 What This Research Contributes\nThis study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays."
+  },
+  {
+    "objectID": "paper.html#data",
+    "href": "paper.html#data",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "3 Data",
+    "text": "3 Data\n\n3.1 Dataset Overview\nThis analysis uses flight operations data from the Bureau of Transportation Statistics (BTS). These records contain detailed flight-level information including:\n\nscheduled departure and arrival times\nactual departure and arrival times\ndelay categories\ncarrier information\norigin and destination airports\n\nThe dataset is enriched with weather variables and engineered temporal features.\n\n\n3.2 Limitations\nSeveral limitations should be noted:\n\nBTS delay categories are aggregated and sometimes coarse\nweather observations may not perfectly represent local flight conditions\nroute-level analysis cannot capture all national network effects\nairline operational decisions such as crew scheduling are not directly observed\n\nDespite these limitations, the dataset provides a strong foundation for studying delay patterns."
+  },
+  {
+    "objectID": "paper.html#feature-engineering",
+    "href": "paper.html#feature-engineering",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "4 Feature Engineering",
+    "text": "4 Feature Engineering\n\n4.1 Delay Indicator\nTo simplify classification, we define a binary delay variable:\n\\[\nDelayed_i =\n\\begin{cases}\n1 & \\text{if DepartureDelay}_i &gt; 15 \\\\\n0 & \\text{otherwise}\n\\end{cases}\n\\]\n\n\n4.2 Prior Aircraft Delay\nUpstream delays are captured by the delay of the previous aircraft flight:\n\\[\nPriorDelay_i = ArrivalDelay_{previous}\n\\]\n\n\n4.3 Turnaround Time\nTurnaround time captures the buffer between flights:\n\\[\nTurnaround_i = DepartureTime_i - PreviousArrivalTime_i\n\\]\n\n\n4.4 Weather Severity\nWeather features combine several meteorological indicators:\n\\[\nWeatherSeverity = f(wind, visibility, precipitation, storm\\ indicators)\n\\]\n\n\n4.5 Temporal Features\nTime-based indicators include:\n\ndeparture hour\nday of week\nmonth\nholiday flags\n\nThese help capture cyclical delay patterns."
+  },
+  {
+    "objectID": "paper.html#exploratory-data-analysis",
+    "href": "paper.html#exploratory-data-analysis",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "5 Exploratory Data Analysis",
+    "text": "5 Exploratory Data Analysis\n\n5.1 Distribution of Delays\n\n# Histogram of departure delays\n# ggplot(df, aes(x = DepDelayMinutes)) +\n#   geom_histogram(bins = 50)\n\n\n\n5.2 Delays by Time of Day\n\n# Delay frequency by departure hour\n\n\n\n5.3 Weather vs Delay\n\n# Weather severity vs delay outcome\n\n\n\n5.4 Delay Propagation\n\n# Previous arrival delay vs next departure delay"
+  },
+  {
+    "objectID": "paper.html#research-questions",
+    "href": "paper.html#research-questions",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "6 Research Questions",
+    "text": "6 Research Questions\nThis study seeks to answer the following questions:\n\nWhich operational and weather variables most strongly predict flight delays?\nHow strongly do delays propagate from prior flights?\nWhich machine learning models best classify delayed flights?\nCan unsupervised methods reveal underlying structure in delay patterns?"
+  },
+  {
+    "objectID": "paper.html#building-classifiers",
+    "href": "paper.html#building-classifiers",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "7 Building Classifiers",
+    "text": "7 Building Classifiers\n\n7.1 Logistic Regression\nWe begin with a baseline logistic regression model.\n\\[\nP(Y_i = 1|X_i) =\n\\frac{1}{1 + e^{-\\eta_i}}\n\\]\n\\[\n\\eta_i = \\beta_0 + \\beta_1 X_1 + \\beta_2 X_2 + ... + \\beta_p X_p\n\\]\n\n# logistic regression model\n\n\n\n\n7.2 Ridge Logistic Regression\nTo address multicollinearity and improve stability we apply ridge regularization.\n\n# ridge logistic regression\n\n\n\n\n7.3 Classification Tree\nDecision trees provide interpretable classification rules.\n\n# classification tree\n\n\n\n\n7.4 Random Forest\nRandom forests improve predictive accuracy through ensemble learning.\n\n# random forest model\n\n\n\n\n7.5 K-Nearest Neighbors\nKNN classifies flights based on nearby observations in feature space.\n\n# knn model"
+  },
+  {
+    "objectID": "paper.html#unsupervised-analysis",
+    "href": "paper.html#unsupervised-analysis",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "8 Unsupervised Analysis",
+    "text": "8 Unsupervised Analysis\n\n8.1 Principal Component Analysis\nPCA identifies dominant dimensions in the feature space.\n\n# PCA analysis\n\n\n\n8.2 K-Means Clustering\nClustering reveals natural groupings among flight observations.\n\n# kmeans clustering"
+  },
+  {
+    "objectID": "paper.html#model-comparison",
+    "href": "paper.html#model-comparison",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "9 Model Comparison",
+    "text": "9 Model Comparison\nWe compare models using metrics such as:\n\naccuracy\nprecision\nrecall\nF1 score\n\n\n# model comparison table"
+  },
+  {
+    "objectID": "paper.html#results",
+    "href": "paper.html#results",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "10 Results",
+    "text": "10 Results\n\n10.1 Key Findings\nThe analysis suggests that delay outcomes are influenced by several interacting factors:\n\nupstream aircraft delays\nairport congestion patterns\nweather conditions\ntemporal scheduling effects\n\n\n\n10.2 Operational Interpretation\nPredictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions."
+  },
+  {
+    "objectID": "paper.html#discussion-limitations",
+    "href": "paper.html#discussion-limitations",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "11 Discussion & Limitations",
+    "text": "11 Discussion & Limitations\nSeveral limitations should be considered:\n\nmissing operational factors such as crew and maintenance constraints\nimperfect weather measurements\nroute-specific findings that may not generalize\n\nDespite these challenges, the framework provides a replicable approach for studying delay behavior."
+  },
+  {
+    "objectID": "paper.html#conclusion",
+    "href": "paper.html#conclusion",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "12 Conclusion",
+    "text": "12 Conclusion\nThis study demonstrates how machine learning methods can be applied to understand delay dynamics in the BWI–EWR market pair.\nTree-based methods and penalized regression provide the best balance of predictive performance and interpretability. The analysis highlights the importance of upstream delay propagation and temporal operational patterns.\nFuture work could extend this framework to larger airline networks and incorporate time-series modeling approaches."
+  },
+  {
+    "objectID": "paper.html#references",
+    "href": "paper.html#references",
+    "title": "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors",
+    "section": "13 References",
+    "text": "13 References"
   }
 ]

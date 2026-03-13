@@ -19,6 +19,8 @@ website:
         text: "About"
       - href: paper.qmd
         text: "Paper"
+      - href: slides.qmd
+        text: "Slides"
       - href: shared-notebooks/index.qmd
         text: "Shared Notebooks"
 

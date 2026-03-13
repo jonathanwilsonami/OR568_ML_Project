@@ -1,0 +1,220 @@
+---
+title: "Predicting Flight Delays Between BWI and EWR"
+subtitle: "Machine Learning Analysis of Weather and Operational Effects"
+author: 
+  - Jonathan Wilson
+  - Karan [Last Name]
+  - Irena [Last Name]
+  - Val [Last Name]
+date: today
+
+format:
+  revealjs:
+    theme: dark
+    slide-number: true
+    transition: slide
+    code-fold: true
+
+execute:
+  echo: false
+---
+
+## Motivation
+
+- Flight delays ripple through airline networks
+- Small disruptions propagate across aircraft rotations
+- Understanding delay drivers helps improve operational planning
+
+Focus of this study:
+
+**BWI → EWR market pair**
+
+---
+
+## Research Questions
+
+1. What factors most strongly predict flight delays?
+2. How much do delays propagate from earlier flights?
+3. Which machine learning models perform best?
+4. What structural patterns exist in the data?
+
+---
+
+## Data Sources
+
+Primary dataset:
+
+**Bureau of Transportation Statistics (BTS)**
+
+Key variables:
+
+- departure delays
+- arrival delays
+- carrier information
+- route identifiers
+- weather conditions
+- time-of-day indicators
+
+---
+
+## Feature Engineering
+
+Key engineered features:
+
+**Delay Indicator**
+
+$$
+Delayed =
+\begin{cases}
+1 & Delay > 15 \\
+0 & otherwise
+\end{cases}
+$$
+
+**Prior Aircraft Delay**
+
+$$
+PriorDelay = ArrivalDelay_{previous}
+$$
+
+**Turnaround Time**
+
+$$
+Turnaround = DepartureTime - PreviousArrival
+$$
+
+---
+
+## Exploratory Analysis
+
+Important patterns we examine:
+
+- distribution of delays
+- time-of-day effects
+- weather vs delay relationships
+- delay propagation patterns
+
+```{r}
+# placeholder for EDA plots
+```
+
+---
+
+## Modeling Approaches
+
+We evaluate multiple models:
+
+- Logistic Regression
+- Ridge Logistic Regression
+- Decision Trees
+- Random Forest
+- K-Nearest Neighbors
+
+Each model is evaluated using:
+
+- accuracy
+- confusion matrix
+- interpretability
+
+---
+
+## Logistic Regression
+
+Baseline probabilistic model:
+
+$$
+P(Y=1|X) = \frac{1}{1+e^{-\eta}}
+$$
+
+$$
+\eta = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_pX_p
+$$
+
+---
+
+## Tree-Based Models
+
+Decision trees provide interpretable rules.
+
+Random forests improve performance using:
+
+- ensemble learning
+- bootstrap sampling
+- feature randomness
+
+```{r}
+# tree visualization placeholder
+```
+
+---
+
+## Model Comparison
+
+Metrics used:
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+
+```{r}
+# model comparison table
+```
+
+---
+
+## Key Findings
+
+Important drivers of delay:
+
+- upstream aircraft delays
+- time-of-day scheduling effects
+- weather conditions
+- airport congestion
+
+Tree-based models produced the most reliable predictions.
+
+---
+
+## Operational Insights
+
+Machine learning models can help:
+
+- identify high-risk flights
+- anticipate delay propagation
+- improve scheduling decisions
+- support airline operations analysis
+
+---
+
+## Limitations
+
+- incomplete operational data
+- weather approximation
+- route-specific analysis
+- limited network context
+
+---
+
+## Future Work
+
+Potential improvements:
+
+- expand to full airline network
+- incorporate time-series models
+- integrate air traffic control data
+- include crew and maintenance data
+
+---
+
+## Conclusion
+
+This study demonstrates that:
+
+- delay propagation is a key driver of disruption
+- machine learning models can effectively classify delays
+- route-level analysis provides actionable operational insight
+
+---
+
+## Questions
