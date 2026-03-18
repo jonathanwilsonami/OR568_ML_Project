@@ -1,0 +1,7 @@
+---
+title: "Home"
+---
+
+# Welcome
+
+This site contains all our team's work as well as shared notebooks organized by team member.

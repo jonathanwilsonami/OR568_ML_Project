@@ -1,0 +1,52 @@
+---
+title: "Example Report (R / Quarto)"
+format:
+  html:
+    toc: true
+---
+
+## Load the dataset
+
+```{r}
+library(tidyverse)
+
+df <- as_tibble(iris)
+glimpse(df)
+head(df)
+```
+
+```{r}
+df %>%
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point(alpha = 0.7, size = 2) +
+  labs(
+    title = "Iris Dataset Example",
+    x = "Sepal Length",
+    y = "Sepal Width",
+    color = "Species"
+  ) +
+  theme_minimal()
+```
+
+## Why this works better
+
+Using `iris` gives you:
+- no local file dependency
+- no path issues during `quarto render`
+- lightweight example notebooks that always work
+- a familiar dataset for both Python and R
+
+## If you want the Python notebook as Quarto-friendly too
+
+If your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:
+
+```python
+from sklearn.datasets import load_iris
+import pandas as pd
+
+iris = load_iris(as_frame=True)
+df = iris.frame.copy()
+df["species"] = df["target"].map(dict(enumerate(iris.target_names)))
+
+df.head()
+```

@@ -1,0 +1,307 @@
+---
+title: "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors"
+date: 2026-03-13
+categories: [Machine Learning, Aviation, Flight Delays]
+repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
+format:
+  html:
+    number-sections: true
+    math:
+      eq-prefix: "Model"
+authors: 
+  - "Jonathan Wilson"
+  - "Karan [Last Name]"
+  - "Irena [Last Name]"
+  - "Val [Last Name]"
+---
+
+## Abstract
+
+Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the BWI–EWR market pair using machine learning, exploratory data analysis, and engineered operational features.
+
+Using Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised learning approaches including logistic regression, ridge regression, classification trees, random forests, and K-nearest neighbors.
+
+Our findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation.
+
+---
+
+## Introduction & Background
+
+### Motivation
+
+Flight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.
+
+Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.
+
+### Why the BWI–EWR Market Pair
+
+The BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.
+
+Flights between these airports are vulnerable to multiple sources of disruption:
+
+- upstream aircraft delays
+- weather disruptions
+- airspace congestion
+- operational scheduling constraints
+
+### What This Research Contributes
+
+This study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays.
+
+---
+
+## Data
+
+### Dataset Overview
+
+This analysis uses flight operations data from the Bureau of Transportation Statistics (BTS). These records contain detailed flight-level information including:
+
+- scheduled departure and arrival times
+- actual departure and arrival times
+- delay categories
+- carrier information
+- origin and destination airports
+
+The dataset is enriched with weather variables and engineered temporal features.
+
+### Limitations
+
+Several limitations should be noted:
+
+- BTS delay categories are aggregated and sometimes coarse
+- weather observations may not perfectly represent local flight conditions
+- route-level analysis cannot capture all national network effects
+- airline operational decisions such as crew scheduling are not directly observed
+
+Despite these limitations, the dataset provides a strong foundation for studying delay patterns.
+
+---
+
+## Feature Engineering
+
+### Delay Indicator
+
+To simplify classification, we define a binary delay variable:
+
+$$
+Delayed_i =
+\begin{cases}
+1 & \text{if DepartureDelay}_i > 15 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+### Prior Aircraft Delay
+
+Upstream delays are captured by the delay of the previous aircraft flight:
+
+$$
+PriorDelay_i = ArrivalDelay_{previous}
+$$
+
+### Turnaround Time
+
+Turnaround time captures the buffer between flights:
+
+$$
+Turnaround_i = DepartureTime_i - PreviousArrivalTime_i
+$$
+
+### Weather Severity
+
+Weather features combine several meteorological indicators:
+
+$$
+WeatherSeverity = f(wind, visibility, precipitation, storm\ indicators)
+$$
+
+### Temporal Features
+
+Time-based indicators include:
+
+- departure hour
+- day of week
+- month
+- holiday flags
+
+These help capture cyclical delay patterns.
+
+---
+
+## Exploratory Data Analysis
+
+### Distribution of Delays
+
+```{r}
+# Histogram of departure delays
+# ggplot(df, aes(x = DepDelayMinutes)) +
+#   geom_histogram(bins = 50)
+```
+
+### Delays by Time of Day
+
+```{r}
+# Delay frequency by departure hour
+```
+
+### Weather vs Delay
+
+```{r}
+# Weather severity vs delay outcome
+```
+
+### Delay Propagation
+
+```{r}
+# Previous arrival delay vs next departure delay
+```
+
+---
+
+## Research Questions
+
+This study seeks to answer the following questions:
+
+1. Which operational and weather variables most strongly predict flight delays?
+2. How strongly do delays propagate from prior flights?
+3. Which machine learning models best classify delayed flights?
+4. Can unsupervised methods reveal underlying structure in delay patterns?
+
+---
+
+## Building Classifiers
+
+### Logistic Regression
+
+We begin with a baseline logistic regression model.
+
+$$
+P(Y_i = 1|X_i) =
+\frac{1}{1 + e^{-\eta_i}}
+$$
+
+$$
+\eta_i = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p
+$$
+
+```{r}
+# logistic regression model
+```
+
+---
+
+### Ridge Logistic Regression
+
+To address multicollinearity and improve stability we apply ridge regularization.
+
+```{r}
+# ridge logistic regression
+```
+
+---
+
+### Classification Tree
+
+Decision trees provide interpretable classification rules.
+
+```{r}
+# classification tree
+```
+
+---
+
+### Random Forest
+
+Random forests improve predictive accuracy through ensemble learning.
+
+```{r}
+# random forest model
+```
+
+---
+
+### K-Nearest Neighbors
+
+KNN classifies flights based on nearby observations in feature space.
+
+```{r}
+# knn model
+```
+
+---
+
+## Unsupervised Analysis
+
+### Principal Component Analysis
+
+PCA identifies dominant dimensions in the feature space.
+
+```{r}
+# PCA analysis
+```
+
+### K-Means Clustering
+
+Clustering reveals natural groupings among flight observations.
+
+```{r}
+# kmeans clustering
+```
+
+---
+
+## Model Comparison
+
+We compare models using metrics such as:
+
+- accuracy
+- precision
+- recall
+- F1 score
+
+```{r}
+# model comparison table
+```
+
+---
+
+## Results
+
+### Key Findings
+
+The analysis suggests that delay outcomes are influenced by several interacting factors:
+
+- upstream aircraft delays
+- airport congestion patterns
+- weather conditions
+- temporal scheduling effects
+
+### Operational Interpretation
+
+Predictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions.
+
+---
+
+## Discussion & Limitations
+
+Several limitations should be considered:
+
+- missing operational factors such as crew and maintenance constraints
+- imperfect weather measurements
+- route-specific findings that may not generalize
+
+Despite these challenges, the framework provides a replicable approach for studying delay behavior.
+
+---
+
+## Conclusion
+
+This study demonstrates how machine learning methods can be applied to understand delay dynamics in the BWI–EWR market pair.
+
+Tree-based methods and penalized regression provide the best balance of predictive performance and interpretability. The analysis highlights the importance of upstream delay propagation and temporal operational patterns.
+
+Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches.
+
+---
+
+## References

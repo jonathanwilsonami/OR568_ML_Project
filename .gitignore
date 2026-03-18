@@ -15,7 +15,6 @@ conda-bld/
 # Quarto
 .quarto/
 _site/
-docs/
 
 # Data outputs (generated locally)
 data/raw/
@@ -32,3 +31,8 @@ data/processed/
 **/*.quarto_ipynb
 
 notes.txt
+
+data_pipeline/outputs/*
+data_pipeline/raw_data/*
+data/*
+shared-notebooks/notebooks/val/r/enriched_flights_NEW.csv
