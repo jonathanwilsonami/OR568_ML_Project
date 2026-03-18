@@ -1,0 +1,612 @@
+---
+title: "OR568_Midterm_2026_0310"
+author: "V Sokolow"
+date: "2026-03-10"
+format:
+  html: default
+  docx: default
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup/Load Data
+
+```{r}
+pacman::p_load(dplyr, skimr, tidyverse, caret, glmnet, janitor, ggplot2, lubridate, purrr,broom)
+
+enriched_flights_NEW_2019 <- read.csv("C:\\Users\\valso\\OneDrive - George Mason University - O365 Production\\2026_T1\\GitHub Clone\\OR568_ML_Project\\shared-notebooks\\notebooks\\val\\r\\enriched_flights_NEW.csv", 
+                                      stringsAsFactors = FALSE)
+```
+
+## Data Prep
+
+```{r}
+#Assign imported dataset
+flights_raw <- enriched_flights_NEW_2019 %>%
+  clean_names()
+
+#Select columns to keep
+bts_info <- c("year","month","dayof_month","day_of_week","flight_date","origin","dest","cancelled","dep_time_blk","crs_dep_time", "dep_time","dep_delay","taxi_out","wheels_off","air_time","wheels_on","arr_time_blk","crs_arr_time", "arr_time","arr_delay","taxi_in","distance","reporting_airline","dot_id_reporting_airline","iata_code_reporting_airline","tail_number")
+
+arr_weather_info <- c("arr_tmpf","arr_dwpf","arr_relh","arr_sknt","arr_vsby")
+dep_weather_info <- c("dep_tmpf","dep_dwpf","dep_relh","dep_sknt","dep_vsby")
+
+plane_info <- c("aircraft_manufacturer","aircraft_model","aircraft_type","weight_category","num_engines","engine_type")
+
+flights_filtered <- flights_raw %>%
+  select(bts_info, arr_weather_info, dep_weather_info, plane_info) %>%
+  # create flag for previous flight delayed
+  mutate(
+    dep_ts = ymd_hm(paste(flight_date, sprintf("%04d", dep_time))),
+    arr_ts = ymd_hm(paste(flight_date, sprintf("%04d", arr_time))),
+    # Fix overnight arrivals (arr_time < dep_time)
+    arr_ts = if_else(arr_ts < dep_ts, arr_ts + days(1), arr_ts)
+  ) %>%
+  arrange(tail_number, dep_ts) %>%
+  group_by(tail_number) %>%
+  mutate(
+    prev_arr_delay = lag(arr_delay),
+    prev_arr_ts    = lag(arr_ts),
+    time_since_prev = as.numeric(difftime(dep_ts, prev_arr_ts, units = "hours")),
+    prev_flight_late = prev_arr_delay > 15 & time_since_prev <= 8
+  ) %>%
+  ungroup() %>%
+  mutate(
+    is_dep_delay = factor(dep_delay > 15, levels = c(FALSE, TRUE)),
+    is_arr_delay = factor(arr_delay > 15, levels = c(FALSE, TRUE)),
+    hour_of_day = dep_time %/% 100,
+    # Fallback to lubridate if day_of_week column is absent
+    is_weekend = day_of_week %in% c("6", "7"),
+    ) %>%
+  group_by(hour_of_day) %>%
+  mutate(congestion = n()) %>%
+  ungroup %>%
+  filter(cancelled == '0')
+
+
+
+
+# Define the 5-fold Cross-Validation strategy
+set.seed(42)
+train_control <- trainControl(method = "cv", number = 5)
+```
+
+## Models
+### Departure Delay
+
+```{r}
+# Limit data to relevant variables
+dep_flight_filtered <- flights_filtered %>%
+  filter(cancelled == '0') %>%
+  filter(origin == "BWI", dest == "JFK") %>%
+  select(c("dep_delay","is_dep_delay","prev_flight_late","dep_tmpf","dep_relh","dep_vsby","reporting_airline","dep_time_blk","is_weekend")) %>%
+  # Scale weather vars
+  mutate(across(all_of(c("dep_tmpf","dep_relh","dep_vsby")), ~ as.numeric(scale(.))))
+
+
+dep_flight <- dep_flight_filtered %>%
+  filter(
+    !is.na(dep_delay),
+    !is.na(prev_flight_late),    
+    dep_delay >= -60,
+    dep_delay <= 1440
+
+  )
+
+```
+
+#### Regression
+##### Linear
+
+```{r, warning = FALSE}
+model_lm <- train(
+  dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm <- function(model) {
+  tidy(model$finalModel) %>%
+    mutate(
+      abs_estimate = abs(estimate)
+    ) %>%
+    arrange(desc(abs_estimate))
+}
+
+interpret_lm(model_lm)
+```
+
+###### Model Ridge
+
+```{r}
+model_ridge <- train(
+  dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 0, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+
+interpret_glmnet <- function(model) {
+  lambda <- model$bestTune$lambda
+  coefs <- coef(model$finalModel, s = lambda)
+  
+  tibble(
+    variable = rownames(coefs),
+    coefficient = as.numeric(coefs)
+  ) %>%
+    filter(variable != "(Intercept)") %>%
+    mutate(abs_coef = abs(coefficient)) %>%
+    arrange(desc(abs_coef))
+}
+
+interpret_glmnet(model_ridge)
+```
+
+###### Lasso
+
+```{r}
+model_lasso <- train(
+  dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_lasso)
+```
+
+##### Elastic Net
+
+```{r}
+model_enet <- train(
+  dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  trControl = train_control
+)
+interpret_glmnet(model_enet)
+```
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+summary(model_logit)
+```
+
+##### PCA
+
+```{r}
+# Select numeric columns; drop zero-variance and NA rows
+pca_input <- dep_flight %>%
+  select(dep_delay, dep_tmpf, dep_relh, dep_vsby) %>%
+  select(where(~ n_distinct(.) > 1)) %>%
+  drop_na()
+
+pca_results <- prcomp(pca_input, scale. = TRUE)
+summary(pca_results)
+plot(pca_results, type = "l", main = "PCA Variance Explained")
+biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
+```
+
+### Model Comparison
+
+```{r}
+results <- resamples(list(
+  Linear     = model_lm,
+  Ridge      = model_ridge,
+  Lasso      = model_lasso,
+  ElasticNet = model_enet
+))
+
+print(dotplot(results, metric = "Rsquared", main = "Model Comparison: R-squared"))
+```
+
+```{r}
+# Predicted vs Actual — Linear Regression
+dep_flight$predictions <- predict(model_lm, newdata = dep_flight)
+
+ggplot(dep_flight, aes(x = dep_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Departure Delay",
+    x = "Actual Departure Delay (min)",
+    y = "Predicted Departure Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+# Confusion Matrix — Logistic Regression
+logit_preds <- predict(model_logit, dep_flight)
+confusionMatrix(logit_preds, dep_flight$is_dep_delay)
+```
+
+### Departure Delay where the Incoming Flight is not Delayed
+
+```{r}
+# Filter to where incoming flight is not late
+dep_flight <- dep_flight %>%
+  filter(prev_flight_late == FALSE)
+```
+
+#### Linear Regression
+
+```{r}
+model_lm <- train(
+  dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm(model_lm)
+
+```
+
+#### Ridge
+
+```{r}
+model_ridge <- train(
+  dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 0, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+
+interpret_glmnet(model_ridge)
+```
+
+#### Lasso
+
+```{r}
+model_lasso <- train(
+  dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_lasso)
+
+```
+
+#### Elastic Net
+
+```{r}
+model_enet <- train(
+  dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glmnet",
+  trControl = train_control
+)
+interpret_glmnet(model_enet)
+
+```
+
+#### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
+  data = dep_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+summary(model_logit)
+```
+
+#### PCA
+
+```{r}
+# Select numeric columns; drop zero-variance and NA rows
+pca_input <- dep_flight %>%
+  select(dep_delay, dep_tmpf, dep_relh, dep_vsby) %>%
+  select(where(~ n_distinct(.) > 1)) %>%
+  drop_na()
+
+pca_results <- prcomp(pca_input, scale. = TRUE)
+summary(pca_results)
+plot(pca_results, type = "l", main = "PCA Variance Explained")
+biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
+```
+
+#### Model Result Comparison
+
+```{r}
+results <- resamples(list(
+  Linear     = model_lm,
+  Ridge      = model_ridge,
+  Lasso      = model_lasso,
+  ElasticNet = model_enet
+))
+
+print(dotplot(results, metric = "Rsquared", main = "Model Comparison: R-squared"))
+```
+
+#### Plot Predicted vs Actual
+
+```{r}
+# Predicted vs Actual — Linear Regression
+dep_flight$predictions <- predict(model_lm, newdata = dep_flight)
+
+ggplot(dep_flight, aes(x = dep_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Departure Delay - Where Previous Flight was not Delayed",
+    x = "Actual Departure Delay (min)",
+    y = "Predicted Departure Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+#### Confusion Matrix
+
+```{r}
+# Confusion Matrix — Logistic Regression
+logit_preds <- predict(model_logit, dep_flight)
+confusionMatrix(logit_preds, dep_flight$is_dep_delay)
+```
+
+
+### Arrival Delay
+
+```{r}
+# Limit data to relevant variables
+arr_flight_filtered <- flights_filtered %>%
+  filter(cancelled == '0') %>%
+  filter(origin == "JFK", dest == "BWI") %>%
+  select(c("arr_delay","is_arr_delay","is_dep_delay","arr_tmpf","arr_relh","arr_vsby","reporting_airline","arr_time_blk","is_weekend")) %>%
+  # Scale weather vars
+  mutate(across(all_of(c("arr_tmpf","arr_relh","arr_vsby")), ~ as.numeric(scale(.))))
+
+
+arr_flight <- arr_flight_filtered %>%
+  filter(
+    !is.na(arr_delay),
+    !is.na(is_dep_delay),    
+    arr_delay >= -60,
+    arr_delay <= 1440
+
+  )
+
+```
+
+#### Regression
+##### Linear
+
+```{r}
+model_lm <- train(
+  arr_delay ~ is_dep_delay + arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "lm", trControl = train_control
+)
+interpret_lm(model_lm)
+```
+
+
+###### Model Ridge
+
+```{r}
+model_ridge <- train(
+  arr_delay ~ is_dep_delay + arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 0, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_ridge)
+```
+
+
+###### Lasso
+
+```{r}
+model_lasso <- train(
+  arr_delay ~ is_dep_delay + arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_lasso)
+```
+
+
+##### Elastic Net
+
+```{r}
+model_enet <- train(
+  arr_delay ~ is_dep_delay + arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  trControl = train_control
+)
+interpret_glmnet(model_enet)
+```
+
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_arr_delay ~ is_dep_delay + arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+summary(model_logit)
+```
+
+
+##### PCA
+
+```{r}
+# Select numeric columns; drop zero-variance and NA rows
+pca_input <- arr_flight %>%
+  select(arr_delay, arr_tmpf, arr_relh, arr_vsby) %>%
+  select(where(~ n_distinct(.) > 1)) %>%
+  drop_na()
+
+pca_results <- prcomp(pca_input, scale. = TRUE)
+summary(pca_results)
+plot(pca_results, type = "l", main = "PCA Variance Explained")
+biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
+```
+
+
+### Model Comparison
+
+```{r}
+results <- resamples(list(
+  Linear     = model_lm,
+  Ridge      = model_ridge,
+  Lasso      = model_lasso,
+  ElasticNet = model_enet
+))
+
+print(dotplot(results, metric = "Rsquared", main = "Model Comparison: R-squared"))
+```
+
+
+```{r}
+# Predicted vs Actual — Linear Regression
+arr_flight$predictions <- predict(model_lm, newdata = arr_flight)
+
+ggplot(arr_flight, aes(x = arr_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Arrival Delay",
+    x = "Actual Arrival Delay (min)",
+    y = "Predicted Arrival Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+
+
+```{r}
+# Confusion Matrix — Logistic Regression
+logit_preds <- predict(model_logit, arr_flight)
+confusionMatrix(logit_preds, arr_flight$is_arr_delay)
+```
+
+### Arrival Delay where the Flight Departure is not Delayed
+
+```{r}
+# Filter to where flight is not late upon departure
+arr_flight <- arr_flight %>%
+  filter(is_dep_delay == FALSE)
+```
+
+#### Linear Regression
+
+```{r}
+model_lm <- train(
+  arr_delay ~ arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "lm", trControl = train_control
+)
+interpret_lm(model_lm)
+```
+
+#### Ridge
+
+```{r}
+model_ridge <- train(
+  arr_delay ~ arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 0, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_ridge)
+```
+
+#### Lasso
+
+```{r}
+model_lasso <- train(
+  arr_delay ~ arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)),
+  trControl = train_control
+)
+interpret_glmnet(model_lasso)
+```
+
+#### Elastic Net
+
+```{r}
+model_enet <- train(
+  arr_delay ~ arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glmnet",
+  trControl = train_control
+)
+interpret_glmnet(model_enet)
+```
+
+#### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_arr_delay ~ arr_tmpf + arr_relh + arr_vsby + reporting_airline + arr_time_blk + is_weekend,
+  data = arr_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+summary(model_logit)
+```
+
+#### PCA
+
+```{r}
+# Select numeric columns; drop zero-variance and NA rows
+pca_input <- arr_flight %>%
+  select(arr_delay, arr_tmpf, arr_relh, arr_vsby) %>%
+  select(where(~ n_distinct(.) > 1)) %>%
+  drop_na()
+
+pca_results <- prcomp(pca_input, scale. = TRUE)
+summary(pca_results)
+plot(pca_results, type = "l", main = "PCA Variance Explained")
+biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
+```
+
+#### Model Performance Comparison
+
+```{r}
+results <- resamples(list(
+  Linear     = model_lm,
+  Ridge      = model_ridge,
+  Lasso      = model_lasso,
+  ElasticNet = model_enet
+))
+
+print(dotplot(results, metric = "Rsquared", main = "Model Comparison: R-squared"))
+```
+
+#### Predicted vs Actual
+
+```{r}
+# Predicted vs Actual — Linear Regression
+arr_flight$predictions <- predict(model_lm, newdata = arr_flight)
+
+ggplot(arr_flight, aes(x = arr_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Arrival Delay - Where Flight was not Late upon Departure",
+    x = "Actual Arrival Delay (min)",
+    y = "Predicted Arrival Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+#### Confusion Matrix
+
+```{r}
+# Confusion Matrix — Logistic Regression
+logit_preds <- predict(model_logit, arr_flight)
+confusionMatrix(logit_preds, arr_flight$is_arr_delay)
+```
