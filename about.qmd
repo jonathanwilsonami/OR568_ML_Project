@@ -28,12 +28,12 @@ I’m an engineer at heart. I grew up working in construction, earned a degree i
 Karan is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team.
 :::
 
-## [Irena Lastname](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}
+## [Irena Austin](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}
 
 ![Irena](/images/about/irena.png){fig-alt="Irena" width="28%" fig-align="center"}
 
 ::: {.small .lh-sm}
-Irena is a member of the OR 568 Machine Learning Project team. Add a short biography here covering educational background, analytical strengths, professional experience, and contributions to the project. This section can also highlight areas such as modeling, data analysis, visualization, or machine learning interests.
+I am a Human Resources professional in the federal sector currently pursuing a master's in Management and Responsible AI at George Mason University. My work focuses on bridging the gap between traditional HR operations and predictive analytics. In this repository, I apply machine learning models to analyze complex datasets like flight delays and organizational risk.
 :::
 
 ## [Val Lastname](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}

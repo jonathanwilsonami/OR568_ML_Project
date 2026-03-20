@@ -9,8 +9,12 @@
     <lastmod>2026-03-13T13:15:46.036Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/index.html</loc>
-    <lastmod>2026-03-13T12:28:29.408Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/about.html</loc>
+    <lastmod>2026-03-20T00:21:11.944Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/r/01_report.html</loc>
+    <lastmod>2026-03-13T12:54:47.524Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/python/01_eda_model.html</loc>
@@ -21,12 +25,16 @@
     <lastmod>2026-02-17T23:35:20.776Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_eda.html</loc>
-    <lastmod>2026-02-17T23:32:37.685Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/network_analysis.html</loc>
+    <lastmod>2026-03-20T00:43:08.980Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/01_report.html</loc>
-    <lastmod>2026-03-13T12:53:53.349Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/flight_delay_eda_plots.html</loc>
+    <lastmod>2026-03-08T20:28:39.060Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/BWI-vs-JFK-and-EWR-Analysis.html</loc>
+    <lastmod>2026-03-20T01:27:07.999Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/r/01_report.html</loc>
@@ -37,12 +45,24 @@
     <lastmod>2026-03-13T12:54:51.525Z</lastmod>
   </url>
   <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/r/VSokolow_Midterm.html</loc>
+    <lastmod>2026-03-20T01:32:57.126Z</lastmod>
+  </url>
+  <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/python/01_eda_model.html</loc>
     <lastmod>2026-03-13T12:52:37.837Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/flight_delay_eda_plots.html</loc>
-    <lastmod>2026-03-08T20:28:39.060Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/BWI vs JFK and EWR Analysis.html</loc>
+    <lastmod>2026-03-20T01:35:39.526Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/irena/r/01_report.html</loc>
+    <lastmod>2026-03-13T12:53:53.349Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/opensky_eda.html</loc>
+    <lastmod>2026-02-17T23:32:37.685Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/filter_data.html</loc>
@@ -53,15 +73,19 @@
     <lastmod>2026-02-21T16:51:57.681Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/karan/r/01_report.html</loc>
-    <lastmod>2026-03-13T12:54:47.524Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/r/network_analysis.html</loc>
+    <lastmod>2026-03-20T00:43:08.980Z</lastmod>
   </url>
   <url>
-    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/about.html</loc>
-    <lastmod>2026-03-13T13:02:28.533Z</lastmod>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/index.html</loc>
+    <lastmod>2026-03-13T12:28:29.408Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/archive/irena_code/Results 1.html</loc>
+    <lastmod>2026-03-20T00:21:11.944Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/paper.html</loc>
-    <lastmod>2026-03-13T13:12:00.929Z</lastmod>
+    <lastmod>2026-03-20T00:43:08.980Z</lastmod>
   </url>
 </urlset>

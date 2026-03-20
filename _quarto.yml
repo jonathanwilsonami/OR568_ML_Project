@@ -25,24 +25,24 @@ website:
         text: "Shared Notebooks"
 
   sidebar:
-    - id: shared-notebooks
-      title: "Shared Notebooks"
-      style: docked
-      search: true
-      contents:
-        - shared-notebooks/index.qmd
+  - id: shared-notebooks
+    title: "Shared Notebooks"
+    style: docked
+    search: true
+    contents:
+      - shared-notebooks/index.qmd
 
-        - section: "Jon"
-          contents: shared-notebooks/notebooks/jon
+      - section: "Jon"
+        contents: "shared-notebooks/notebooks/jon/**/*"
 
-        - section: "Karan"
-          contents: shared-notebooks/notebooks/karan
+      - section: "Karan"
+        contents: "shared-notebooks/notebooks/karan/**/*"
 
-        - section: "Irena"
-          contents: shared-notebooks/notebooks/irena
+      - section: "Irena"
+        contents: "shared-notebooks/notebooks/irena/**/*"
 
-        - section: "Val"
-          contents: shared-notebooks/notebooks/val
+      - section: "Val"
+        contents: "shared-notebooks/notebooks/val/**/*"
 
 format:
   html:
