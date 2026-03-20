@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Example Report (R / Quarto) – OR 568 Machine Learning Project</title>
+<title>network_analysis – OR 568 Machine Learning Project</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/index.html">Val</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/r/01_report.html">R</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/r/01_report.html">Example Report (R / Quarto)</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Jon</li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/jon/python/filter_data.html">Index</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/jon/python/network_analysis.html">Network Analysis</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -194,13 +194,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Index</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../../shared-notebooks/notebooks/jon/python/filter_data.html" class="sidebar-item-text sidebar-link">
@@ -215,7 +215,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../../../shared-notebooks/notebooks/jon/python/network_analysis.html" class="sidebar-item-text sidebar-link">
+  <a href="../../../../shared-notebooks/notebooks/jon/python/network_analysis.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Network Analysis</span></a>
   </div>
 </li>
@@ -388,16 +388,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
  <span class="menu-text">R</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../../../shared-notebooks/notebooks/val/r/01_report.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../../../shared-notebooks/notebooks/val/r/01_report.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Example Report (R / Quarto)</span></a>
   </div>
 </li>
@@ -416,117 +416,68 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link active" data-scroll-target="#load-the-dataset">Load the dataset</a></li>
-  <li><a href="#why-this-works-better" id="toc-why-this-works-better" class="nav-link" data-scroll-target="#why-this-works-better">Why this works better</a></li>
-  <li><a href="#if-you-want-the-python-notebook-as-quarto-friendly-too" id="toc-if-you-want-the-python-notebook-as-quarto-friendly-too" class="nav-link" data-scroll-target="#if-you-want-the-python-notebook-as-quarto-friendly-too">If you want the Python notebook as Quarto-friendly too</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Jon</li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/jon/python/filter_data.html">Index</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/jon/python/network_analysis.html">Network Analysis</a></li></ol></nav></header>
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/index.html">Val</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/r/01_report.html">R</a></li><li class="breadcrumb-item"><a href="../../../../shared-notebooks/notebooks/val/r/01_report.html">Example Report (R / Quarto)</a></li></ol></nav>
-<div class="quarto-title">
-<h1 class="title">Example Report (R / Quarto)</h1>
+
+
+
+<div id="08e05a7b" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> importlib</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_rows(<span class="dv">1000</span>)   <span class="co"># allow many rows</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_cols(<span class="dv">100</span>)    <span class="co"># allow many columns</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_width_chars(<span class="dv">200</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>current <span class="op">=</span> Path.cwd()</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> current.name <span class="op">!=</span> <span class="st">"shared-notebooks"</span>:</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> current.parent <span class="op">==</span> current:</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">RuntimeError</span>(<span class="st">"Could not locate shared-notebooks directory"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> current.parent</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>utils_path <span class="op">=</span> current <span class="op">/</span> <span class="st">"common_utils"</span> <span class="op">/</span> <span class="st">"python"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">str</span>(utils_path) <span class="kw">not</span> <span class="kw">in</span> sys.path:</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    sys.path.append(<span class="bu">str</span>(utils_path))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> data_prep</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>importlib.<span class="bu">reload</span>(data_prep)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> data_prep.load_flight_data()</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> data_prep.engineer_features(df)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>df_work <span class="op">=</span> df.select([</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"year"</span>, <span class="st">"quarter"</span>, <span class="st">"month"</span>, <span class="st">"dayof_month"</span>, <span class="st">"day_of_week"</span>, <span class="st">"flight_date"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"reporting_airline"</span>, <span class="st">"tail_number"</span>, <span class="st">"flight_number_reporting_airline"</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"origin"</span>, <span class="st">"dest"</span>, <span class="st">"distance"</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crs_dep_time"</span>, <span class="st">"dep_time"</span>, <span class="st">"dep_delay"</span>, <span class="st">"dep_delay_minutes"</span>, <span class="st">"dep_del15"</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"taxi_out"</span>, <span class="st">"wheels_off"</span>, <span class="st">"wheels_on"</span>, <span class="st">"taxi_in"</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crs_arr_time"</span>, <span class="st">"arr_time"</span>, <span class="st">"arr_delay"</span>, <span class="st">"arr_delay_minutes"</span>, <span class="st">"arr_del15"</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cancelled"</span>, <span class="st">"diverted"</span>, <span class="st">"crs_elapsed_time"</span>, <span class="st">"actual_elapsed_time"</span>, <span class="st">"air_time"</span>,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_tmpf"</span>, <span class="st">"dep_dwpf"</span>, <span class="st">"dep_relh"</span>, <span class="st">"dep_drct"</span>, <span class="st">"dep_sknt"</span>, <span class="st">"dep_p01i"</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_alti"</span>, <span class="st">"dep_mslp"</span>, <span class="st">"dep_vsby"</span>, <span class="st">"dep_gust"</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_skyc1"</span>, <span class="st">"dep_skyl1"</span>, <span class="st">"dep_wxcodes"</span>,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_peak_wind_gust"</span>, <span class="st">"dep_peak_wind_drct"</span>, <span class="st">"dep_weather_severity"</span>,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sched_dep_hour"</span>, <span class="st">"sched_arr_hour"</span>, <span class="st">"hour_of_day"</span>, <span class="st">"is_weekend"</span>, <span class="st">"route"</span>,</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">"is_delayed"</span>, <span class="st">"delay_state"</span>, <span class="st">"sched_dep_min"</span>, <span class="st">"sched_arr_min"</span>, <span class="st">"dep_min"</span>, <span class="st">"arr_min"</span>,</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"schedule_buffer"</span>, <span class="st">"prev_origin"</span>, <span class="st">"prev_dest"</span>, <span class="st">"prev_dep_delay"</span>, <span class="st">"prev_arr_delay"</span>,</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_arr_min"</span>, <span class="st">"prev_dep_min"</span>, <span class="st">"prev_flight_date"</span>, <span class="st">"rotation_leg_number"</span>,</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">"flights_per_aircraft_day"</span>, <span class="st">"cum_dep_delay_day"</span>, <span class="st">"cum_arr_delay_day"</span>,</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"curr_sched_dep_abs_min"</span>, <span class="st">"prev_arr_abs_min"</span>, <span class="st">"turnaround_minutes"</span>,</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"inherited_delay"</span>, <span class="st">"bad_visibility"</span>, <span class="st">"high_wind"</span>, <span class="st">"precipitation"</span>, <span class="st">"severe_weather"</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> df_work.head(<span class="dv">10</span>)</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>sample.write_csv(<span class="st">"sample_data.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
-
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<section id="load-the-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="load-the-dataset">Load the dataset</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.4     ✔ readr     2.1.5
-✔ forcats   1.0.0     ✔ stringr   1.5.2
-✔ ggplot2   3.5.2     ✔ tibble    3.3.0
-✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-✔ purrr     1.1.0     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()
-ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-</div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(iris)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 150
-Columns: 5
-$ Sepal.Length &lt;dbl&gt; 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.…
-$ Sepal.Width  &lt;dbl&gt; 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.…
-$ Petal.Length &lt;dbl&gt; 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.…
-$ Petal.Width  &lt;dbl&gt; 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.…
-$ Species      &lt;fct&gt; setosa, setosa, setosa, setosa, setosa, setosa, setosa, s…</code></pre>
-</div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 5
-  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
-         &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  
-1          5.1         3.5          1.4         0.2 setosa 
-2          4.9         3            1.4         0.2 setosa 
-3          4.7         3.2          1.3         0.2 setosa 
-4          4.6         3.1          1.5         0.2 setosa 
-5          5           3.6          1.4         0.2 setosa 
-6          5.4         3.9          1.7         0.4 setosa </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Sepal.Length, <span class="at">y =</span> Sepal.Width, <span class="at">color =</span> Species)) <span class="sc">+</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Iris Dataset Example"</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Sepal Length"</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Sepal Width"</span>,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Species"</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="01_report_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="why-this-works-better" class="level2">
-<h2 class="anchored" data-anchor-id="why-this-works-better">Why this works better</h2>
-<p>Using <code>iris</code> gives you: - no local file dependency - no path issues during <code>quarto render</code> - lightweight example notebooks that always work - a familiar dataset for both Python and R</p>
-</section>
-<section id="if-you-want-the-python-notebook-as-quarto-friendly-too" class="level2">
-<h2 class="anchored" data-anchor-id="if-you-want-the-python-notebook-as-quarto-friendly-too">If you want the Python notebook as Quarto-friendly too</h2>
-<p>If your Python notebook is being used inside Quarto and you want it minimal, I would use this exact version:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> load_iris</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>iris <span class="op">=</span> load_iris(as_frame<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> iris.frame.copy()</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"species"</span>] <span class="op">=</span> df[<span class="st">"target"</span>].<span class="bu">map</span>(<span class="bu">dict</span>(<span class="bu">enumerate</span>(iris.target_names)))</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-
-
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -5,6 +5,8 @@ date: "2026-03-10"
 format:
   html: default
   docx: default
+execute:
+  eval: false
 ---
 
 ```{r}
@@ -16,13 +18,41 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 pacman::p_load(dplyr, skimr, tidyverse, caret, glmnet, janitor, ggplot2, lubridate, purrr,broom)
 
-enriched_flights_NEW_2019 <- read.csv("C:\\Users\\valso\\OneDrive - George Mason University - O365 Production\\2026_T1\\GitHub Clone\\OR568_ML_Project\\shared-notebooks\\notebooks\\val\\r\\enriched_flights_NEW.csv", 
-                                      stringsAsFactors = FALSE)
+# enriched_flights_NEW_2019 <- read.csv("C:\\Users\\valso\\OneDrive - George Mason University - O365 Production\\2026_T1\\GitHub Clone\\OR568_ML_Project\\shared-notebooks\\notebooks\\val\\r\\enriched_flights_NEW.csv", 
+#                                       stringsAsFactors = FALSE)
+
+###################################################
+# Code to Load Data from S3
+###################################################
+library(dplyr)
+library(janitor)
+notebook_dir <- dirname(knitr::current_input(dir = TRUE))
+
+util_path <- normalizePath(
+  file.path(
+    notebook_dir,
+    "..", "..", "..",
+    "common_utils", "r", "load_flight_data.r"
+  ),
+  winslash = "/",
+  mustWork = TRUE
+)
+
+source(util_path)
+
+# Load data and clean column names
+enriched_flights_NEW_2019 <- load_flight_data() %>%
+  janitor::clean_names()
+
+###################################################
+# End Code to Load Data from S3
+###################################################
 ```
 
 ## Data Prep
 
 ```{r}
+#| eval: false
 #Assign imported dataset
 flights_raw <- enriched_flights_NEW_2019 %>%
   clean_names()
@@ -77,6 +107,7 @@ train_control <- trainControl(method = "cv", number = 5)
 ### Departure Delay
 
 ```{r}
+#| eval: false
 # Limit data to relevant variables
 dep_flight_filtered <- flights_filtered %>%
   filter(cancelled == '0') %>%
@@ -101,6 +132,7 @@ dep_flight <- dep_flight_filtered %>%
 ##### Linear
 
 ```{r, warning = FALSE}
+#| eval: false
 model_lm <- train(
   dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "lm", trControl = train_control
@@ -120,6 +152,7 @@ interpret_lm(model_lm)
 ###### Model Ridge
 
 ```{r}
+#| eval: false
 model_ridge <- train(
   dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -146,6 +179,7 @@ interpret_glmnet(model_ridge)
 ###### Lasso
 
 ```{r}
+#| eval: false
 model_lasso <- train(
   dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -158,6 +192,7 @@ interpret_glmnet(model_lasso)
 ##### Elastic Net
 
 ```{r}
+#| eval: false
 model_enet <- train(
   dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -170,6 +205,7 @@ interpret_glmnet(model_enet)
 ##### Logistic Regression
 
 ```{r}
+#| eval: false
 model_logit <- train(
   is_dep_delay ~ prev_flight_late + dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glm",
@@ -182,6 +218,7 @@ summary(model_logit)
 ##### PCA
 
 ```{r}
+#| eval: false
 # Select numeric columns; drop zero-variance and NA rows
 pca_input <- dep_flight %>%
   select(dep_delay, dep_tmpf, dep_relh, dep_vsby) %>%
@@ -197,6 +234,7 @@ biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
 ### Model Comparison
 
 ```{r}
+#| eval: false
 results <- resamples(list(
   Linear     = model_lm,
   Ridge      = model_ridge,
@@ -208,6 +246,7 @@ print(dotplot(results, metric = "Rsquared", main = "Model Comparison: R-squared"
 ```
 
 ```{r}
+#| eval: false
 # Predicted vs Actual — Linear Regression
 dep_flight$predictions <- predict(model_lm, newdata = dep_flight)
 
@@ -224,6 +263,7 @@ ggplot(dep_flight, aes(x = dep_delay, y = predictions)) +
 
 
 ```{r}
+#| eval: false
 # Confusion Matrix — Logistic Regression
 logit_preds <- predict(model_logit, dep_flight)
 confusionMatrix(logit_preds, dep_flight$is_dep_delay)
@@ -232,6 +272,7 @@ confusionMatrix(logit_preds, dep_flight$is_dep_delay)
 ### Departure Delay where the Incoming Flight is not Delayed
 
 ```{r}
+#| eval: false
 # Filter to where incoming flight is not late
 dep_flight <- dep_flight %>%
   filter(prev_flight_late == FALSE)
@@ -240,6 +281,7 @@ dep_flight <- dep_flight %>%
 #### Linear Regression
 
 ```{r}
+#| eval: false
 model_lm <- train(
   dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "lm", trControl = train_control
@@ -252,6 +294,7 @@ interpret_lm(model_lm)
 #### Ridge
 
 ```{r}
+#| eval: false
 model_ridge <- train(
   dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -265,6 +308,7 @@ interpret_glmnet(model_ridge)
 #### Lasso
 
 ```{r}
+#| eval: false
 model_lasso <- train(
   dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -278,6 +322,7 @@ interpret_glmnet(model_lasso)
 #### Elastic Net
 
 ```{r}
+#| eval: false
 model_enet <- train(
   dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glmnet",
@@ -290,6 +335,7 @@ interpret_glmnet(model_enet)
 #### Logistic Regression
 
 ```{r}
+#| eval: false
 model_logit <- train(
   is_dep_delay ~ dep_tmpf + dep_relh + dep_vsby + reporting_airline + dep_time_blk + is_weekend,
   data = dep_flight, method = "glm",
@@ -302,6 +348,7 @@ summary(model_logit)
 #### PCA
 
 ```{r}
+#| eval: false
 # Select numeric columns; drop zero-variance and NA rows
 pca_input <- dep_flight %>%
   select(dep_delay, dep_tmpf, dep_relh, dep_vsby) %>%
@@ -317,6 +364,7 @@ biplot(pca_results, cex = 0.7, main = "PCA: Flight Feature Relationships")
 #### Model Result Comparison
 
 ```{r}
+#| eval: false
 results <- resamples(list(
   Linear     = model_lm,
   Ridge      = model_ridge,

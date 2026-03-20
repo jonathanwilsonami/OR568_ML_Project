@@ -1,0 +1,30 @@
+
+```{r}
+###################################################
+# Code to Load Data from S3
+###################################################
+library(dplyr)
+library(janitor)
+notebook_dir <- dirname(knitr::current_input(dir = TRUE))
+
+util_path <- normalizePath(
+  file.path(
+    notebook_dir,
+    "..", "..", "..",
+    "common_utils", "r", "load_flight_data.r"
+  ),
+  winslash = "/",
+  mustWork = TRUE
+)
+
+source(util_path)
+
+# Load data and clean column names
+enriched_flights_2019 <- load_flight_data() %>%
+  janitor::clean_names()
+
+###################################################
+# End Code to Load Data from S3
+###################################################
+
+```
