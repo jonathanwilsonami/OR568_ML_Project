@@ -1,0 +1,474 @@
+# Network Analysis BWI to JFK/EWR
+
+```{r}
+#| echo: false
+
+## Project Setup
+
+notebook_dir <- dirname(knitr::current_input(dir = TRUE))
+
+util_path <- normalizePath(
+  file.path(
+    notebook_dir,
+    "..", "..", "..",
+    "common_utils", "r", "load_flight_data.r"
+  ),
+  winslash = "/",
+  mustWork = TRUE
+)
+
+source(util_path)
+
+required_packages <- c(
+  "tidyverse",
+  "janitor",
+  "lubridate",
+  "skimr",
+  "caret",
+  "glmnet",
+  "broom",
+  "ggplot2",
+  "kableExtra",
+  "dplyr",
+  "tidyr",
+  "stringr",
+  "igraph",
+  "ggraph",
+  "tidygraph",
+  "tibble",
+  "knitr"
+)
+
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+
+if (length(missing_packages) > 0) {
+  stop(
+    paste0(
+      "Missing required R packages: ",
+      paste(missing_packages, collapse = ", "),
+      "\nInstall them first before rendering."
+    )
+  )
+}
+
+invisible(lapply(required_packages, library, character.only = TRUE))
+
+# Load data and clean column names
+df <- load_flight_data() %>%
+  janitor::clean_names()
+
+df_work <- df %>%
+  select(
+    year, quarter, month, dayof_month, day_of_week, flight_date,
+    reporting_airline, tail_number, flight_number_reporting_airline,
+    origin, dest, distance,
+    crs_dep_time, dep_time, dep_delay, dep_delay_minutes, dep_del15,
+    taxi_out, wheels_off, wheels_on, taxi_in,
+    crs_arr_time, arr_time, arr_delay, arr_delay_minutes, arr_del15,
+    cancelled, diverted, crs_elapsed_time, actual_elapsed_time, air_time,
+    dep_tmpf, dep_dwpf, dep_relh, dep_drct, dep_sknt, dep_p01i,
+    dep_alti, dep_mslp, dep_vsby, dep_gust,
+    dep_skyc1, dep_skyl1, dep_wxcodes,
+    dep_peak_wind_gust, dep_peak_wind_drct, dep_weather_severity
+  )
+
+set.seed(42)
+
+```
+
+## Feature Engineering
+
+```{r}
+#| echo: false
+
+
+# names(df_work)
+
+df_work <- df_work %>%
+  mutate(
+    # Dates
+    flight_date = as.Date(flight_date),
+
+    # Convert selected columns to numeric
+    across(
+      c(
+        crs_dep_time, crs_arr_time, dep_time, arr_time,
+        dep_delay_minutes, arr_delay_minutes,
+        crs_elapsed_time, air_time,
+        dep_vsby, dep_gust, dep_sknt, dep_p01i, dep_weather_severity
+      ),
+      ~ suppressWarnings(as.numeric(as.character(.)))
+    ),
+
+    # Scheduled hour features
+    sched_dep_hour = floor(crs_dep_time / 100),
+    sched_arr_hour = floor(crs_arr_time / 100),
+
+    # Hour of day
+    hour_of_day = sched_dep_hour,
+
+    # Weekend flag
+    is_weekend = if_else(day_of_week %in% c(6, 7), 1, 0),
+
+    # Route
+    route = paste(origin, dest, sep = "_"),
+
+    # Delay classification
+    is_delayed = if_else(dep_delay_minutes > 15, 1, 0, missing = NA_integer_),
+
+    delay_state = case_when(
+      is.na(dep_delay_minutes) ~ NA_character_,
+      dep_delay_minutes <= 0 ~ "on_time_or_early",
+      dep_delay_minutes <= 15 ~ "minor_delay",
+      dep_delay_minutes <= 60 ~ "moderate_delay",
+      TRUE ~ "severe_delay"
+    ),
+
+    # Convert HHMM to minutes after midnight
+    sched_dep_min = if_else(
+      !is.na(crs_dep_time),
+      (crs_dep_time %/% 100) * 60 + (crs_dep_time %% 100),
+      NA_real_
+    ),
+
+    sched_arr_min = if_else(
+      !is.na(crs_arr_time),
+      (crs_arr_time %/% 100) * 60 + (crs_arr_time %% 100),
+      NA_real_
+    ),
+
+    dep_min = if_else(
+      !is.na(dep_time),
+      (dep_time %/% 100) * 60 + (dep_time %% 100),
+      NA_real_
+    ),
+
+    arr_min = if_else(
+      !is.na(arr_time),
+      (arr_time %/% 100) * 60 + (arr_time %% 100),
+      NA_real_
+    ),
+
+    # Schedule buffer
+    schedule_buffer = crs_elapsed_time - air_time
+  ) %>%
+  arrange(tail_number, flight_date, sched_dep_min) %>%
+  group_by(tail_number) %>%
+  mutate(
+    prev_origin = lag(origin),
+    prev_dest = lag(dest),
+    prev_dep_delay = lag(dep_delay_minutes),
+    prev_arr_delay = lag(arr_delay_minutes),
+    prev_arr_min = lag(arr_min),
+    prev_dep_min = lag(dep_min),
+    prev_flight_date = lag(flight_date)
+  ) %>%
+  ungroup() %>%
+  group_by(tail_number, flight_date) %>%
+  arrange(sched_dep_min, .by_group = TRUE) %>%
+  mutate(
+    rotation_leg_number = row_number(),
+    flights_per_aircraft_day = n(),
+    cum_dep_delay_day = cumsum(replace_na(dep_delay_minutes, 0)),
+    cum_arr_delay_day = cumsum(replace_na(arr_delay_minutes, 0))
+  ) %>%
+  ungroup()
+
+base_date <- min(df_work$flight_date, na.rm = TRUE)
+
+df_work <- df_work %>%
+  mutate(
+    curr_sched_dep_abs_min =
+      as.numeric(flight_date - base_date) * 1440 + sched_dep_min,
+
+    prev_arr_abs_min =
+      if_else(
+        !is.na(prev_flight_date) & !is.na(prev_arr_min),
+        as.numeric(prev_flight_date - base_date) * 1440 + prev_arr_min,
+        NA_real_
+      ),
+
+    turnaround_minutes = curr_sched_dep_abs_min - prev_arr_abs_min,
+
+    inherited_delay = pmax(
+      replace_na(prev_arr_delay, 0) - replace_na(turnaround_minutes, 0),
+      0
+    ),
+
+    bad_visibility = if_else(dep_vsby < 3, 1, 0, missing = 0),
+    high_wind = if_else(dep_gust > 20 | dep_sknt > 20, 1, 0, missing = 0),
+    precipitation = if_else(dep_p01i > 0, 1, 0, missing = 0),
+    severe_weather = if_else(dep_weather_severity >= 2, 1, 0, missing = 0)
+  )
+
+df_preview <- df_work %>%
+  select(
+    tail_number,
+    flight_date,
+    origin,
+    dest,
+    route,
+    sched_dep_hour,
+    hour_of_day,
+    is_weekend,
+    rotation_leg_number,
+    flights_per_aircraft_day,
+    prev_arr_delay,
+    prev_dep_delay,
+    turnaround_minutes,
+    inherited_delay,
+    schedule_buffer,
+    dep_weather_severity,
+    bad_visibility,
+    high_wind,
+    precipitation,
+    severe_weather,
+    dep_delay_minutes,
+    arr_delay_minutes,
+    is_delayed
+  ) %>%
+  head(50)
+
+#glimpse(df_preview)
+```
+
+## Netowrk Centrality Metrics
+
+```{r}
+##| eval: false
+##| echo: false
+
+
+# ----------------------------------------------------
+# Build Route Network
+# ----------------------------------------------------
+route_edges <- df_work %>%
+  group_by(origin, dest) %>%
+  summarise(
+    flights = n(),
+    mean_dep_delay = mean(dep_delay_minutes, na.rm = TRUE),
+    mean_arr_delay = mean(arr_delay_minutes, na.rm = TRUE),
+    delay_rate = mean(is_delayed, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+g <- graph_from_data_frame(route_edges, directed = TRUE)
+
+# ----------------------------------------------------
+# Compute Network Centrality Metrics
+# ----------------------------------------------------
+airport_metrics <- tibble(
+  airport = V(g)$name,
+  degree = degree(g, mode = "all"),
+  indegree = degree(g, mode = "in"),
+  outdegree = degree(g, mode = "out"),
+  betweenness = betweenness(g, directed = TRUE, normalized = TRUE),
+  closeness = closeness(g, mode = "out", normalized = TRUE),
+  pagerank = page_rank(g, directed = TRUE)$vector
+)
+
+# ----------------------------------------------------
+# Add Delay Statistics
+# ----------------------------------------------------
+airport_delay <- df_work %>%
+  group_by(origin) %>%
+  summarise(
+    avg_dep_delay = mean(dep_delay_minutes, na.rm = TRUE),
+    flights = n(),
+    .groups = "drop"
+  ) %>%
+  rename(airport = origin)
+
+airport_analysis <- airport_metrics %>%
+  left_join(airport_delay, by = "airport")
+
+# ----------------------------------------------------
+# Airport Network Visualization
+# ----------------------------------------------------
+graph_tbl <- as_tbl_graph(g) %>%
+  left_join(airport_analysis, by = c("name" = "airport"))
+
+ggraph(graph_tbl, layout = "fr") +
+  geom_edge_link(aes(width = flights), alpha = 0.2, show.legend = FALSE) +
+  geom_node_point(aes(size = betweenness, color = avg_dep_delay)) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_size_continuous(range = c(3, 12)) +
+  labs(
+    title = "Airport Route Network",
+    subtitle = "Node size = betweenness centrality; node color = average departure delay",
+    color = "Avg Departure Delay",
+    size = "Betweenness Centrality"
+  ) +
+  theme_void()
+
+# ----------------------------------------------------
+# Top Airports by Betweenness Centrality
+# ----------------------------------------------------
+airport_analysis %>%
+  arrange(desc(betweenness)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(airport, betweenness), y = betweenness)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Top Airports by Betweenness Centrality",
+    x = "Airport",
+    y = "Betweenness Centrality"
+  ) +
+  theme_minimal()
+
+# ----------------------------------------------------
+# Top Airports by PageRank
+# ----------------------------------------------------
+airport_analysis %>%
+  arrange(desc(pagerank)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(airport, pagerank), y = pagerank)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Top Airports by PageRank",
+    x = "Airport",
+    y = "PageRank"
+  ) +
+  theme_minimal()
+
+# ----------------------------------------------------
+# Centrality vs Delay
+# ----------------------------------------------------
+ggplot(airport_analysis, aes(x = betweenness, y = avg_dep_delay, label = airport)) +
+  geom_point(aes(size = flights), alpha = 0.7) +
+  geom_text(check_overlap = TRUE, nudge_y = 0.3, size = 3) +
+  labs(
+    title = "Airport Centrality vs Average Departure Delay",
+    x = "Betweenness Centrality",
+    y = "Average Departure Delay (minutes)",
+    size = "Flights"
+  ) +
+  theme_minimal()
+
+# ----------------------------------------------------
+# Centrality Summary Table
+# ----------------------------------------------------
+airport_analysis %>%
+  arrange(desc(betweenness)) %>%
+  select(
+    airport,
+    degree,
+    indegree,
+    outdegree,
+    betweenness,
+    pagerank,
+    avg_dep_delay,
+    flights
+  ) %>%
+  slice_head(n = 15) %>%
+  kbl(caption = "Top Airports by Betweenness Centrality", digits = 3) %>%
+  kable_styling(full_width = FALSE)
+
+# TODO 
+# Need a bigger network - get more BTS and waether data say for 10 to 20 big hubs
+```
+
+## Propagation Analysis
+
+```{r}
+# ------------------------------------------
+# Propagation summary: previous arrival delay
+# vs next departure delay
+# ------------------------------------------
+propagation_summary <- df_work %>%
+  filter(!is.na(prev_arr_delay), !is.na(dep_delay_minutes)) %>%
+  mutate(
+    prev_delay_bucket = case_when(
+      prev_arr_delay <= 0 ~ "On time / early",
+      prev_arr_delay <= 15 ~ "1-15 min",
+      prev_arr_delay <= 30 ~ "16-30 min",
+      prev_arr_delay <= 60 ~ "31-60 min",
+      TRUE ~ "60+ min"
+    )
+  ) %>%
+  group_by(prev_delay_bucket) %>%
+  summarise(
+    flights = n(),
+    avg_next_dep_delay = mean(dep_delay_minutes, na.rm = TRUE),
+    median_next_dep_delay = median(dep_delay_minutes, na.rm = TRUE),
+    prob_next_delay = mean(is_delayed, na.rm = TRUE),
+    avg_turnaround = mean(turnaround_minutes, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print(propagation_summary)
+
+ggplot(propagation_summary, aes(x = prev_delay_bucket, y = avg_next_dep_delay)) +
+  geom_col() +
+  labs(
+    title = "Delay Propagation by Previous Arrival Delay Bucket",
+    x = "Previous Arrival Delay Bucket",
+    y = "Average Next Departure Delay (minutes)"
+  ) +
+  theme_minimal()
+```
+
+### Turnaround vs propagation
+
+```{r}
+turnaround_propagation <- df_work %>%
+  filter(!is.na(prev_arr_delay), !is.na(turnaround_minutes), !is.na(dep_delay_minutes)) %>%
+  mutate(
+    turnaround_bucket = case_when(
+      turnaround_minutes < 30 ~ "<30",
+      turnaround_minutes < 45 ~ "30-44",
+      turnaround_minutes < 60 ~ "45-59",
+      turnaround_minutes < 90 ~ "60-89",
+      TRUE ~ "90+"
+    )
+  ) %>%
+  group_by(turnaround_bucket) %>%
+  summarise(
+    flights = n(),
+    avg_dep_delay = mean(dep_delay_minutes, na.rm = TRUE),
+    prob_delay = mean(is_delayed, na.rm = TRUE),
+    avg_prev_arr_delay = mean(prev_arr_delay, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print(turnaround_propagation)
+
+ggplot(turnaround_propagation, aes(x = turnaround_bucket, y = avg_dep_delay)) +
+  geom_col() +
+  labs(
+    title = "Average Departure Delay by Turnaround Bucket",
+    x = "Turnaround Minutes Bucket",
+    y = "Average Departure Delay (minutes)"
+  ) +
+  theme_minimal()
+```
+
+### Aircraft rotation fragility 
+
+```{r}
+rotation_fragility <- df_work %>%
+  filter(!is.na(rotation_leg_number), !is.na(dep_delay_minutes)) %>%
+  group_by(rotation_leg_number) %>%
+  summarise(
+    flights = n(),
+    avg_dep_delay = mean(dep_delay_minutes, na.rm = TRUE),
+    prob_delay = mean(is_delayed, na.rm = TRUE),
+    avg_prev_arr_delay = mean(prev_arr_delay, na.rm = TRUE),
+    avg_turnaround = mean(turnaround_minutes, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print(rotation_fragility)
+
+ggplot(rotation_fragility, aes(x = rotation_leg_number, y = avg_dep_delay)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Average Departure Delay by Rotation Leg Number",
+    x = "Flight Position in Aircraft Rotation",
+    y = "Average Departure Delay (minutes)"
+  ) +
+  theme_minimal()
+```
