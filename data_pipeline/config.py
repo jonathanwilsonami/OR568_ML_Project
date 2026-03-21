@@ -32,7 +32,9 @@ class WeatherConfig:
     timeout: int = 180
 
     chunk_by_month: bool = True
-    chunk_pause_seconds: float = 1.5
+    chunk_pause_seconds: float = 2.0
+    station_chunk_size: int = 25
+
     max_retries: int = 6
     backoff_base_seconds: float = 2.0
     verify_ssl: bool = True

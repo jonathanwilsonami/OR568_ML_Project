@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import math
 import time
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlencode
 
 import polars as pl
-import requests
 
 from config import WeatherConfig
 from utils import ensure_dir, make_retry_session
@@ -23,10 +23,15 @@ def _month_windows(year: int) -> list[tuple[str, str, str]]:
         if month == 12:
             end = date(year, 12, 31)
         else:
-            end = date(year, month + 1, 1).fromordinal(date(year, month + 1, 1).toordinal() - 1)
+            next_month = date(year, month + 1, 1)
+            end = date.fromordinal(next_month.toordinal() - 1)
         label = f"{year}_{month:02d}"
         windows.append((start.isoformat(), end.isoformat(), label))
     return windows
+
+
+def _chunk_list(values: list[str], chunk_size: int) -> list[list[str]]:
+    return [values[i:i + chunk_size] for i in range(0, len(values), chunk_size)]
 
 
 def _build_weather_url(
@@ -49,7 +54,7 @@ def _build_weather_url(
     return f"{cfg.base_url}?{urlencode(params)}"
 
 
-def _fetch_weather_json(
+def _fetch_weather_json_chunk(
     stations: list[str],
     start: str,
     end: str,
@@ -58,9 +63,19 @@ def _fetch_weather_json(
     url = _build_weather_url(stations, start, end, cfg)
     session = make_retry_session(max_retries=cfg.max_retries, user_agent="OR568-Weather/1.0")
 
-    print(f"Fetching weather for {len(stations)} stations, {start} -> {end}")
+    print(
+        f"Fetching weather chunk: {len(stations)} stations, "
+        f"{start} -> {end}"
+    )
+
     r = session.get(url, timeout=cfg.timeout, verify=cfg.verify_ssl)
-    r.raise_for_status()
+    if not r.ok:
+        print(f"Weather request failed: status={r.status_code}")
+        print(f"URL length: {len(url)}")
+        print(f"First 300 chars of URL: {url[:300]}")
+        print(f"Response text preview: {r.text[:1000]}")
+        r.raise_for_status()
+
     payload = r.json()
 
     if isinstance(payload, dict):
@@ -73,6 +88,46 @@ def _fetch_weather_json(
         return payload
 
     raise ValueError(f"Unexpected weather payload type: {type(payload)}")
+
+
+def _fetch_weather_json(
+    stations: list[str],
+    start: str,
+    end: str,
+    cfg: WeatherConfig,
+) -> list[dict]:
+    """
+    Fetch weather in station batches to avoid NOAA request-size failures.
+    """
+    stations = sorted(set(stations))
+    if not stations:
+        return []
+
+    station_chunk_size = getattr(cfg, "station_chunk_size", 25)
+    station_chunks = _chunk_list(stations, station_chunk_size)
+
+    print(
+        f"Fetching weather across {len(stations):,} stations in "
+        f"{len(station_chunks)} chunk(s) "
+        f"(chunk size={station_chunk_size})"
+    )
+
+    all_records: list[dict] = []
+
+    for i, station_chunk in enumerate(station_chunks, start=1):
+        print(f"  Station chunk {i}/{len(station_chunks)}")
+        records = _fetch_weather_json_chunk(
+            stations=station_chunk,
+            start=start,
+            end=end,
+            cfg=cfg,
+        )
+        all_records.extend(records)
+
+        if cfg.chunk_pause_seconds > 0:
+            time.sleep(cfg.chunk_pause_seconds)
+
+    return all_records
 
 
 def _parse_tmp(expr: pl.Expr) -> pl.Expr:
@@ -179,6 +234,24 @@ def pull_weather_for_period(
     clean_output_path: Path | None = None,
 ) -> pl.DataFrame:
     records = _fetch_weather_json(stations, start, end, cfg)
+
+    if not records:
+        print(f"No weather records returned for {start} -> {end}")
+        empty_df = pl.DataFrame(
+            schema={
+                "station": pl.Utf8,
+                "valid_ts": pl.Datetime,
+                "temp_c": pl.Float64,
+                "wind_speed_m_s": pl.Float64,
+                "wind_dir_deg": pl.Float64,
+                "ceiling_height_m": pl.Float64,
+            }
+        )
+        if clean_output_path is not None:
+            ensure_dir(clean_output_path.parent)
+            empty_df.write_parquet(clean_output_path)
+        return empty_df
+
     raw_df = pl.DataFrame(records)
 
     if raw_output_path is not None:
@@ -232,9 +305,6 @@ def pull_weather_for_year_chunked(
         .sort(["station", "valid_ts"])
         .unique(subset=["station", "valid_ts"], keep="last")
     )
-
-    if raw_output_path is not None and cfg.raw_parquet:
-        print(f"Skipping yearly raw weather write because monthly raw files are already cached.")
 
     if clean_output_path is not None:
         ensure_dir(clean_output_path.parent)

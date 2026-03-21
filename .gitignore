@@ -34,6 +34,7 @@ notes.txt
 
 data_pipeline/outputs/*
 data_pipeline/raw_data/*
+data_pipeline/data/*
 data/*
 shared-notebooks/data/
 shared-notebooks/notebooks/val/r/enriched_flights_NEW.csv
