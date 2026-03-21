@@ -13,11 +13,6 @@ def _add_time_bucket(df: pl.DataFrame, ts_col: str, bucket: str, out_col: str) -
     )
 
 
-def _existing(cols: list[str], df: pl.DataFrame) -> list[str]:
-    available = set(df.columns)
-    return [c for c in cols if c in available]
-
-
 def _mean_exprs(df: pl.DataFrame, cols: list[str]) -> list[pl.Expr]:
     return [pl.col(c).mean().alias(f"{c}_mean") for c in cols if c in df.columns]
 
@@ -26,9 +21,6 @@ def build_flight_level_features(
     flights_df: pl.DataFrame,
     joins: JoinConfig,
 ) -> pl.DataFrame:
-    """
-    Canonical enriched flight table with propagation-aware columns.
-    """
     df = flights_df.sort([joins.tail_col, joins.dep_ts_col])
 
     df = df.with_columns([
@@ -115,10 +107,6 @@ def build_airport_time_table(
     flights_df: pl.DataFrame,
     cfg: FeatureConfig,
 ) -> pl.DataFrame:
-    """
-    Node-state table for GNN / LSTM / transformer / airport-level regression.
-    One row per airport per time bucket.
-    """
     dep_df = _add_time_bucket(flights_df, "dep_ts_actual", cfg.time_bucket, "time_bucket")
     arr_df = _add_time_bucket(flights_df, "arr_ts_actual", cfg.time_bucket, "time_bucket")
 
@@ -137,18 +125,6 @@ def build_airport_time_table(
         "dep_wind_speed_m_s",
         "dep_wind_dir_deg",
         "dep_ceiling_height_m",
-        "dep_vsby",
-        "dep_gust",
-        "dep_sknt",
-        "dep_p01i",
-        "dep_weather_severity",
-        "dep_wx_intensity",
-        "dep_wx_has_ra",
-        "dep_wx_has_ts",
-        "dep_wx_has_sn",
-        "dep_wx_has_fg",
-        "dep_wx_has_br",
-        "dep_wx_has_hz",
     ]
     dep_aggs.extend(_mean_exprs(dep_df, dep_weather_candidates))
 
@@ -173,18 +149,6 @@ def build_airport_time_table(
         "arr_wind_speed_m_s",
         "arr_wind_dir_deg",
         "arr_ceiling_height_m",
-        "arr_vsby",
-        "arr_gust",
-        "arr_sknt",
-        "arr_p01i",
-        "arr_weather_severity",
-        "arr_wx_intensity",
-        "arr_wx_has_ra",
-        "arr_wx_has_ts",
-        "arr_wx_has_sn",
-        "arr_wx_has_fg",
-        "arr_wx_has_br",
-        "arr_wx_has_hz",
     ]
     arr_aggs.extend(_mean_exprs(arr_df, arr_weather_candidates))
 
@@ -241,10 +205,6 @@ def build_route_time_table(
     flights_df: pl.DataFrame,
     cfg: FeatureConfig,
 ) -> pl.DataFrame:
-    """
-    Edge-state table for route-level propagation and graph models.
-    One row per route per time bucket.
-    """
     df = _add_time_bucket(flights_df, "dep_ts_actual", cfg.time_bucket, "time_bucket")
 
     aggs: list[pl.Expr] = [

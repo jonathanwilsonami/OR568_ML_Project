@@ -1,296 +1,173 @@
 from __future__ import annotations
 
-from calendar import monthrange
-from pathlib import Path
-import random
 import time
+from datetime import date
+from pathlib import Path
+from urllib.parse import urlencode
 
-import requests
 import polars as pl
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+import requests
 
 from config import WeatherConfig
-from utils import ensure_dir
+from utils import ensure_dir, make_retry_session
 
 
-def make_session(cfg: WeatherConfig) -> requests.Session:
-    session = requests.Session()
-
-    retry = Retry(
-        total=cfg.max_retries,
-        read=cfg.max_retries,
-        connect=cfg.max_retries,
-        backoff_factor=0.0,  # we handle backoff ourselves
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
-        raise_on_status=False,
-        respect_retry_after_header=True,
-    )
-
-    adapter = HTTPAdapter(max_retries=retry, pool_connections=10, pool_maxsize=10)
-    session.mount("https://", adapter)
-    session.mount("http://", adapter)
-
-    session.headers.update(
-        {
-            "User-Agent": "OR568-Weather-Pipeline/1.0 (polite monthly chunk downloader)",
-            "Accept": "text/csv, text/plain, */*",
-            "Connection": "keep-alive",
-        }
-    )
-    return session
+def build_year_date_window(year: int) -> tuple[str, str]:
+    return f"{year}-01-01", f"{year}-12-31"
 
 
-def fetch_ncei_csv_text_once(
-    session: requests.Session,
+def _month_windows(year: int) -> list[tuple[str, str, str]]:
+    windows: list[tuple[str, str, str]] = []
+    for month in range(1, 13):
+        start = date(year, month, 1)
+        if month == 12:
+            end = date(year, 12, 31)
+        else:
+            end = date(year, month + 1, 1).fromordinal(date(year, month + 1, 1).toordinal() - 1)
+        label = f"{year}_{month:02d}"
+        windows.append((start.isoformat(), end.isoformat(), label))
+    return windows
+
+
+def _build_weather_url(
     stations: list[str],
     start: str,
     end: str,
     cfg: WeatherConfig,
 ) -> str:
     params = {
-        "dataset": "global-hourly",
+        "dataset": cfg.dataset,
         "stations": ",".join(stations),
         "startDate": start,
         "endDate": end,
-        "format": "csv",
+        "format": "json",
+        "includeAttributes": "false",
+        "includeStationName": "true",
         "units": cfg.units,
-        "includeAttributes": "true" if cfg.include_attributes else "false",
-        "includeStationName": "true" if cfg.include_station_name else "false",
+        "dataTypes": "TMP,WND,CIG",
     }
-
-    r = session.get(
-        cfg.base_url,
-        params=params,
-        timeout=cfg.timeout,
-        verify=cfg.verify_ssl,
-    )
-    r.raise_for_status()
-    return r.text
+    return f"{cfg.base_url}?{urlencode(params)}"
 
 
-def fetch_ncei_csv_text_with_backoff(
-    session: requests.Session,
+def _fetch_weather_json(
     stations: list[str],
     start: str,
     end: str,
     cfg: WeatherConfig,
-) -> str:
-    last_exc: Exception | None = None
+) -> list[dict]:
+    url = _build_weather_url(stations, start, end, cfg)
+    session = make_retry_session(max_retries=cfg.max_retries, user_agent="OR568-Weather/1.0")
 
-    for attempt in range(1, cfg.max_retries + 1):
-        try:
-            return fetch_ncei_csv_text_once(
-                session=session,
-                stations=stations,
-                start=start,
-                end=end,
-                cfg=cfg,
-            )
-        except requests.exceptions.RequestException as exc:
-            last_exc = exc
-            if attempt == cfg.max_retries:
-                break
+    print(f"Fetching weather for {len(stations)} stations, {start} -> {end}")
+    r = session.get(url, timeout=cfg.timeout, verify=cfg.verify_ssl)
+    r.raise_for_status()
+    payload = r.json()
 
-            sleep_s = cfg.backoff_base_seconds * (2 ** (attempt - 1))
-            sleep_s += random.uniform(0.0, 0.75)
+    if isinstance(payload, dict):
+        if "results" in payload and isinstance(payload["results"], list):
+            return payload["results"]
+        if "data" in payload and isinstance(payload["data"], list):
+            return payload["data"]
 
-            print(
-                f"Weather request failed (attempt {attempt}/{cfg.max_retries}) "
-                f"for stations={stations}, start={start}, end={end}. "
-                f"Retrying in {sleep_s:.1f}s. Error: {exc}"
-            )
-            time.sleep(sleep_s)
+    if isinstance(payload, list):
+        return payload
 
-    assert last_exc is not None
-    raise last_exc
+    raise ValueError(f"Unexpected weather payload type: {type(payload)}")
 
 
-def clean_global_hourly(df: pl.DataFrame) -> pl.DataFrame:
-    cols = set(df.columns)
-    needed = {"DATE", "TMP", "WND", "CIG", "STATION"}
-    missing = sorted(needed - cols)
+def _parse_tmp(expr: pl.Expr) -> pl.Expr:
+    return (
+        expr.cast(pl.Utf8)
+        .str.split(",")
+        .list.get(0)
+        .cast(pl.Int64, strict=False)
+        .truediv(10.0)
+    )
+
+
+def _parse_wnd_dir(expr: pl.Expr) -> pl.Expr:
+    return (
+        expr.cast(pl.Utf8)
+        .str.split(",")
+        .list.get(0)
+        .cast(pl.Int64, strict=False)
+    )
+
+
+def _parse_wnd_speed(expr: pl.Expr) -> pl.Expr:
+    return (
+        expr.cast(pl.Utf8)
+        .str.split(",")
+        .list.get(3)
+        .cast(pl.Int64, strict=False)
+        .truediv(10.0)
+    )
+
+
+def _parse_cig(expr: pl.Expr) -> pl.Expr:
+    return (
+        expr.cast(pl.Utf8)
+        .str.split(",")
+        .list.get(0)
+        .cast(pl.Int64, strict=False)
+    )
+
+
+def _normalize_weather_df(df: pl.DataFrame) -> pl.DataFrame:
+    rename_map = {}
+    for c in df.columns:
+        uc = c.upper()
+        if uc == "STATION":
+            rename_map[c] = "station"
+        elif uc == "DATE":
+            rename_map[c] = "date"
+        elif uc == "TMP":
+            rename_map[c] = "TMP"
+        elif uc == "WND":
+            rename_map[c] = "WND"
+        elif uc == "CIG":
+            rename_map[c] = "CIG"
+        elif uc == "NAME":
+            rename_map[c] = "station_name"
+    if rename_map:
+        df = df.rename(rename_map)
+
+    required = {"station", "date"}
+    missing = [c for c in required if c not in df.columns]
     if missing:
-        raise KeyError(f"Missing weather columns: {missing}")
+        raise KeyError(f"Missing required weather columns: {missing}. Available: {df.columns}")
 
-    tmp_parts = pl.col("TMP").cast(pl.Utf8).str.split_exact(",", 1)
-    wnd_parts = pl.col("WND").cast(pl.Utf8).str.split_exact(",", 4)
-    cig_parts = pl.col("CIG").cast(pl.Utf8).str.split_exact(",", 3)
+    df = df.with_columns([
+        pl.col("station").cast(pl.Utf8).str.strip_chars(),
+        pl.col("date").cast(pl.Utf8).str.strptime(pl.Datetime, strict=False).alias("valid_ts"),
+    ])
+
+    if "TMP" in df.columns:
+        df = df.with_columns(_parse_tmp(pl.col("TMP")).alias("temp_c"))
+    if "WND" in df.columns:
+        df = df.with_columns([
+            _parse_wnd_dir(pl.col("WND")).alias("wind_dir_deg"),
+            _parse_wnd_speed(pl.col("WND")).alias("wind_speed_m_s"),
+        ])
+    if "CIG" in df.columns:
+        df = df.with_columns(_parse_cig(pl.col("CIG")).alias("ceiling_height_m"))
+
+    keep_cols = [
+        "station",
+        "valid_ts",
+        "temp_c",
+        "wind_speed_m_s",
+        "wind_dir_deg",
+        "ceiling_height_m",
+    ]
+    keep_cols = [c for c in keep_cols if c in df.columns]
 
     return (
-        df.with_columns(
-            tmp_parts.struct.field("field_0").alias("temp_raw"),
-            wnd_parts.struct.field("field_0").alias("wind_dir_raw"),
-            wnd_parts.struct.field("field_3").alias("wind_speed_raw"),
-            cig_parts.struct.field("field_0").alias("ceiling_raw"),
-        )
-        .with_columns(
-            pl.col("DATE").str.strptime(pl.Datetime, strict=False).alias("valid_ts"),
-            pl.col("STATION").cast(pl.Utf8).alias("station"),
-
-            pl.when(pl.col("temp_raw") == "+9999")
-            .then(None)
-            .otherwise(pl.col("temp_raw").cast(pl.Float64, strict=False) / 10.0)
-            .alias("temp_c"),
-
-            pl.when(pl.col("wind_speed_raw") == "9999")
-            .then(None)
-            .otherwise(pl.col("wind_speed_raw").cast(pl.Float64, strict=False) / 10.0)
-            .alias("wind_speed_m_s"),
-
-            pl.when(pl.col("wind_dir_raw") == "999")
-            .then(None)
-            .otherwise(pl.col("wind_dir_raw").cast(pl.Int64, strict=False))
-            .alias("wind_dir_deg"),
-
-            pl.when(pl.col("ceiling_raw") == "99999")
-            .then(None)
-            .otherwise(pl.col("ceiling_raw").cast(pl.Int64, strict=False))
-            .alias("ceiling_height_m"),
-        )
-        .select(
-            [
-                "station",
-                "valid_ts",
-                "temp_c",
-                "wind_speed_m_s",
-                "wind_dir_deg",
-                "ceiling_height_m",
-            ]
-        )
+        df.select(keep_cols)
+        .drop_nulls(subset=["station", "valid_ts"])
         .sort(["station", "valid_ts"])
+        .unique(subset=["station", "valid_ts"], keep="last")
     )
-
-
-def build_month_date_window(year: int, month: int) -> tuple[str, str]:
-    last_day = monthrange(year, month)[1]
-    start = f"{year}-{month:02d}-01T00:00:00Z"
-    end = f"{year}-{month:02d}-{last_day:02d}T23:59:59Z"
-    return start, end
-
-
-def build_year_date_window(year: int) -> tuple[str, str]:
-    start = f"{year}-01-01T00:00:00Z"
-    end = f"{year}-12-31T23:59:59Z"
-    return start, end
-
-
-def pull_weather_station_month(
-    session: requests.Session,
-    station: str,
-    year: int,
-    month: int,
-    cfg: WeatherConfig,
-) -> pl.DataFrame:
-    start, end = build_month_date_window(year, month)
-
-    csv_text = fetch_ncei_csv_text_with_backoff(
-        session=session,
-        stations=[station],
-        start=start,
-        end=end,
-        cfg=cfg,
-    )
-
-    df_raw = pl.read_csv(
-        source=csv_text.encode("utf-8"),
-        infer_schema_length=2000,
-        ignore_errors=True,
-    )
-
-    if df_raw.height == 0:
-        return pl.DataFrame(
-            schema={
-                "station": pl.Utf8,
-                "valid_ts": pl.Datetime,
-                "temp_c": pl.Float64,
-                "wind_speed_m_s": pl.Float64,
-                "wind_dir_deg": pl.Int64,
-                "ceiling_height_m": pl.Int64,
-            }
-        )
-
-    return clean_global_hourly(df_raw)
-
-
-def monthly_cache_path(cfg: WeatherConfig, station: str, year: int, month: int) -> Path:
-    return cfg.out_dir / "monthly_cache" / f"weather_{station}_{year}_{month:02d}.parquet"
-
-
-def pull_weather_for_year_chunked(
-    stations: list[str],
-    year: int,
-    cfg: WeatherConfig,
-    raw_output_path: Path | None = None,
-    clean_output_path: Path | None = None,
-) -> pl.DataFrame:
-    ensure_dir(cfg.out_dir)
-    if raw_output_path is not None:
-        ensure_dir(raw_output_path.parent)
-    if clean_output_path is not None:
-        ensure_dir(clean_output_path.parent)
-
-    session = make_session(cfg)
-
-    monthly_frames: list[pl.DataFrame] = []
-
-    try:
-        for station in stations:
-            for month in range(1, 13):
-                cache_path = monthly_cache_path(cfg, station, year, month)
-
-                if cfg.use_monthly_cache and cache_path.exists():
-                    print(f"Loading cached weather chunk -> {cache_path}")
-                    df_chunk = pl.read_parquet(cache_path)
-                    monthly_frames.append(df_chunk)
-                    time.sleep(cfg.chunk_pause_seconds)
-                    continue
-
-                print(f"Pulling weather chunk: station={station}, year={year}, month={month:02d}")
-                df_chunk = pull_weather_station_month(
-                    session=session,
-                    station=station,
-                    year=year,
-                    month=month,
-                    cfg=cfg,
-                )
-
-                if cfg.use_monthly_cache:
-                    ensure_dir(cache_path.parent)
-                    df_chunk.write_parquet(cache_path)
-                    print(f"Wrote weather chunk cache -> {cache_path}")
-
-                monthly_frames.append(df_chunk)
-
-                time.sleep(cfg.chunk_pause_seconds)
-    finally:
-        session.close()
-
-    if not monthly_frames:
-        df_year = pl.DataFrame(
-            schema={
-                "station": pl.Utf8,
-                "valid_ts": pl.Datetime,
-                "temp_c": pl.Float64,
-                "wind_speed_m_s": pl.Float64,
-                "wind_dir_deg": pl.Int64,
-                "ceiling_height_m": pl.Int64,
-            }
-        )
-    else:
-        df_year = (
-            pl.concat(monthly_frames, how="vertical_relaxed")
-            .unique(subset=["station", "valid_ts"], keep="first")
-            .sort(["station", "valid_ts"])
-        )
-
-    if clean_output_path is not None:
-        df_year.write_parquet(clean_output_path)
-        print(f"Wrote cleaned yearly weather -> {clean_output_path}")
-
-    # raw_output_path intentionally not used in chunked mode because the source is many requests
-    return df_year
 
 
 def pull_weather_for_period(
@@ -301,32 +178,67 @@ def pull_weather_for_period(
     raw_output_path: Path | None = None,
     clean_output_path: Path | None = None,
 ) -> pl.DataFrame:
-    session = make_session(cfg)
-    try:
-        csv_text = fetch_ncei_csv_text_with_backoff(
-            session=session,
-            stations=stations,
-            start=start,
-            end=end,
-            cfg=cfg,
-        )
-    finally:
-        session.close()
-
-    df_raw = pl.read_csv(
-        source=csv_text.encode("utf-8"),
-        infer_schema_length=2000,
-        ignore_errors=True,
-    )
+    records = _fetch_weather_json(stations, start, end, cfg)
+    raw_df = pl.DataFrame(records)
 
     if raw_output_path is not None:
         ensure_dir(raw_output_path.parent)
-        df_raw.write_parquet(raw_output_path)
+        raw_df.write_parquet(raw_output_path)
+        print(f"Wrote raw weather -> {raw_output_path}")
 
-    df_clean = clean_global_hourly(df_raw)
+    clean_df = _normalize_weather_df(raw_df)
 
     if clean_output_path is not None:
         ensure_dir(clean_output_path.parent)
-        df_clean.write_parquet(clean_output_path)
+        clean_df.write_parquet(clean_output_path)
+        print(f"Wrote clean weather -> {clean_output_path}")
 
-    return df_clean
+    return clean_df
+
+
+def pull_weather_for_year_chunked(
+    stations: list[str],
+    year: int,
+    cfg: WeatherConfig,
+    raw_output_path: Path | None = None,
+    clean_output_path: Path | None = None,
+) -> pl.DataFrame:
+    all_months: list[pl.DataFrame] = []
+
+    for start, end, label in _month_windows(year):
+        monthly_clean_path = cfg.out_dir / f"weather_clean_{label}.parquet"
+        monthly_raw_path = cfg.out_dir / f"weather_raw_{label}.parquet" if cfg.raw_parquet else None
+
+        if cfg.use_monthly_cache and monthly_clean_path.exists():
+            print(f"Loading cached monthly weather -> {monthly_clean_path}")
+            month_df = pl.read_parquet(monthly_clean_path)
+        else:
+            month_df = pull_weather_for_period(
+                stations=stations,
+                start=start,
+                end=end,
+                cfg=cfg,
+                raw_output_path=monthly_raw_path,
+                clean_output_path=monthly_clean_path,
+            )
+
+        all_months.append(month_df)
+
+        if cfg.chunk_pause_seconds > 0:
+            time.sleep(cfg.chunk_pause_seconds)
+
+    weather_df = (
+        pl.concat(all_months, how="vertical_relaxed")
+        .sort(["station", "valid_ts"])
+        .unique(subset=["station", "valid_ts"], keep="last")
+    )
+
+    if raw_output_path is not None and cfg.raw_parquet:
+        print(f"Skipping yearly raw weather write because monthly raw files are already cached.")
+
+    if clean_output_path is not None:
+        ensure_dir(clean_output_path.parent)
+        weather_df.write_parquet(clean_output_path)
+        print(f"Wrote yearly clean weather -> {clean_output_path}")
+
+    return weather_df

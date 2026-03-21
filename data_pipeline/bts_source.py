@@ -33,12 +33,6 @@ def build_bts_url(year: int, month: int, cfg: BTSConfig) -> str:
 
 
 def apply_route_filter(df: pl.DataFrame, route_cfg: RouteFilterConfig) -> pl.DataFrame:
-    """
-    For network analysis:
-    - airports => keep flights where Origin OR Dest is in the airport list
-    - airport_pairs => keep only explicit directed pairs
-    - origin_filter / dest_filter => additional restrictions
-    """
     if route_cfg.airports:
         airport_set = set(route_cfg.airports)
         df = df.filter(
@@ -63,14 +57,6 @@ def apply_route_filter(df: pl.DataFrame, route_cfg: RouteFilterConfig) -> pl.Dat
 
 
 def _format_hhmm(col_name: str) -> pl.Expr:
-    """
-    Convert BTS HHMM-style columns into zero-padded 4-digit strings.
-    Examples:
-      5 -> '0005'
-      45 -> '0045'
-      930 -> '0930'
-      1427 -> '1427'
-    """
     return (
         pl.col(col_name)
         .cast(pl.Int64, strict=False)
@@ -80,22 +66,6 @@ def _format_hhmm(col_name: str) -> pl.Expr:
 
 
 def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Build scheduled and actual departure/arrival timestamps from BTS columns.
-
-    Expected columns:
-    - FlightDate
-    - CRSDepTime
-    - DepTime
-    - CRSArrTime
-    - ArrTime
-
-    Handles:
-    - numeric HHMM fields
-    - zero-padding
-    - null values
-    - overnight arrival rollover
-    """
     required = ["FlightDate", "CRSDepTime", "DepTime", "CRSArrTime", "ArrTime"]
     missing = [c for c in required if c not in df.columns]
     if missing:
@@ -104,10 +74,6 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
             f"Available columns include: {df.columns[:80]}"
         )
 
-    print("\nColumns available for timestamp build:")
-    print(df.columns)
-
-    # Parse date and create zero-padded HHMM strings
     df = df.with_columns([
         pl.col("FlightDate")
         .cast(pl.Utf8)
@@ -120,30 +86,24 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
         _format_hhmm("ArrTime").alias("arr_hhmm"),
     ])
 
-    # Build base timestamps
     df = df.with_columns([
         (
             pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("crs_dep_hhmm")
-        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
-        .alias("dep_ts_sched"),
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False).alias("dep_ts_sched"),
 
         (
             pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("dep_hhmm")
-        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
-        .alias("dep_ts_actual"),
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False).alias("dep_ts_actual"),
 
         (
             pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("crs_arr_hhmm")
-        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
-        .alias("arr_ts_sched_raw"),
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False).alias("arr_ts_sched_raw"),
 
         (
             pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("arr_hhmm")
-        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
-        .alias("arr_ts_actual_raw"),
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False).alias("arr_ts_actual_raw"),
     ])
 
-    # If arrival clock time is earlier than departure clock time, assume next-day arrival
     df = df.with_columns([
         pl.when(
             pl.col("arr_ts_sched_raw").is_not_null()
@@ -164,13 +124,11 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
         .alias("arr_ts_actual"),
     ])
 
-    # Add convenience date columns used downstream
     df = df.with_columns([
         pl.col("arr_ts_sched").dt.date().alias("crs_arr_date"),
         pl.col("arr_ts_actual").dt.date().alias("act_arr_date"),
     ])
 
-    # Validation prints
     for c in ["dep_ts_sched", "dep_ts_actual", "arr_ts_sched", "arr_ts_actual"]:
         non_null = df.select(pl.col(c).is_not_null().sum()).item()
         print(f"Non-null {c}: {non_null:,}")
@@ -180,8 +138,7 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
                 "Check BTS timestamp construction."
             )
 
-    # Drop temp columns
-    df = df.drop([
+    return df.drop([
         "flight_date",
         "crs_dep_hhmm",
         "dep_hhmm",
@@ -191,8 +148,6 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
         "arr_ts_actual_raw",
     ])
 
-    return df
-
 
 def process_bts_month(
     year: int,
@@ -201,17 +156,11 @@ def process_bts_month(
     route_cfg: RouteFilterConfig,
     joins: JoinConfig,
 ) -> tuple[pl.DataFrame, tuple[Path, Path]]:
-    """
-    Download one BTS month, extract CSV, apply route filter, build timestamps,
-    and return the processed DataFrame plus download record:
-      (zip_path, extract_dir)
-    """
     ensure_dir(bts_cfg.out_dir)
 
     zip_name = build_bts_zip_name(year, month, bts_cfg)
     zip_path = bts_cfg.out_dir / zip_name
     extract_dir = bts_cfg.out_dir / f"extracted_{year}_{month:02d}"
-
     url = build_bts_url(year, month, bts_cfg)
 
     session = make_retry_session(max_retries=bts_cfg.max_retries)
@@ -229,7 +178,6 @@ def process_bts_month(
     csv_path = extract_first_csv(zip_path, extract_dir)
     print(f"Using BTS CSV -> {csv_path}")
 
-    # Read CSV
     df = pl.read_csv(
         csv_path,
         infer_schema_length=10000,
@@ -238,39 +186,18 @@ def process_bts_month(
         try_parse_dates=False,
     )
 
+    df = df.select([c for c in df.columns if c != ""])
+
     print(f"Raw BTS rows before route filter: {df.height:,}")
 
-    # Apply route/network filter
     df = apply_route_filter(df, route_cfg)
     print(f"BTS rows after route filter: {df.height:,}")
 
     if df.height == 0:
-        # Return early if nothing remains
         return df, (zip_path, extract_dir)
 
-    # Build timestamps
     df = add_bts_timestamps(df)
 
-    print("Timestamp preview:")
-    preview_cols = [
-        c for c in [
-            "FlightDate",
-            "Origin",
-            "Dest",
-            "CRSDepTime",
-            "DepTime",
-            "CRSArrTime",
-            "ArrTime",
-            "dep_ts_sched",
-            "dep_ts_actual",
-            "arr_ts_sched",
-            "arr_ts_actual",
-        ]
-        if c in df.columns
-    ]
-    print(df.select(preview_cols).head(10))
-
-    # Optional polite pause between monthly pulls
     if bts_cfg.chunk_pause_seconds > 0:
         time.sleep(bts_cfg.chunk_pause_seconds)
 

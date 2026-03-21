@@ -12,9 +12,6 @@ def filter_selected_columns(
     cfg: PostProcessConfig,
     dataset_name: str = "dataset",
 ) -> pl.DataFrame:
-    """
-    Keep only requested columns. Missing columns are skipped unless strict_missing_columns=True.
-    """
     requested = cfg.selected_columns
     available = set(df.columns)
 

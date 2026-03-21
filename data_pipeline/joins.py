@@ -49,12 +49,6 @@ def join_weather_to_bts(
             f"Available columns include: {bts_df.columns[:60]}"
         )
 
-    print(f"join_weather_to_bts input rows: {bts_df.height:,}")
-
-    for c in [joins.dep_ts_col, joins.arr_ts_col, joins.dep_station_col, joins.arr_station_col]:
-        non_null = bts_df.select(pl.col(c).is_not_null().sum()).item()
-        print(f"Non-null {c}: {non_null:,}")
-
     wx_dep = prepare_weather_prefix(weather_df, "dep_").sort(["station", "valid_ts"])
     wx_arr = prepare_weather_prefix(weather_df, "arr_").sort(["station", "valid_ts"])
 
@@ -70,8 +64,6 @@ def join_weather_to_bts(
         tolerance=joins.weather_tolerance,
     )
 
-    print(f"Rows after departure weather join: {dep_joined.height:,}")
-
     arr_sorted = dep_joined.sort([joins.arr_station_col, joins.arr_ts_col])
 
     fully_joined = arr_sorted.join_asof(
@@ -83,7 +75,5 @@ def join_weather_to_bts(
         strategy=joins.weather_strategy,
         tolerance=joins.weather_tolerance,
     )
-
-    print(f"Rows after arrival weather join: {fully_joined.height:,}")
 
     return fully_joined

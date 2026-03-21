@@ -5,13 +5,14 @@ import polars as pl
 #     null_values=["NA", ""],          # interpret these as nulls
 #     infer_schema_length=10000,       # more rows for better inference
 # )
-
-df = pl.read_parquet("/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/data/final/bts_weather_faa_filtered_all_years.parquet")
+data_name = "route_time_2019" #aircraft_rotation_2019 airport_timezone_2019 flights_enriched_2019 route_time_2019
+# df = pl.read_parquet("/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/data/features/flights_enriched_2019.parquet")
+df = pl.read_parquet(f"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/data/features/{data_name}.parquet")
 # df = pl.read_csv("/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/raw_data/weather.csv")bts_weather_faa_filtered_all_years.parquet
-df2 = pl.read_parquet("/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.parquet")
-
-
-print(df.shape)
+# df2 = pl.read_parquet("/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/outputs/enriched_flights_filtered.parquet")
+df = df.sample(n=100000, seed=42)
+df.write_csv(f"/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data/{data_name}.csv")
+# print(df.shape)
 # 209311 - BTS 2019 raw
 # 9993 - weather raw
 # 222848 - enriched data
