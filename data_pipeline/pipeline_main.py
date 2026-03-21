@@ -10,22 +10,21 @@ from weather_source import (
     pull_weather_for_year_chunked,
     build_year_date_window,
 )
-from faa_registry import load_faa_registry, standardize_faa_registry, join_faa_registry
 from joins import add_station_keys_to_bts, join_weather_to_bts
 from postprocess import maybe_write_filtered
+from feature_engineering import build_all_feature_tables
 from utils import ensure_dir, cleanup_path
 
 
-class BTSWeatherFAAPipeline:
+class BTSWeatherNetworkPipeline:
     def __init__(self, cfg: PipelineConfig):
         self.cfg = cfg
         ensure_dir(self.cfg.bts.out_dir)
         ensure_dir(self.cfg.weather.out_dir)
         ensure_dir(self.cfg.final_out_dir)
+        ensure_dir(self.cfg.feature_out_dir)
 
     def run(self) -> None:
-        faa_df = self._load_faa_once()
-
         all_years_full: list[pl.DataFrame] = []
 
         for year in self.cfg.years:
@@ -40,8 +39,8 @@ class BTSWeatherFAAPipeline:
             for month in months:
                 print(f"\n----- Processing {year}-{month:02d} -----")
 
-                monthly_joined_path = self.cfg.final_out_dir / f"bts_weather_faa_{year}_{month:02d}.parquet"
-                monthly_filtered_path = self.cfg.final_out_dir / f"bts_weather_faa_filtered_{year}_{month:02d}.parquet"
+                monthly_joined_path = self.cfg.final_out_dir / f"bts_weather_{year}_{month:02d}.parquet"
+                monthly_filtered_path = self.cfg.final_out_dir / f"bts_weather_filtered_{year}_{month:02d}.parquet"
                 monthly_bts_path = self.cfg.bts.out_dir / f"bts_filtered_{year}_{month:02d}.parquet"
 
                 if self.cfg.use_cached_monthly_joined and monthly_joined_path.exists():
@@ -80,36 +79,12 @@ class BTSWeatherFAAPipeline:
                     joins=self.cfg.joins,
                 )
 
-                for c in ["Origin", "Dest", "dep_station", "arr_station", "dep_ts_actual", "arr_ts_actual"]:
-                    if c in bts_df.columns:
-                        non_null = bts_df.select(pl.col(c).is_not_null().sum()).item()
-                        print(f"Non-null {c}: {non_null:,}")
-
-                preview_cols = [
-                    c for c in [
-                        "Origin", "Dest",
-                        "dep_station", "arr_station",
-                        "dep_ts_actual", "arr_ts_actual"
-                    ]
-                    if c in bts_df.columns
-                ]
-                print("Station mapping preview:")
-                print(bts_df.select(preview_cols).head(10))
-
                 joined_df = join_weather_to_bts(
                     bts_df=bts_df,
                     weather_df=weather_df,
                     joins=self.cfg.joins,
                 )
                 print(f"Rows after weather join: {joined_df.height:,}")
-
-                if faa_df is not None:
-                    joined_df = join_faa_registry(
-                        flights_df=joined_df,
-                        faa_df=faa_df,
-                        joins=self.cfg.joins,
-                    )
-                    print(f"Rows after FAA join: {joined_df.height:,}")
 
                 if self.cfg.write_monthly_joined:
                     joined_df.write_parquet(monthly_joined_path)
@@ -127,7 +102,7 @@ class BTSWeatherFAAPipeline:
 
             if monthly_joined and self.cfg.write_yearly_joined:
                 df_year = pl.concat(monthly_joined, how="vertical_relaxed")
-                yearly_out = self.cfg.final_out_dir / f"bts_weather_faa_{year}.parquet"
+                yearly_out = self.cfg.final_out_dir / f"bts_weather_{year}.parquet"
                 df_year.write_parquet(yearly_out)
 
                 print(f"\nWrote yearly joined -> {yearly_out}")
@@ -136,12 +111,22 @@ class BTSWeatherFAAPipeline:
                 all_years_full.append(df_year)
 
                 if self.cfg.postprocess.enabled and self.cfg.postprocess.write_filtered_yearly:
-                    yearly_filtered_out = self.cfg.final_out_dir / f"bts_weather_faa_filtered_{year}.parquet"
+                    yearly_filtered_out = self.cfg.final_out_dir / f"bts_weather_filtered_{year}.parquet"
                     maybe_write_filtered(
                         df_year,
                         self.cfg.postprocess,
                         yearly_filtered_out,
                         dataset_name=f"yearly_filtered_{year}",
+                    )
+
+                if self.cfg.run_feature_stage and self.cfg.features.enabled:
+                    print(f"\nBuilding derived feature/network tables for {year}...")
+                    build_all_feature_tables(
+                        flights_df=df_year,
+                        joins=self.cfg.joins,
+                        cfg=self.cfg.features,
+                        out_dir=self.cfg.feature_out_dir,
+                        year_label=str(year),
                     )
 
                 if (
@@ -165,12 +150,12 @@ class BTSWeatherFAAPipeline:
         print(f"Combined all-years cols: {len(all_years_df.columns)}")
 
         if self.cfg.postprocess.write_all_years_full:
-            all_years_full_path = self.cfg.final_out_dir / "bts_weather_faa_all_years.parquet"
+            all_years_full_path = self.cfg.final_out_dir / "bts_weather_all_years.parquet"
             all_years_df.write_parquet(all_years_full_path)
             print(f"Wrote all-years full -> {all_years_full_path}")
 
         if self.cfg.postprocess.enabled and self.cfg.postprocess.write_all_years_filtered:
-            all_years_filtered_path = self.cfg.final_out_dir / "bts_weather_faa_filtered_all_years.parquet"
+            all_years_filtered_path = self.cfg.final_out_dir / "bts_weather_filtered_all_years.parquet"
             maybe_write_filtered(
                 all_years_df,
                 self.cfg.postprocess,
@@ -249,17 +234,7 @@ class BTSWeatherFAAPipeline:
         write_bts_parquet(bts_df, monthly_bts_path)
         return bts_df, download_record
 
-    def _load_faa_once(self) -> pl.DataFrame | None:
-        try:
-            faa_df = load_faa_registry(self.cfg.faa)
-            faa_df = standardize_faa_registry(faa_df, self.cfg.faa)
-            print(f"Loaded FAA registry rows: {faa_df.height:,}")
-            return faa_df
-        except FileNotFoundError:
-            print("FAA registry file not found. Continuing without FAA join.")
-            return None
-
 
 if __name__ == "__main__":
-    pipeline = BTSWeatherFAAPipeline(CONFIG)
+    pipeline = BTSWeatherNetworkPipeline(CONFIG)
     pipeline.run()

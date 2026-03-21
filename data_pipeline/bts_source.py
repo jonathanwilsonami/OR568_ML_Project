@@ -7,283 +7,191 @@ import polars as pl
 
 from config import BTSConfig, JoinConfig, RouteFilterConfig
 from utils import (
-    download_file_with_backoff,
-    extract_first_csv,
     ensure_dir,
     make_retry_session,
+    download_file_with_backoff,
+    extract_first_csv,
 )
 
 
-def get_months_for_year(year: int, months_by_year: dict[int, list[int]] | None) -> list[int]:
-    if months_by_year and year in months_by_year:
-        return months_by_year[year]
-    return list(range(1, 13))
+def get_months_for_year(
+    year: int,
+    months_by_year: dict[int, list[int]] | None,
+) -> list[int]:
+    if months_by_year is None:
+        return list(range(1, 13))
+    return months_by_year.get(year, list(range(1, 13)))
 
 
-def get_date_expr(cols: set[str]) -> pl.Expr:
-    if "FL_DATE" in cols:
-        return pl.col("FL_DATE").cast(pl.Utf8).str.strptime(pl.Date, "%Y-%m-%d", strict=False)
-    if "FlightDate" in cols:
-        return pl.col("FlightDate").cast(pl.Utf8).str.strptime(pl.Date, "%Y%m%d", strict=False)
-    raise KeyError("Could not find 'FL_DATE' or 'FlightDate'.")
+def build_bts_zip_name(year: int, month: int, cfg: BTSConfig) -> str:
+    return cfg.zip_name_template.format(year=year, month=month)
 
 
-def find_origin_dest_cols(cols: set[str]) -> tuple[str, str]:
-    origin_col = "Origin" if "Origin" in cols else ("ORIGIN" if "ORIGIN" in cols else None)
-    dest_col = "Dest" if "Dest" in cols else ("DEST" if "DEST" in cols else None)
-
-    if origin_col is None or dest_col is None:
-        raise KeyError("Could not find Origin/Dest columns.")
-    return origin_col, dest_col
+def build_bts_url(year: int, month: int, cfg: BTSConfig) -> str:
+    zip_name = build_bts_zip_name(year, month, cfg)
+    return f"{cfg.prezip_base}/{zip_name}"
 
 
-def build_route_filter(
-    origin_col: str,
-    dest_col: str,
-    route_cfg: RouteFilterConfig,
-) -> pl.Expr | None:
-    exprs: list[pl.Expr] = []
-
+def apply_route_filter(df: pl.DataFrame, route_cfg: RouteFilterConfig) -> pl.DataFrame:
+    """
+    For network analysis:
+    - airports => keep flights where Origin OR Dest is in the airport list
+    - airport_pairs => keep only explicit directed pairs
+    - origin_filter / dest_filter => additional restrictions
+    """
     if route_cfg.airports:
-        airports = route_cfg.airports
-        exprs.append(
-            pl.col(origin_col).is_in(airports) | pl.col(dest_col).is_in(airports)
+        airport_set = set(route_cfg.airports)
+        df = df.filter(
+            pl.col("Origin").is_in(airport_set) | pl.col("Dest").is_in(airport_set)
         )
 
     if route_cfg.airport_pairs:
-        pair_exprs: list[pl.Expr] = []
-        for a, b in route_cfg.airport_pairs:
-            pair_exprs.append(
-                ((pl.col(origin_col) == a) & (pl.col(dest_col) == b))
-                | ((pl.col(origin_col) == b) & (pl.col(dest_col) == a))
-            )
-        if pair_exprs:
-            pair_filter = pair_exprs[0]
-            for e in pair_exprs[1:]:
-                pair_filter = pair_filter | e
-            exprs.append(pair_filter)
+        pair_expr = None
+        for origin, dest in route_cfg.airport_pairs:
+            expr = (pl.col("Origin") == origin) & (pl.col("Dest") == dest)
+            pair_expr = expr if pair_expr is None else (pair_expr | expr)
+        if pair_expr is not None:
+            df = df.filter(pair_expr)
 
     if route_cfg.origin_filter:
-        exprs.append(pl.col(origin_col).is_in(route_cfg.origin_filter))
+        df = df.filter(pl.col("Origin").is_in(route_cfg.origin_filter))
 
     if route_cfg.dest_filter:
-        exprs.append(pl.col(dest_col).is_in(route_cfg.dest_filter))
-
-    if not exprs:
-        return None
-
-    final_expr = exprs[0]
-    for e in exprs[1:]:
-        final_expr = final_expr & e
-    return final_expr
-
-
-def standardize_bts_columns(df: pl.DataFrame, joins: JoinConfig) -> pl.DataFrame:
-    cols = set(df.columns)
-
-    renames: dict[str, str] = {}
-    if "ORIGIN" in cols and joins.origin_col not in cols:
-        renames["ORIGIN"] = joins.origin_col
-    if "DEST" in cols and joins.dest_col not in cols:
-        renames["DEST"] = joins.dest_col
-
-    if renames:
-        df = df.rename(renames)
+        df = df.filter(pl.col("Dest").is_in(route_cfg.dest_filter))
 
     return df
 
 
-def _find_col(df: pl.DataFrame, candidates: list[str]) -> str | None:
-    for c in candidates:
-        if c in df.columns:
-            return c
-    return None
-
-
-def _clean_hhmm_expr(col_name: str) -> pl.Expr:
+def _format_hhmm(col_name: str) -> pl.Expr:
+    """
+    Convert BTS HHMM-style columns into zero-padded 4-digit strings.
+    Examples:
+      5 -> '0005'
+      45 -> '0045'
+      930 -> '0930'
+      1427 -> '1427'
+    """
     return (
         pl.col(col_name)
-        .cast(pl.Utf8, strict=False)
-        .str.strip_chars()
-        .str.replace_all(r"\.0$", "")
+        .cast(pl.Int64, strict=False)
+        .cast(pl.Utf8)
         .str.zfill(4)
     )
 
 
-def _hhmm_hour_expr(col_name: str) -> pl.Expr:
-    hhmm = _clean_hhmm_expr(col_name)
-    return (
-        pl.when(pl.col(col_name).is_null())
-        .then(None)
-        .when(hhmm == "2400")
-        .then(0)
-        .otherwise(hhmm.str.slice(0, 2).cast(pl.Int64, strict=False))
-    )
+def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Build scheduled and actual departure/arrival timestamps from BTS columns.
 
+    Expected columns:
+    - FlightDate
+    - CRSDepTime
+    - DepTime
+    - CRSArrTime
+    - ArrTime
 
-def _hhmm_minute_expr(col_name: str) -> pl.Expr:
-    hhmm = _clean_hhmm_expr(col_name)
-    return (
-        pl.when(pl.col(col_name).is_null())
-        .then(None)
-        .when(hhmm == "2400")
-        .then(0)
-        .otherwise(hhmm.str.slice(2, 2).cast(pl.Int64, strict=False))
-    )
-
-
-def _hhmm_add_day_expr(col_name: str) -> pl.Expr:
-    hhmm = _clean_hhmm_expr(col_name)
-    return (
-        pl.when(pl.col(col_name).is_null())
-        .then(0)
-        .when(hhmm == "2400")
-        .then(1)
-        .otherwise(0)
-    )
-
-
-def enrich_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
-    flight_date_col = _find_col(df, ["FL_DATE", "FlightDate"])
-    if flight_date_col is None:
-        raise KeyError("Could not find FL_DATE or FlightDate in BTS data.")
-
-    crs_dep_col = _find_col(df, ["CRS_DEP_TIME", "CRSDepTime", "CRSDepTime".lower(), "CRSDepTime".upper(), "CRSDepTime"])
-    dep_col = _find_col(df, ["DEP_TIME", "DepTime"])
-    crs_arr_col = _find_col(df, ["CRS_ARR_TIME", "CRSArrTime"])
-    arr_col = _find_col(df, ["ARR_TIME", "ArrTime"])
-
-    # also support camel-case names commonly present after some transforms
-    if crs_dep_col is None and "CRSDepTime" in df.columns:
-        crs_dep_col = "CRSDepTime"
-    if dep_col is None and "DepTime" in df.columns:
-        dep_col = "DepTime"
-    if crs_arr_col is None and "CRSArrTime" in df.columns:
-        crs_arr_col = "CRSArrTime"
-    if arr_col is None and "ArrTime" in df.columns:
-        arr_col = "ArrTime"
-
-    missing = [
-        name for name, value in {
-            "CRS_DEP_TIME/CRSDepTime": crs_dep_col,
-            "DEP_TIME/DepTime": dep_col,
-            "CRS_ARR_TIME/CRSArrTime": crs_arr_col,
-            "ARR_TIME/ArrTime": arr_col,
-        }.items()
-        if value is None
-    ]
+    Handles:
+    - numeric HHMM fields
+    - zero-padding
+    - null values
+    - overnight arrival rollover
+    """
+    required = ["FlightDate", "CRSDepTime", "DepTime", "CRSArrTime", "ArrTime"]
+    missing = [c for c in required if c not in df.columns]
     if missing:
         raise KeyError(
-            f"Missing one or more BTS time columns: {missing}. "
-            f"Available columns include: {df.columns[:60]}"
+            f"Missing required BTS timestamp columns: {missing}. "
+            f"Available columns include: {df.columns[:80]}"
         )
 
-    if flight_date_col == "FL_DATE":
-        date_expr = pl.col(flight_date_col).cast(pl.Utf8).str.strptime(pl.Date, "%Y-%m-%d", strict=False)
-    else:
-        date_expr = pl.col(flight_date_col).cast(pl.Utf8).str.strptime(pl.Date, "%Y%m%d", strict=False)
+    print("\nColumns available for timestamp build:")
+    print(df.columns)
 
-    df = df.with_columns(
-        date_expr.alias("_flight_date"),
+    # Parse date and create zero-padded HHMM strings
+    df = df.with_columns([
+        pl.col("FlightDate")
+        .cast(pl.Utf8)
+        .str.strptime(pl.Date, format="%Y-%m-%d", strict=False)
+        .alias("flight_date"),
 
-        _hhmm_hour_expr(crs_dep_col).alias("_crs_dep_hour"),
-        _hhmm_minute_expr(crs_dep_col).alias("_crs_dep_min"),
-        _hhmm_add_day_expr(crs_dep_col).alias("_crs_dep_add_day"),
+        _format_hhmm("CRSDepTime").alias("crs_dep_hhmm"),
+        _format_hhmm("DepTime").alias("dep_hhmm"),
+        _format_hhmm("CRSArrTime").alias("crs_arr_hhmm"),
+        _format_hhmm("ArrTime").alias("arr_hhmm"),
+    ])
 
-        _hhmm_hour_expr(dep_col).alias("_dep_hour"),
-        _hhmm_minute_expr(dep_col).alias("_dep_min"),
-        _hhmm_add_day_expr(dep_col).alias("_dep_add_day"),
-
-        _hhmm_hour_expr(crs_arr_col).alias("_crs_arr_hour"),
-        _hhmm_minute_expr(crs_arr_col).alias("_crs_arr_min"),
-        _hhmm_add_day_expr(crs_arr_col).alias("_crs_arr_add_day"),
-
-        _hhmm_hour_expr(arr_col).alias("_arr_hour"),
-        _hhmm_minute_expr(arr_col).alias("_arr_min"),
-        _hhmm_add_day_expr(arr_col).alias("_arr_add_day"),
-    )
-
-    df = df.with_columns(
-        pl.when(pl.col("_crs_dep_hour").is_null() | pl.col("_crs_dep_min").is_null())
-        .then(None)
-        .otherwise(
-            pl.datetime(
-                pl.col("_flight_date").dt.year(),
-                pl.col("_flight_date").dt.month(),
-                pl.col("_flight_date").dt.day(),
-                pl.col("_crs_dep_hour"),
-                pl.col("_crs_dep_min"),
-            ) + pl.duration(days=pl.col("_crs_dep_add_day"))
-        )
+    # Build base timestamps
+    df = df.with_columns([
+        (
+            pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("crs_dep_hhmm")
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
         .alias("dep_ts_sched"),
 
-        pl.when(pl.col("_dep_hour").is_null() | pl.col("_dep_min").is_null())
-        .then(None)
-        .otherwise(
-            pl.datetime(
-                pl.col("_flight_date").dt.year(),
-                pl.col("_flight_date").dt.month(),
-                pl.col("_flight_date").dt.day(),
-                pl.col("_dep_hour"),
-                pl.col("_dep_min"),
-            ) + pl.duration(days=pl.col("_dep_add_day"))
-        )
+        (
+            pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("dep_hhmm")
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
         .alias("dep_ts_actual"),
 
-        pl.when(pl.col("_crs_arr_hour").is_null() | pl.col("_crs_arr_min").is_null())
-        .then(None)
-        .otherwise(
-            pl.datetime(
-                pl.col("_flight_date").dt.year(),
-                pl.col("_flight_date").dt.month(),
-                pl.col("_flight_date").dt.day(),
-                pl.col("_crs_arr_hour"),
-                pl.col("_crs_arr_min"),
-            ) + pl.duration(days=pl.col("_crs_arr_add_day"))
-        )
-        .alias("_arr_ts_sched_same_day"),
+        (
+            pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("crs_arr_hhmm")
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
+        .alias("arr_ts_sched_raw"),
 
-        pl.when(pl.col("_arr_hour").is_null() | pl.col("_arr_min").is_null())
-        .then(None)
-        .otherwise(
-            pl.datetime(
-                pl.col("_flight_date").dt.year(),
-                pl.col("_flight_date").dt.month(),
-                pl.col("_flight_date").dt.day(),
-                pl.col("_arr_hour"),
-                pl.col("_arr_min"),
-            ) + pl.duration(days=pl.col("_arr_add_day"))
-        )
-        .alias("_arr_ts_actual_same_day"),
-    )
+        (
+            pl.col("flight_date").cast(pl.Utf8) + " " + pl.col("arr_hhmm")
+        ).str.strptime(pl.Datetime, format="%Y-%m-%d %H%M", strict=False)
+        .alias("arr_ts_actual_raw"),
+    ])
 
-    df = df.with_columns(
-        pl.when(pl.col("_arr_ts_sched_same_day").is_null() | pl.col("dep_ts_sched").is_null())
-        .then(pl.col("_arr_ts_sched_same_day"))
-        .when(pl.col("_arr_ts_sched_same_day") < pl.col("dep_ts_sched"))
-        .then(pl.col("_arr_ts_sched_same_day") + pl.duration(days=1))
-        .otherwise(pl.col("_arr_ts_sched_same_day"))
+    # If arrival clock time is earlier than departure clock time, assume next-day arrival
+    df = df.with_columns([
+        pl.when(
+            pl.col("arr_ts_sched_raw").is_not_null()
+            & pl.col("dep_ts_sched").is_not_null()
+            & (pl.col("arr_ts_sched_raw") < pl.col("dep_ts_sched"))
+        )
+        .then(pl.col("arr_ts_sched_raw") + pl.duration(days=1))
+        .otherwise(pl.col("arr_ts_sched_raw"))
         .alias("arr_ts_sched"),
 
-        pl.when(pl.col("_arr_ts_actual_same_day").is_null() | pl.col("dep_ts_actual").is_null())
-        .then(pl.col("_arr_ts_actual_same_day"))
-        .when(pl.col("_arr_ts_actual_same_day") < pl.col("dep_ts_actual"))
-        .then(pl.col("_arr_ts_actual_same_day") + pl.duration(days=1))
-        .otherwise(pl.col("_arr_ts_actual_same_day"))
+        pl.when(
+            pl.col("arr_ts_actual_raw").is_not_null()
+            & pl.col("dep_ts_actual").is_not_null()
+            & (pl.col("arr_ts_actual_raw") < pl.col("dep_ts_actual"))
+        )
+        .then(pl.col("arr_ts_actual_raw") + pl.duration(days=1))
+        .otherwise(pl.col("arr_ts_actual_raw"))
         .alias("arr_ts_actual"),
-    )
+    ])
 
-    return df.drop(
-        [
-            "_flight_date",
-            "_crs_dep_hour", "_crs_dep_min", "_crs_dep_add_day",
-            "_dep_hour", "_dep_min", "_dep_add_day",
-            "_crs_arr_hour", "_crs_arr_min", "_crs_arr_add_day",
-            "_arr_hour", "_arr_min", "_arr_add_day",
-            "_arr_ts_sched_same_day",
-            "_arr_ts_actual_same_day",
-        ]
-    )
+    # Add convenience date columns used downstream
+    df = df.with_columns([
+        pl.col("arr_ts_sched").dt.date().alias("crs_arr_date"),
+        pl.col("arr_ts_actual").dt.date().alias("act_arr_date"),
+    ])
+
+    # Validation prints
+    for c in ["dep_ts_sched", "dep_ts_actual", "arr_ts_sched", "arr_ts_actual"]:
+        non_null = df.select(pl.col(c).is_not_null().sum()).item()
+        print(f"Non-null {c}: {non_null:,}")
+        if non_null == 0:
+            raise ValueError(
+                f"{c} failed to build and has 0 non-null values. "
+                "Check BTS timestamp construction."
+            )
+
+    # Drop temp columns
+    df = df.drop([
+        "flight_date",
+        "crs_dep_hhmm",
+        "dep_hhmm",
+        "crs_arr_hhmm",
+        "arr_hhmm",
+        "arr_ts_sched_raw",
+        "arr_ts_actual_raw",
+    ])
+
+    return df
 
 
 def process_bts_month(
@@ -293,61 +201,78 @@ def process_bts_month(
     route_cfg: RouteFilterConfig,
     joins: JoinConfig,
 ) -> tuple[pl.DataFrame, tuple[Path, Path]]:
+    """
+    Download one BTS month, extract CSV, apply route filter, build timestamps,
+    and return the processed DataFrame plus download record:
+      (zip_path, extract_dir)
+    """
     ensure_dir(bts_cfg.out_dir)
 
-    zip_name = bts_cfg.zip_name_template.format(year=year, month=month)
-    zip_url = f"{bts_cfg.prezip_base}/{zip_name}"
-
+    zip_name = build_bts_zip_name(year, month, bts_cfg)
     zip_path = bts_cfg.out_dir / zip_name
     extract_dir = bts_cfg.out_dir / f"extracted_{year}_{month:02d}"
 
-    session = make_retry_session(
+    url = build_bts_url(year, month, bts_cfg)
+
+    session = make_retry_session(max_retries=bts_cfg.max_retries)
+
+    download_file_with_backoff(
+        session=session,
+        url=url,
+        out_path=zip_path,
+        timeout=bts_cfg.timeout,
+        verify_ssl=bts_cfg.verify_ssl,
         max_retries=bts_cfg.max_retries,
-        user_agent="OR568-BTS-Pipeline/1.0 (polite monthly downloader)",
+        backoff_base_seconds=bts_cfg.backoff_base_seconds,
     )
-    try:
-        download_file_with_backoff(
-            session=session,
-            url=zip_url,
-            out_path=zip_path,
-            timeout=bts_cfg.timeout,
-            verify_ssl=bts_cfg.verify_ssl,
-            max_retries=bts_cfg.max_retries,
-            backoff_base_seconds=bts_cfg.backoff_base_seconds,
-        )
-    finally:
-        session.close()
 
     csv_path = extract_first_csv(zip_path, extract_dir)
     print(f"Using BTS CSV -> {csv_path}")
 
-    lf = pl.scan_csv(csv_path, infer_schema_length=2000)
-    cols = set(lf.collect_schema().names())
+    # Read CSV
+    df = pl.read_csv(
+        csv_path,
+        infer_schema_length=10000,
+        ignore_errors=False,
+        null_values=["", "NA", "NULL", "null"],
+        try_parse_dates=False,
+    )
 
-    origin_col, dest_col = find_origin_dest_cols(cols)
-    date_expr = get_date_expr(cols)
-    route_filter = build_route_filter(origin_col, dest_col, route_cfg)
+    print(f"Raw BTS rows before route filter: {df.height:,}")
 
-    raw_count = lf.select(pl.len()).collect().item()
-    print(f"Raw BTS rows before route filter: {raw_count:,}")
+    # Apply route/network filter
+    df = apply_route_filter(df, route_cfg)
+    print(f"BTS rows after route filter: {df.height:,}")
 
-    lf = lf.with_columns(date_expr.alias("_flight_date"))
-    if route_filter is not None:
-        lf = lf.filter(route_filter)
+    if df.height == 0:
+        # Return early if nothing remains
+        return df, (zip_path, extract_dir)
 
-    filtered_count = lf.select(pl.len()).collect().item()
-    print(f"BTS rows after route filter: {filtered_count:,}")
+    # Build timestamps
+    df = add_bts_timestamps(df)
 
-    df = lf.drop("_flight_date").collect(streaming=True)
-    df = standardize_bts_columns(df, joins)
-    df = enrich_bts_timestamps(df)
+    print("Timestamp preview:")
+    preview_cols = [
+        c for c in [
+            "FlightDate",
+            "Origin",
+            "Dest",
+            "CRSDepTime",
+            "DepTime",
+            "CRSArrTime",
+            "ArrTime",
+            "dep_ts_sched",
+            "dep_ts_actual",
+            "arr_ts_sched",
+            "arr_ts_actual",
+        ]
+        if c in df.columns
+    ]
+    print(df.select(preview_cols).head(10))
 
-    for c in ["dep_ts_sched", "dep_ts_actual", "arr_ts_sched", "arr_ts_actual"]:
-        if c in df.columns:
-            non_null = df.select(pl.col(c).is_not_null().sum()).item()
-            print(f"Non-null {c}: {non_null:,}")
-
-    time.sleep(bts_cfg.chunk_pause_seconds)
+    # Optional polite pause between monthly pulls
+    if bts_cfg.chunk_pause_seconds > 0:
+        time.sleep(bts_cfg.chunk_pause_seconds)
 
     return df, (zip_path, extract_dir)
 

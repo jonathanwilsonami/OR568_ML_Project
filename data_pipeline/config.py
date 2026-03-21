@@ -4,6 +4,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+# =========================
+# BTS CONFIG
+# =========================
 @dataclass
 class BTSConfig:
     prezip_base: str = "https://transtats.bts.gov/PREZIP"
@@ -14,17 +17,20 @@ class BTSConfig:
     timeout: int = 180
     cleanup_downloads_if_final_has_data: bool = False
 
-    # Safer / more polite downloading
+    # polite downloading
     max_retries: int = 6
     backoff_base_seconds: float = 2.0
     chunk_pause_seconds: float = 1.0
     verify_ssl: bool = True
 
-    # Cache behavior
+    # caching
     keep_zip_files: bool = True
     keep_extracted_csvs: bool = True
 
 
+# =========================
+# WEATHER CONFIG (NOAA)
+# =========================
 @dataclass
 class WeatherConfig:
     base_url: str = "https://www.ncei.noaa.gov/access/services/data/v1"
@@ -43,16 +49,9 @@ class WeatherConfig:
     use_monthly_cache: bool = True
 
 
-@dataclass
-class FAAConfig:
-    registry_file: Path = Path(
-        "/home/jon/Documents/grad_school/OR568/project/OR568_ML_Project/data_pipeline/raw_data/faa_flight_registry_2025.parquet"
-    )
-    tail_number_col: str = "n_number"
-    valid_from_col: str | None = None
-    valid_to_col: str | None = None
-
-
+# =========================
+# JOIN CONFIG
+# =========================
 @dataclass
 class JoinConfig:
     dep_ts_col: str = "dep_ts_actual"
@@ -61,6 +60,7 @@ class JoinConfig:
     origin_col: str = "Origin"
     dest_col: str = "Dest"
     tail_col: str = "Tail_Number"
+    carrier_col: str = "Reporting_Airline"
 
     weather_station_col: str = "station"
     weather_ts_col: str = "valid_ts"
@@ -72,6 +72,9 @@ class JoinConfig:
     weather_tolerance: str = "2h"
 
 
+# =========================
+# ROUTE FILTER CONFIG
+# =========================
 @dataclass
 class RouteFilterConfig:
     airports: list[str] | None = None
@@ -80,6 +83,35 @@ class RouteFilterConfig:
     dest_filter: list[str] | None = None
 
 
+# =========================
+# FEATURE ENGINEERING CONFIG
+# =========================
+@dataclass
+class FeatureConfig:
+    enabled: bool = True
+
+    # Time resolution for network modeling
+    time_bucket: str = "1h"
+
+    # Rolling windows (important for propagation)
+    rolling_airport_hours: list[int] = field(default_factory=lambda: [1, 3, 6])
+    rolling_route_hours: list[int] = field(default_factory=lambda: [1, 3, 6])
+
+    # Feature toggles
+    build_aircraft_rotation_features: bool = True
+    build_airport_time_features: bool = True
+    build_route_time_features: bool = True
+
+    # Outputs
+    write_flights_enriched: bool = True
+    write_aircraft_rotation: bool = True
+    write_airport_time: bool = True
+    write_route_time: bool = True
+
+
+# =========================
+# POST PROCESS CONFIG
+# =========================
 @dataclass
 class PostProcessConfig:
     enabled: bool = True
@@ -92,125 +124,88 @@ class PostProcessConfig:
 
     selected_columns: list[str] = field(default_factory=lambda: [
         "FlightDate",
+        "Reporting_Airline",
         "Tail_Number",
         "Origin",
-        "OriginState",
-        "OriginStateFips",
-        "OriginWac",
         "Dest",
-        "DestState",
-        "DestStateFips",
-        "DestWac",
         "CRSDepTime",
         "DepTime",
         "DepDelay",
         "DepDelayMinutes",
         "DepDel15",
-        "DepartureDelayGroups",
         "CRSArrTime",
         "ArrTime",
         "ArrDelay",
         "ArrDelayMinutes",
         "ArrDel15",
-        "ArrivalDelayGroups",
         "TaxiOut",
-        "WheelsOff",
-        "WheelsOn",
         "TaxiIn",
         "Cancelled",
-        "CancellationCode",
         "Diverted",
-        "CRSElapsedTime",
-        "ActualElapsedTime",
-        "AirTime",
-        "Flights",
         "Distance",
-        "DistanceGroup",
         "CarrierDelay",
         "WeatherDelay",
         "NASDelay",
-        "SecurityDelay",
         "LateAircraftDelay",
-        "crs_arr_date",
-        "act_arr_date",
-        "dep_ts_sched",
-        "arr_ts_sched",
         "dep_ts_actual",
         "arr_ts_actual",
-        "dep_drct",
-        "dep_sknt",
-        "dep_p01i",
-        "dep_vsby",
-        "dep_gust",
-        "dep_wxcodes",
-        "dep_ice_accretion_1hr",
-        "dep_ice_accretion_3hr",
-        "dep_ice_accretion_6hr",
-        "dep_peak_wind_gust",
-        "dep_peak_wind_drct",
-        "dep_peak_wind_time",
-        "dep_weather_severity",
-        "dep_wx_intensity",
-        "dep_wx_has_ra",
-        "dep_wx_has_ts",
-        "dep_wx_has_sn",
-        "dep_wx_has_fg",
-        "dep_wx_has_br",
-        "dep_wx_has_hz",
-        "arr_drct",
-        "arr_sknt",
-        "arr_p01i",
-        "arr_vsby",
-        "arr_gust",
-        "arr_wxcodes",
-        "arr_ice_accretion_1hr",
-        "arr_ice_accretion_3hr",
-        "arr_ice_accretion_6hr",
-        "arr_peak_wind_gust",
-        "arr_peak_wind_drct",
-        "arr_peak_wind_time",
-        "arr_weather_severity",
-        "arr_wx_intensity",
-        "arr_wx_has_ra",
-        "arr_wx_has_ts",
-        "arr_wx_has_sn",
-        "arr_wx_has_fg",
-        "arr_wx_has_br",
-        "arr_wx_has_hz",
-        "icao24",
-        "aircraft_model",
-        "aircraft_type",
-        "weight_category",
-        "num_seats",
+        "dep_station",
+        "arr_station",
     ])
 
 
+# =========================
+# PIPELINE CONFIG
+# =========================
 @dataclass
 class PipelineConfig:
     years: list[int] = field(default_factory=lambda: [2019])
     months_by_year: dict[int, list[int]] | None = None
 
+    # NETWORK AIRPORTS (CORE)
     airport_to_station: dict[str, str] = field(
         default_factory=lambda: {
             "BWI": "72406093721",
             "ATL": "72219013874",
+            "ORD": "72530094846",
+            "DFW": "72259003927",
+            "DEN": "72565003017",
+            "BOS": "72509014739",
+            "CLT": "72314013881",
+            "MCO": "72205012815",
+            "JFK": "74486094789",
+            "LGA": "72503014732",
             "EWR": "72502014734",
         }
     )
 
     route_filter: RouteFilterConfig = field(
         default_factory=lambda: RouteFilterConfig(
-            airport_pairs=[("BWI", "EWR"), ("ATL", "BWI")]
+            airports=[
+                "BWI",
+                "ATL",
+                "ORD",
+                "DFW",
+                "DEN",
+                "BOS",
+                "CLT",
+                "MCO",
+                "JFK",
+                "LGA",
+                "EWR",
+            ]
         )
     )
 
     bts: BTSConfig = field(default_factory=BTSConfig)
     weather: WeatherConfig = field(default_factory=WeatherConfig)
-    faa: FAAConfig = field(default_factory=FAAConfig)
     joins: JoinConfig = field(default_factory=JoinConfig)
+    features: FeatureConfig = field(default_factory=FeatureConfig)
     postprocess: PostProcessConfig = field(default_factory=PostProcessConfig)
 
     final_out_dir: Path = Path("data/final")
+    feature_out_dir: Path = Path("data/features")
+
     write_monthly_joined: bool = True
     write_yearly_joined: bool = True
 
@@ -221,23 +216,15 @@ class PipelineConfig:
     run_weather_stage: bool = True
     run_bts_stage: bool = True
     run_join_stage: bool = True
+    run_feature_stage: bool = True
 
 
+# =========================
+# FINAL CONFIG INSTANCE
+# =========================
 CONFIG = PipelineConfig(
-    years=[2015, 2016, 2017, 2018, 2019],
+    years=[2019],
     months_by_year={
-        2015: list(range(1, 13)),
-        2016: list(range(1, 13)),
-        2017: list(range(1, 13)),
-        2018: list(range(1, 13)),
         2019: list(range(1, 13)),
     },
-    airport_to_station={
-        "BWI": "72406093721",
-        "ATL": "72219013874",
-        "EWR": "72502014734",
-    },
-    route_filter=RouteFilterConfig(
-        airport_pairs=[("BWI", "EWR"), ("ATL", "BWI")]
-    ),
 )
