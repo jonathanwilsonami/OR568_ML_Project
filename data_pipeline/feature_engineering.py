@@ -107,8 +107,8 @@ def build_airport_time_table(
     flights_df: pl.DataFrame,
     cfg: FeatureConfig,
 ) -> pl.DataFrame:
-    dep_df = _add_time_bucket(flights_df, "dep_ts_actual", cfg.time_bucket, "time_bucket")
-    arr_df = _add_time_bucket(flights_df, "arr_ts_actual", cfg.time_bucket, "time_bucket")
+    dep_df = _add_time_bucket(flights_df, "dep_ts_actual_utc", cfg.time_bucket, "time_bucket")
+    arr_df = _add_time_bucket(flights_df, "arr_ts_actual_utc", cfg.time_bucket, "time_bucket")
 
     dep_aggs: list[pl.Expr] = [
         pl.len().alias("dep_flight_count"),
@@ -205,7 +205,7 @@ def build_route_time_table(
     flights_df: pl.DataFrame,
     cfg: FeatureConfig,
 ) -> pl.DataFrame:
-    df = _add_time_bucket(flights_df, "dep_ts_actual", cfg.time_bucket, "time_bucket")
+    df = _add_time_bucket(flights_df, "dep_ts_actual_utc", cfg.time_bucket, "time_bucket")
 
     aggs: list[pl.Expr] = [
         pl.len().alias("flight_count"),

@@ -1,60 +1,48 @@
 from __future__ import annotations
 
-from pathlib import Path
 import json
 
 import polars as pl
 
 from config import CONFIG, PipelineConfig
 from bts_source import process_bts_month, write_bts_parquet, get_months_for_year
-from airport_station_mapping import (
+from reference_builder import (
     extract_unique_airports_from_bts,
-    build_airport_to_station_mapping,
+    build_reference_dimensions,
 )
+from joins import add_station_keys_to_bts, join_weather_to_bts, add_weather_utc_timestamps
 from weather_source import (
     pull_weather_for_period,
     pull_weather_for_year_chunked,
     build_year_date_window,
 )
-from joins import add_station_keys_to_bts, join_weather_to_bts
+from canonical_features import build_all_canonical_feature_tables
 from postprocess import maybe_write_filtered
-from feature_engineering import build_all_feature_tables
-from utils import ensure_dir, cleanup_path
+from utils import ensure_dir
 
 
-class BTSWeatherNetworkPipeline:
+class FullNetworkPipeline:
     def __init__(self, cfg: PipelineConfig):
         self.cfg = cfg
         ensure_dir(self.cfg.bts.out_dir)
         ensure_dir(self.cfg.weather.out_dir)
-        ensure_dir(self.cfg.mapping.out_dir)
+        ensure_dir(self.cfg.reference.out_dir)
         ensure_dir(self.cfg.final_out_dir)
         ensure_dir(self.cfg.feature_out_dir)
+        ensure_dir(self.cfg.market_out_dir)
 
     def run(self) -> None:
         for year in self.cfg.years:
             print(f"\n========== YEAR {year} ==========")
-
             months = get_months_for_year(year, self.cfg.months_by_year)
 
-            # Pass 1: BTS monthly extraction
             yearly_bts_df = self._build_or_load_yearly_bts(year, months)
-
-            # Pass 2: airport discovery + mapping
-            airport_to_station = self._build_or_load_mapping(year, yearly_bts_df)
-
-            # Pass 3: weather pull using generated mapping
+            airport_dim, airport_to_station, station_to_timezone = self._build_or_load_reference(year, yearly_bts_df)
             weather_df = self._get_weather_for_year(year, airport_to_station)
+            weather_df = add_weather_utc_timestamps(weather_df, station_to_timezone)
 
-            # Pass 4: join weather to monthly BTS and write joined files
-            yearly_joined_df = self._join_months_for_year(
-                year=year,
-                months=months,
-                airport_to_station=airport_to_station,
-                weather_df=weather_df,
-            )
+            yearly_joined_df = self._join_months_for_year(year, months, airport_to_station, weather_df)
 
-            # Optional filtered output
             if self.cfg.postprocess.enabled and self.cfg.postprocess.write_filtered_yearly:
                 yearly_filtered_out = self.cfg.final_out_dir / f"bts_weather_filtered_{year}.parquet"
                 maybe_write_filtered(
@@ -64,11 +52,11 @@ class BTSWeatherNetworkPipeline:
                     dataset_name=f"yearly_filtered_{year}",
                 )
 
-            # Pass 5: build feature tables
             if self.cfg.run_feature_stage and self.cfg.features.enabled:
-                print(f"\nBuilding derived feature/network tables for {year}...")
-                build_all_feature_tables(
-                    flights_df=yearly_joined_df,
+                print(f"\nBuilding canonical feature tables for {year}...")
+                build_all_canonical_feature_tables(
+                    flights_joined_df=yearly_joined_df,
+                    airport_dim=airport_dim,
                     joins=self.cfg.joins,
                     cfg=self.cfg.features,
                     out_dir=self.cfg.feature_out_dir,
@@ -77,7 +65,6 @@ class BTSWeatherNetworkPipeline:
 
     def _build_or_load_yearly_bts(self, year: int, months: list[int]) -> pl.DataFrame:
         yearly_bts_path = self.cfg.final_out_dir / f"bts_only_{year}.parquet"
-
         monthly_dfs: list[pl.DataFrame] = []
 
         for month in months:
@@ -88,9 +75,7 @@ class BTSWeatherNetworkPipeline:
                 bts_df = pl.read_parquet(monthly_bts_path)
             else:
                 if not self.cfg.run_bts_stage:
-                    raise RuntimeError(
-                        f"BTS stage disabled, but cached month not found: {monthly_bts_path}"
-                    )
+                    raise RuntimeError(f"BTS stage disabled, but cached month not found: {monthly_bts_path}")
 
                 bts_df, _ = process_bts_month(
                     year=year,
@@ -107,37 +92,47 @@ class BTSWeatherNetworkPipeline:
         yearly_bts_df.write_parquet(yearly_bts_path)
         print(f"Wrote yearly BTS-only -> {yearly_bts_path}")
         print(f"Year {year} BTS-only rows: {yearly_bts_df.height:,}")
-
         return yearly_bts_df
 
-    def _build_or_load_mapping(
+    def _build_or_load_reference(
         self,
         year: int,
         yearly_bts_df: pl.DataFrame,
-    ) -> dict[str, str]:
-        mapping_json = self.cfg.mapping.airport_station_json_path
+    ) -> tuple[pl.DataFrame, dict[str, str], dict[str, str]]:
+        airport_dim_path = self.cfg.reference.airport_dim_path
+        station_dim_path = self.cfg.reference.station_dim_path
+        airport_station_json = self.cfg.reference.airport_station_json_path
 
-        if mapping_json.exists():
-            print(f"Loading cached airport mapping -> {mapping_json}")
-            with open(mapping_json, "r", encoding="utf-8") as f:
-                return json.load(f)
+        if airport_dim_path.exists() and station_dim_path.exists() and airport_station_json.exists():
+            print(f"Loading cached airport_dim -> {airport_dim_path}")
+            airport_dim = pl.read_parquet(airport_dim_path)
+            station_dim = pl.read_parquet(station_dim_path)
 
-        if not self.cfg.run_mapping_stage:
-            raise RuntimeError(
-                f"Mapping stage disabled, but cached mapping not found: {mapping_json}"
-            )
+            with open(airport_station_json, "r", encoding="utf-8") as f:
+                airport_to_station = json.load(f)
+
+            station_to_timezone = {
+                row["station"]: row["station_timezone"]
+                for row in station_dim.filter(pl.col("station_timezone").is_not_null())
+                .select(["station", "station_timezone"]).iter_rows(named=True)
+            }
+
+            return airport_dim, airport_to_station, station_to_timezone
+
+        if not self.cfg.run_reference_stage:
+            raise RuntimeError("Reference stage disabled, but reference outputs not found.")
 
         unique_airports_df = extract_unique_airports_from_bts(
             yearly_bts_df,
-            self.cfg.mapping.unique_airports_path,
+            self.cfg.reference.unique_airports_path,
         )
 
-        airport_to_station, _ = build_airport_to_station_mapping(
+        airport_dim, station_dim, _bridge, airport_to_station, _airport_to_timezone, station_to_timezone = build_reference_dimensions(
             unique_airports_df=unique_airports_df,
-            cfg=self.cfg.mapping,
+            cfg=self.cfg.reference,
         )
 
-        return airport_to_station
+        return airport_dim, airport_to_station, station_to_timezone
 
     def _get_weather_for_year(
         self,
@@ -184,7 +179,6 @@ class BTSWeatherNetworkPipeline:
                 clean_output_path=clean_path,
             )
 
-        print(f"Weather rows for {year}: {weather_df.height:,}")
         return weather_df
 
     def _join_months_for_year(
@@ -194,7 +188,12 @@ class BTSWeatherNetworkPipeline:
         airport_to_station: dict[str, str],
         weather_df: pl.DataFrame,
     ) -> pl.DataFrame:
+        from canonical_features import join_airport_reference, add_utc_timestamps
+
         monthly_joined: list[pl.DataFrame] = []
+
+        # Load airport_dim once so we can attach timezones before joining weather
+        airport_dim = pl.read_parquet(self.cfg.reference.airport_dim_path)
 
         for month in months:
             print(f"\n----- Joining {year}-{month:02d} -----")
@@ -211,11 +210,38 @@ class BTSWeatherNetworkPipeline:
 
             bts_df = pl.read_parquet(monthly_bts_path)
 
+            # Attach airport timezone metadata
+            bts_df = join_airport_reference(
+                flights_df=bts_df,
+                airport_dim=airport_dim,
+                joins=self.cfg.joins,
+            )
+
+            # Build UTC timestamps from local BTS timestamps
+            bts_df = add_utc_timestamps(
+                df=bts_df,
+                joins=self.cfg.joins,
+            )
+
+            # Add station keys for weather join
             bts_df = add_station_keys_to_bts(
                 bts_df,
                 airport_to_station=airport_to_station,
                 joins=self.cfg.joins,
             )
+
+            # Sanity check
+            for c in [
+                self.cfg.joins.dep_ts_col,
+                self.cfg.joins.arr_ts_col,
+                self.cfg.joins.dep_station_col,
+                self.cfg.joins.arr_station_col,
+            ]:
+                if c not in bts_df.columns:
+                    raise KeyError(f"Required join column missing after UTC/station prep: {c}")
+
+                non_null = bts_df.select(pl.col(c).is_not_null().sum()).item()
+                print(f"Non-null {c}: {non_null:,}")
 
             joined_df = join_weather_to_bts(
                 bts_df=bts_df,
@@ -246,13 +272,9 @@ class BTSWeatherNetworkPipeline:
         print(f"\nWrote yearly joined -> {yearly_out}")
         print(f"Year {year} final rows: {yearly_joined_df.height:,}")
 
-        if self.cfg.postprocess.write_all_years_full:
-            all_years_full_path = self.cfg.final_out_dir / "bts_weather_all_years.parquet"
-            yearly_joined_df.write_parquet(all_years_full_path)
-
         return yearly_joined_df
 
 
 if __name__ == "__main__":
-    pipeline = BTSWeatherNetworkPipeline(CONFIG)
+    pipeline = FullNetworkPipeline(CONFIG)
     pipeline.run()

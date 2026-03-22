@@ -51,6 +51,44 @@ def extract_unique_airports_from_bts(
     return unique_airports
 
 
+def build_two_hop_airport_sets(
+    bts_df: pl.DataFrame,
+    core_airports: list[str],
+    cfg: MappingConfig,
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    core_set = set(core_airports)
+
+    hop1 = (
+        bts_df
+        .filter(~pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(core_set))
+        .select(pl.col("Origin").alias("airport"))
+        .drop_nulls()
+        .unique()
+        .sort("airport")
+    )
+
+    hop1_set = set(hop1["airport"].to_list())
+
+    hop2 = (
+        bts_df
+        .filter(~pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(hop1_set))
+        .select(pl.col("Origin").alias("airport"))
+        .drop_nulls()
+        .unique()
+        .sort("airport")
+    )
+
+    hop1.write_parquet(cfg.hop1_airports_path)
+    hop2.write_parquet(cfg.hop2_airports_path)
+
+    print(f"Wrote hop1 airports -> {cfg.hop1_airports_path}")
+    print(f"Wrote hop2 airports -> {cfg.hop2_airports_path}")
+    print(f"Hop1 airports: {hop1.height:,}")
+    print(f"Hop2 airports: {hop2.height:,}")
+
+    return hop1, hop2
+
+
 def _load_ourairports_airports(path: Path) -> pl.DataFrame:
     df = pl.read_csv(path, infer_schema_length=5000, ignore_errors=True)
 
@@ -65,6 +103,7 @@ def _load_ourairports_airports(path: Path) -> pl.DataFrame:
         "scheduled_service",
         "latitude_deg",
         "longitude_deg",
+        "timezone",
     ]
     keep = [c for c in keep if c in df.columns]
     df = df.select(keep)
@@ -152,10 +191,10 @@ def _pick_best_station_for_icao(
     return best["station"].item()
 
 
-def build_airport_to_station_mapping(
+def build_airport_to_station_and_timezone_mapping(
     unique_airports_df: pl.DataFrame,
     cfg: MappingConfig,
-) -> tuple[dict[str, str], pl.DataFrame]:
+) -> tuple[dict[str, str], dict[str, str], pl.DataFrame]:
     ensure_dir(cfg.out_dir)
     ensure_dir(cfg.airports_cache_path.parent)
     ensure_dir(cfg.isd_history_cache_path.parent)
@@ -172,7 +211,7 @@ def build_airport_to_station_mapping(
     airports_ref = _load_ourairports_airports(airports_ref_path)
     isd_history = _load_isd_history(isd_ref_path)
 
-    iata_to_icao = (
+    iata_to_ref = (
         airports_ref
         .filter(pl.col("iata_code").is_not_null())
         .with_columns([
@@ -183,15 +222,16 @@ def build_airport_to_station_mapping(
             .cast(pl.Utf8)
             .str.to_uppercase()
             .alias("ICAO"),
+            pl.col("timezone").cast(pl.Utf8).alias("timezone"),
         ])
-        .select(["IATA", "ICAO", "name", "type", "municipality", "iso_country"])
+        .select(["IATA", "ICAO", "timezone", "name", "type", "municipality", "iso_country"])
         .unique(subset=["IATA"], keep="first")
     )
 
     discovered = (
         unique_airports_df
         .with_columns(pl.col("airport").str.to_uppercase())
-        .join(iata_to_icao, left_on="airport", right_on="IATA", how="left")
+        .join(iata_to_ref, left_on="airport", right_on="IATA", how="left")
     )
 
     mapping_rows: list[dict[str, str | None]] = []
@@ -199,6 +239,7 @@ def build_airport_to_station_mapping(
     for row in discovered.iter_rows(named=True):
         airport = row["airport"]
         icao = row.get("ICAO")
+        timezone = row.get("timezone")
 
         station = None
         if icao is not None:
@@ -208,6 +249,7 @@ def build_airport_to_station_mapping(
             {
                 "airport": airport,
                 "icao": icao,
+                "timezone": timezone,
                 "station": station,
                 "airport_name": row.get("name"),
                 "airport_type": row.get("type"),
@@ -218,24 +260,31 @@ def build_airport_to_station_mapping(
 
     mapping_df = pl.DataFrame(mapping_rows).sort("airport")
 
-    mapped_df = mapping_df.filter(pl.col("station").is_not_null())
+    mapped_station_df = mapping_df.filter(pl.col("station").is_not_null())
+    mapped_timezone_df = mapping_df.filter(pl.col("timezone").is_not_null())
     unmapped_df = mapping_df.filter(pl.col("station").is_null())
 
     airport_to_station = {
         row["airport"]: row["station"]
-        for row in mapped_df.select(["airport", "station"]).iter_rows(named=True)
+        for row in mapped_station_df.select(["airport", "station"]).iter_rows(named=True)
+    }
+
+    airport_to_timezone = {
+        row["airport"]: row["timezone"]
+        for row in mapped_timezone_df.select(["airport", "timezone"]).iter_rows(named=True)
     }
 
     with open(cfg.airport_station_json_path, "w", encoding="utf-8") as f:
         json.dump(airport_to_station, f, indent=2, sort_keys=True)
 
-    mapped_df.write_csv(cfg.airport_station_csv_path)
+    with open(cfg.airport_timezone_json_path, "w", encoding="utf-8") as f:
+        json.dump(airport_to_timezone, f, indent=2, sort_keys=True)
+
+    mapped_station_df.write_csv(cfg.airport_station_csv_path)
+    mapping_df.select(["airport", "timezone"]).write_csv(cfg.airport_timezone_csv_path)
     unmapped_df.write_parquet(cfg.unmapped_airports_path)
 
     print(f"Wrote airport_to_station JSON -> {cfg.airport_station_json_path}")
-    print(f"Wrote airport_to_station CSV  -> {cfg.airport_station_csv_path}")
-    print(f"Wrote unmapped airports       -> {cfg.unmapped_airports_path}")
-    print(f"Mapped airports:   {mapped_df.height:,}")
-    print(f"Unmapped airports: {unmapped_df.height:,}")
+    print(f"Wrote airport_to_timezone JSON -> {cfg.airport_timezone_json_path}")
 
-    return airport_to_station, unmapped_df
+    return airport_to_station, airport_to_timezone, unmapped_df

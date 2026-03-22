@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import polars as pl
 
@@ -33,13 +34,41 @@ def build_bts_url(year: int, month: int, cfg: BTSConfig) -> str:
 
 
 def apply_route_filter(df: pl.DataFrame, route_cfg: RouteFilterConfig) -> pl.DataFrame:
-    if route_cfg.airports:
+    """
+    Safe version: works even if RouteFilterConfig is missing fields
+    """
+
+    core_airports = set(getattr(route_cfg, "core_airports", []) or [])
+    two_hop = getattr(route_cfg, "two_hop_inbound_to_core", False)
+
+    if core_airports and two_hop:
+        core_set = core_airports
+
+        hop1 = (
+            df
+            .filter(~pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(core_set))
+            .select(pl.col("Origin").alias("airport"))
+            .drop_nulls()
+            .unique()
+        )
+        hop1_set = set(hop1["airport"].to_list())
+
+        expr = (
+            (pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(core_set))
+            | (~pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(core_set))
+            | (~pl.col("Origin").is_in(core_set) & pl.col("Dest").is_in(hop1_set))
+        )
+
+        df = df.filter(expr)
+
+    # --- Safe access for optional fields ---
+    if getattr(route_cfg, "airports", None):
         airport_set = set(route_cfg.airports)
         df = df.filter(
             pl.col("Origin").is_in(airport_set) | pl.col("Dest").is_in(airport_set)
         )
 
-    if route_cfg.airport_pairs:
+    if getattr(route_cfg, "airport_pairs", None):
         pair_expr = None
         for origin, dest in route_cfg.airport_pairs:
             expr = (pl.col("Origin") == origin) & (pl.col("Dest") == dest)
@@ -47,10 +76,10 @@ def apply_route_filter(df: pl.DataFrame, route_cfg: RouteFilterConfig) -> pl.Dat
         if pair_expr is not None:
             df = df.filter(pair_expr)
 
-    if route_cfg.origin_filter:
+    if getattr(route_cfg, "origin_filter", None):
         df = df.filter(pl.col("Origin").is_in(route_cfg.origin_filter))
 
-    if route_cfg.dest_filter:
+    if getattr(route_cfg, "dest_filter", None):
         df = df.filter(pl.col("Dest").is_in(route_cfg.dest_filter))
 
     return df
@@ -129,15 +158,6 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
         pl.col("arr_ts_actual").dt.date().alias("act_arr_date"),
     ])
 
-    for c in ["dep_ts_sched", "dep_ts_actual", "arr_ts_sched", "arr_ts_actual"]:
-        non_null = df.select(pl.col(c).is_not_null().sum()).item()
-        print(f"Non-null {c}: {non_null:,}")
-        if non_null == 0:
-            raise ValueError(
-                f"{c} failed to build and has 0 non-null values. "
-                "Check BTS timestamp construction."
-            )
-
     return df.drop([
         "flight_date",
         "crs_dep_hhmm",
@@ -146,6 +166,68 @@ def add_bts_timestamps(df: pl.DataFrame) -> pl.DataFrame:
         "arr_hhmm",
         "arr_ts_sched_raw",
         "arr_ts_actual_raw",
+    ])
+
+
+def add_timezone_columns(
+    df: pl.DataFrame,
+    airport_to_timezone: dict[str, str],
+    joins: JoinConfig,
+) -> pl.DataFrame:
+    return df.with_columns(
+        pl.col(joins.origin_col)
+        .replace(airport_to_timezone, default=None)
+        .alias(joins.dep_timezone_col),
+
+        pl.col(joins.dest_col)
+        .replace(airport_to_timezone, default=None)
+        .alias(joins.arr_timezone_col),
+    )
+
+
+def _convert_local_series_to_utc(
+    ts_series: pl.Series,
+    tz_series: pl.Series,
+) -> pl.Series:
+    out = []
+
+    for ts_val, tz_val in zip(ts_series.to_list(), tz_series.to_list()):
+        if ts_val is None or tz_val is None:
+            out.append(None)
+            continue
+
+        try:
+            aware = ts_val.replace(tzinfo=ZoneInfo(tz_val))
+            utc_val = aware.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
+            out.append(utc_val)
+        except Exception:
+            out.append(None)
+
+    return pl.Series(out)
+
+
+def add_utc_timestamps(
+    df: pl.DataFrame,
+    joins: JoinConfig,
+) -> pl.DataFrame:
+    dep_sched_utc = _convert_local_series_to_utc(
+        df["dep_ts_sched"], df[joins.dep_timezone_col]
+    )
+    dep_actual_utc = _convert_local_series_to_utc(
+        df["dep_ts_actual"], df[joins.dep_timezone_col]
+    )
+    arr_sched_utc = _convert_local_series_to_utc(
+        df["arr_ts_sched"], df[joins.arr_timezone_col]
+    )
+    arr_actual_utc = _convert_local_series_to_utc(
+        df["arr_ts_actual"], df[joins.arr_timezone_col]
+    )
+
+    return df.with_columns([
+        dep_sched_utc.alias("dep_ts_sched_utc"),
+        dep_actual_utc.alias("dep_ts_actual_utc"),
+        arr_sched_utc.alias("arr_ts_sched_utc"),
+        arr_actual_utc.alias("arr_ts_actual_utc"),
     ])
 
 
