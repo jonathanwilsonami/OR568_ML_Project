@@ -1,39 +1,42 @@
 name: or568_ml_project
 channels:
-  - https://repo.anaconda.com/pkgs/main
-  - https://repo.anaconda.com/pkgs/r
+  - conda-forge
 dependencies:
+  - python=3.11
+  - pip
+
+  # Notebook / kernels
   - jupyterlab
   - jupytext
-  - matplotlib
+  - ipykernel
+  - nb_conda_kernels
+
+  # Python analytics / ML
   - numpy
   - pandas
-  - pip
-  - python=3.11
+  - scipy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - statsmodels
+  - pyarrow
+  - fastparquet
+  - lightgbm
+  - xgboost
+
+  # R base / notebook support
   - r-base=4.3
-  - r-ggplot2
   - r-irkernel
   - r-knitr
   - r-rmarkdown
+
+  # R data / modeling
   - r-tidyverse
-  - scikit-learn
-  - fastparquet
-  - ipykernel
-  - lightgbm
-  - nb_conda_kernels
-  - pyarrow
   - r-arrow
   - r-caret
   - r-data.table
-  - r-dplyr
   - r-ranger
-  - r-readr
-  - r-tidyr
   - r-xgboost
-  - scipy
-  - seaborn
-  - statsmodels
-  - xgboost
   - r-ggraph
   - r-igraph
   - r-tidygraph
@@ -44,7 +47,4 @@ dependencies:
   - r-kableextra
   - r-lubridate
   - r-skimr
-  - r-stringr
-  - r-tibble
   - r-pacman
-prefix: /home/jon/anaconda3/envs/or568_ml_project

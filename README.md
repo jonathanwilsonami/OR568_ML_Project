@@ -43,41 +43,73 @@ This project uses **Conda** to manage a unified environment for both **Python** 
 
 If you do not already have Conda installed, install one of the following:
 
-- Miniconda: https://docs.conda.io/en/latest/miniconda.html  
-- Anaconda: https://www.anaconda.com/
+- Miniconda (): https://docs.conda.io/en/latest/miniconda.html  
 
 ---
 
 ### 2. Create the Environment
 
-You can create the environment using the provided `environment.yml` file:
+Create the environment using the provided `environment.yml` file:
 
 ```bash
 conda env create -f environment.yml
-conda activate ml-shared-notebooks # Activates the env
+conda activate or568_ml_project
 ```
 
-If you are using Jupyter notebook register the R kernel for Jupyter (only once per machine). Run this in the terminal:
-```bash
-R -q -e 'IRkernel::installspec(user = TRUE)'
-```
-
-### 3. Installing new packages in conda 
-
-Sometimes you will need to install new pacakges or even new R or Python versions. Do this by using the `environment.yml` file. Caution on changing R and Python versions. Sometimes this breaks packages that are not backwards compatible or others might be using versions of packages that require a certain version. Just keep that in mind.  
+If you are using Jupyter, register the R kernel (only once per machine):
 
 ```bash
-# For python 
-conda install -c conda-forge r-tidyverse r-data.table r-ggplot2 r-lubridate -y
-
-# For R 
-install.packages(c("janitor", "caret", "glmnet"))
+R -q -e "IRkernel::installspec(user = TRUE)"
 ```
 
-Once you have installed the new packages above make sure you add them to the  `environment.yml` file so that the rest of the team can also use them. Note that this will overwrite the existing `environment.yml` file. 
+## 3. Installing New Packages
+
+If you need to install new packages, update the environment in a way that keeps it reproducible for the team.
+
+### Preferred Method (Recommended)
+
+Install packages using Conda:
+
 ```bash
-conda env export > environment.yml
+# Python packages
+conda install -c conda-forge <package_name>
+
+# R packages (via conda)
+conda install -c conda-forge r-<package_name>
 ```
+
+Examples:
+
+```bash
+conda install -c conda-forge polars
+conda install -c conda-forge r-janitor
+```
+
+### Using pip (Python only)
+
+Only use pip if the package is not available in Conda:
+
+```bash
+pip install <package_name>
+```
+
+### Installing R packages via CRAN (fallback)
+
+Only if not available in Conda:
+
+```r
+install.packages("package_name")
+```
+
+## 4. Updating the Environment File (IMPORTANT)
+
+After installing new packages, update the shared `environment.yml` file:
+
+```bash
+conda env export --no-builds > environment.yml
+```
+
+---
 
 Summary notes: 
 - Prefer conda install when possible for compatibility
