@@ -106,7 +106,7 @@ install.packages("package_name")
 After installing new packages, update the shared `environment.yml` file:
 
 ```bash
-conda env export --no-builds > environment.yml
+conda env export --from-history --no-builds | grep -v "^prefix:" > environment.yml
 ```
 
 ---
