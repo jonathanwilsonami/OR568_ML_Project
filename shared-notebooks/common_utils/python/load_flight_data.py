@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urljoin, urlparse
 import polars as pl
 import urllib.request
 import re
@@ -14,7 +15,7 @@ def _clean_names(columns):
         col = col.strip()
         col = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", col)
         col = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", col)
-        col = re.sub(r"[^a-zA-Z0-9]+", "_", col)
+        col = re.sub(r"[^a-zA-Z0-9]+", r"_", col)
         col = re.sub(r"_+", "_", col)
         col = col.lower().strip("_")
 
@@ -29,18 +30,66 @@ def _clean_names(columns):
     return cleaned
 
 
-def load_flight_data(url: str = URL) -> pl.DataFrame:
+def _resolve_url(url: str, file_name: str | None = None) -> str:
+    """
+    Build the final URL.
+
+    Rules:
+    - If file_name is not provided, use url as-is.
+    - If file_name is provided, replace the file portion of the default/base URL
+      with that file name so callers only need to pass something like
+      'enriched_flights_2018.parquet'.
+    """
+    if not file_name:
+        return url
+
+    base_url = url.rsplit("/", 1)[0] + "/"
+    return urljoin(base_url, file_name)
+
+
+def _infer_local_filename(resolved_url: str) -> str:
+    parsed = urlparse(resolved_url)
+    file_name = Path(parsed.path).name
+    if not file_name:
+        raise ValueError("Could not infer a file name from the resolved URL.")
+    return file_name
+
+
+def load_flight_data(
+    url: str = URL,
+    file_name: str | None = None
+) -> pl.DataFrame:
+    """
+    Load flight data from local cache or S3.
+
+    Parameters
+    ----------
+    url : str, optional
+        Full dataset URL. Defaults to the current 2019 parquet file.
+    file_name : str | None, optional
+        Optional file name such as 'enriched_flights_2018.parquet'.
+        If provided, it replaces the file part of `url` so callers do not need
+        to specify the full bucket path.
+
+    Examples
+    --------
+    load_flight_data()
+    load_flight_data(file_name="enriched_flights_2018.parquet")
+    load_flight_data(url="https://my-bucket.s3.amazonaws.com/custom.parquet")
+    """
     module_file = Path(__file__).resolve()
     shared_notebooks_dir = module_file.parents[2]
 
     data_dir = shared_notebooks_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    local_file = data_dir / "enriched_flights_2019.parquet"
+    resolved_url = _resolve_url(url, file_name)
+    local_file_name = _infer_local_filename(resolved_url)
+    local_file = data_dir / local_file_name
 
     if not local_file.exists():
-        print("Downloading dataset from S3...")
-        urllib.request.urlretrieve(url, local_file)
+        print(f"Downloading dataset from S3: {resolved_url}")
+        urllib.request.urlretrieve(resolved_url, local_file)
 
     df = pl.read_parquet(local_file)
     df.columns = _clean_names(df.columns)
@@ -65,7 +114,6 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
         "dep_vsby", "dep_gust", "dep_sknt", "dep_p01i", "dep_weather_severity",
     ]
 
-    # Cast first
     df_work = df_work.with_columns(
         [
             pl.col("flight_date").cast(pl.Date, strict=False),
@@ -73,7 +121,6 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
         ]
     )
 
-    # Main feature engineering
     df_work = df_work.with_columns(
         [
             (pl.col("crs_dep_time") // 100).alias("sched_dep_hour"),
@@ -114,10 +161,8 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
         ]
     )
 
-    # Sort before lag features
     df_work = df_work.sort(["tail_number", "flight_date", "sched_dep_min"])
 
-    # Lag features by aircraft
     df_work = df_work.with_columns(
         [
             pl.col("origin").shift(1).over("tail_number").alias("prev_origin"),
@@ -130,7 +175,6 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
         ]
     )
 
-    # Within-aircraft/day sequence features
     df_work = df_work.with_columns(
         [
             pl.cum_count("tail_number").over(["tail_number", "flight_date"]).alias("rotation_leg_number"),
@@ -152,7 +196,6 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
 
     base_date = df_work.select(pl.col("flight_date").min()).item()
 
-    # Absolute minute features
     df_work = df_work.with_columns(
         [
             (
@@ -172,14 +215,12 @@ def engineer_features(df_work: pl.DataFrame) -> pl.DataFrame:
         ]
     )
 
-    # Create turnaround first
     df_work = df_work.with_columns(
         [
             (pl.col("curr_sched_dep_abs_min") - pl.col("prev_arr_abs_min")).alias("turnaround_minutes"),
         ]
     )
 
-    # Then use turnaround_minutes
     df_work = df_work.with_columns(
         [
             pl.max_horizontal(

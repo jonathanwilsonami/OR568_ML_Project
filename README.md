@@ -189,14 +189,21 @@ I've provided some examples of how to set this up but the following is an exampl
 ###################################################
 # Code to Load Data from S3
 ###################################################
-library(dplyr)
-library(janitor)
-notebook_dir <- dirname(knitr::current_input(dir = TRUE))
+# library(dplyr)
+# library(janitor)
 
+# Your project path local to your machine 
+if (is.null(knitr::current_input())) {
+  project_dir <- getwd()
+} else {
+  project_dir <- dirname(knitr::current_input(dir = TRUE))
+}
+
+# This path should be common to everyone 
 util_path <- normalizePath(
   file.path(
-    notebook_dir,
-    "..", "..", "..",
+    project_dir,
+    "shared-notebooks",
     "common_utils", "r", "load_flight_data.r"
   ),
   winslash = "/",
@@ -205,7 +212,60 @@ util_path <- normalizePath(
 
 source(util_path)
 
-# Load data and clean column names
+# Load packages - modify this for your needs 
+required_packages <- c(
+  "tidyverse",
+  "janitor",
+  "lubridate",
+  "skimr",
+  "caret",
+  "glmnet",
+  "broom",
+  "ggplot2",
+  "kableExtra",
+  "dplyr",
+  "tidyr",
+  "stringr",
+  "igraph",
+  "ggraph",
+  "tidygraph",
+  "tibble",
+  "knitr"
+)
+
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+
+if (length(missing_packages) > 0) {
+  stop(
+    paste0(
+      "Missing required R packages: ",
+      paste(missing_packages, collapse = ", "),
+      "\nInstall them first before rendering."
+    )
+  )
+}
+
+invisible(lapply(required_packages, library, character.only = TRUE))
+
+"""
+Load data and clean column names
+Usage: 
+load_flight_data() 
+  - Resolves to enriched_flights_2019.parquet - original dataset
+Load a different file from the same S3 bucket using file_name
+  - flights_network <- load_flight_data(
+      file_name = 'flights_enriched_network_2019.parquet' # or other data
+    )
+Load a completely different dataset by passing a full URL 
+  - flights <- load_flight_data(
+      url = 'https://some-other-bucket.s3.amazonaws.com/my_data.parquet'
+    )
+Pass both url and file_name
+  - flights <- load_flight_data(
+      url = 'https://my-bucket.s3.amazonaws.com/base_file.parquet',
+      file_name = 'alternate_file.parquet'
+    )
+"""
 enriched_flights_2019 <- load_flight_data() %>%
   janitor::clean_names()
 
