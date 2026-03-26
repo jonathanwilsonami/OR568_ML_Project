@@ -1,15 +1,48 @@
+load_project_packages <- function() {
+  required_packages <- c(
+    "tidyverse",
+    "janitor",
+    "lubridate",
+    "skimr",
+    "caret",
+    "glmnet",
+    "broom",
+    "ggplot2",
+    "kableExtra",
+    "dplyr",
+    "tidyr",
+    "stringr",
+    "igraph",
+    "ggraph",
+    "tidygraph",
+    "tibble",
+    "knitr",
+    "arrow"
+  )
+
+  missing_packages <- required_packages[
+    !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
+  ]
+
+  if (length(missing_packages) > 0) {
+    stop(
+      paste0(
+        "Missing required R packages: ",
+        paste(missing_packages, collapse = ", "),
+        "\nInstall them first before rendering."
+      )
+    )
+  }
+
+  invisible(lapply(required_packages, library, character.only = TRUE))
+}
+
 load_flight_data <- function(
-  # This function loads the flight delay dataset, downloading it from S3 if not already cached locally.
   url = "https://or568-flight-delay-data-411750981882-us-east-1-an.s3.us-east-1.amazonaws.com/enriched_flights_2019.parquet",
   file_name = NULL
 ) {
-
   if (!requireNamespace("arrow", quietly = TRUE)) {
     stop("Package 'arrow' required. Install with install.packages('arrow')")
-  }
-
-  if (!requireNamespace("here", quietly = TRUE)) {
-    stop("Package 'here' required. Install with install.packages('here')")
   }
 
   resolve_url <- function(url, file_name = NULL) {
@@ -21,30 +54,24 @@ load_flight_data <- function(
     paste0(base_url, file_name)
   }
 
-  infer_local_filename <- function(resolved_url) {
-    file_name <- basename(resolved_url)
-    if (!nzchar(file_name)) {
-      stop("Could not infer a file name from the resolved URL.")
-    }
-    file_name
-  }
-
   resolved_url <- resolve_url(url, file_name)
 
-  # Construct project-relative path
-  data_dir <- here::here("shared-notebooks", "data")
+  project_dir <- Sys.getenv("QUARTO_PROJECT_DIR", unset = getwd())
+  data_dir <- file.path(project_dir, "shared-notebooks", "data")
 
-  # Create directory if needed
   if (!dir.exists(data_dir)) {
     dir.create(data_dir, recursive = TRUE)
   }
 
-  local_file_name <- infer_local_filename(resolved_url)
+  local_file_name <- basename(resolved_url)
+  if (!nzchar(local_file_name)) {
+    stop("Could not infer a local file name from the URL.")
+  }
+
   local_file <- file.path(data_dir, local_file_name)
 
-  # Download if not cached
   if (!file.exists(local_file)) {
-    message(sprintf("Downloading dataset from S3: %s", resolved_url))
+    message(sprintf("Downloading dataset from: %s", resolved_url))
     download.file(resolved_url, destfile = local_file, mode = "wb")
   }
 

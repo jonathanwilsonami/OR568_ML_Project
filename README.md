@@ -189,63 +189,8 @@ I've provided some examples of how to set this up but the following is an exampl
 ###################################################
 # Code to Load Data from S3
 ###################################################
-# library(dplyr)
-# library(janitor)
-
-# Your project path local to your machine 
-if (is.null(knitr::current_input())) {
-  project_dir <- getwd()
-} else {
-  project_dir <- dirname(knitr::current_input(dir = TRUE))
-}
-
-# This path should be common to everyone 
-util_path <- normalizePath(
-  file.path(
-    project_dir,
-    "shared-notebooks",
-    "common_utils", "r", "load_flight_data.r"
-  ),
-  winslash = "/",
-  mustWork = TRUE
-)
-
-source(util_path)
-
-# Load packages - modify this for your needs 
-required_packages <- c(
-  "tidyverse",
-  "janitor",
-  "lubridate",
-  "skimr",
-  "caret",
-  "glmnet",
-  "broom",
-  "ggplot2",
-  "kableExtra",
-  "dplyr",
-  "tidyr",
-  "stringr",
-  "igraph",
-  "ggraph",
-  "tidygraph",
-  "tibble",
-  "knitr"
-)
-
-missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
-
-if (length(missing_packages) > 0) {
-  stop(
-    paste0(
-      "Missing required R packages: ",
-      paste(missing_packages, collapse = ", "),
-      "\nInstall them first before rendering."
-    )
-  )
-}
-
-invisible(lapply(required_packages, library, character.only = TRUE))
+source("shared-notebooks/common_utils/r/load_flight_data.r")
+load_project_packages() # Optional 
 
 """
 Load data and clean column names
