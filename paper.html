@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-03-13">
 
-<title>Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors – OR 568 Machine Learning Project</title>
+<title>Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors – Flight Delays: A Machine Learning Approach</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -147,7 +147,7 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">OR 568 Machine Learning Project</span>
+    <span class="navbar-title">Flight Delays: A Machine Learning Approach</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -167,6 +167,10 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link active" href="./paper.html" aria-current="page"> 
 <span class="menu-text">Paper</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./ml-pipeline.html"> 
+<span class="menu-text">ML Pipeline</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./slides.html"> 
@@ -196,9 +200,10 @@ window.Quarto = {
   <li><a href="#introduction-background" id="toc-introduction-background" class="nav-link" data-scroll-target="#introduction-background"><span class="header-section-number">2</span> Introduction &amp; Background</a>
   <ul class="collapse">
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation"><span class="header-section-number">2.1</span> Motivation</a></li>
-  <li><a href="#data-and-methods" id="toc-data-and-methods" class="nav-link" data-scroll-target="#data-and-methods"><span class="header-section-number">2.2</span> Data and Methods</a></li>
-  <li><a href="#why-the-bwiewr-market-pair" id="toc-why-the-bwiewr-market-pair" class="nav-link" data-scroll-target="#why-the-bwiewr-market-pair"><span class="header-section-number">2.3</span> Why the BWI–EWR Market Pair</a></li>
-  <li><a href="#what-this-research-contributes" id="toc-what-this-research-contributes" class="nav-link" data-scroll-target="#what-this-research-contributes"><span class="header-section-number">2.4</span> What This Research Contributes</a></li>
+  <li><a href="#related-works" id="toc-related-works" class="nav-link" data-scroll-target="#related-works"><span class="header-section-number">2.2</span> Related Works</a></li>
+  <li><a href="#data-and-methods" id="toc-data-and-methods" class="nav-link" data-scroll-target="#data-and-methods"><span class="header-section-number">2.3</span> Data and Methods</a></li>
+  <li><a href="#why-the-bwiewr-market-pair" id="toc-why-the-bwiewr-market-pair" class="nav-link" data-scroll-target="#why-the-bwiewr-market-pair"><span class="header-section-number">2.4</span> Why the BWI–EWR Market Pair</a></li>
+  <li><a href="#what-this-research-contributes" id="toc-what-this-research-contributes" class="nav-link" data-scroll-target="#what-this-research-contributes"><span class="header-section-number">2.5</span> What This Research Contributes</a></li>
   </ul></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data"><span class="header-section-number">3</span> Data</a>
   <ul class="collapse">
@@ -302,12 +307,20 @@ window.Quarto = {
 <p>Flight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.</p>
 <p>Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.</p>
 </section>
-<section id="data-and-methods" class="level3" data-number="2.2">
-<h3 data-number="2.2" class="anchored" data-anchor-id="data-and-methods"><span class="header-section-number">2.2</span> Data and Methods</h3>
-<p>Aircraft registry features were initially considered, but because only a 2025 FAA registry snapshot was available while the flight dataset represents 2019 operations, these features could introduce temporal inconsistencies. Therefore, the analysis focuses primarily on operational variables derived directly from the flight dataset, such as aircraft rotation features, turnaround time, and previous-flight delays, which more directly capture delay propagation mechanisms.</p>
+<section id="related-works" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="related-works"><span class="header-section-number">2.2</span> Related Works</h3>
 </section>
-<section id="why-the-bwiewr-market-pair" class="level3" data-number="2.3">
-<h3 data-number="2.3" class="anchored" data-anchor-id="why-the-bwiewr-market-pair"><span class="header-section-number">2.3</span> Why the BWI–EWR Market Pair</h3>
+<section id="data-and-methods" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="data-and-methods"><span class="header-section-number">2.3</span> Data and Methods</h3>
+<p>Aircraft registry features were initially considered, but because only a 2025 FAA registry snapshot was available while the flight dataset represents 2019 operations, these features could introduce temporal inconsistencies. Therefore, the analysis focuses primarily on operational variables derived directly from the flight dataset, such as aircraft rotation features, turnaround time, and previous-flight delays, which more directly capture delay propagation mechanisms.</p>
+<ul>
+<li>Add diagram of data pipeline and processing of features</li>
+<li>Add diagram of model training and evaluation process</li>
+</ul>
+<p><strong>Note: create a section of the site that represents reproducable instructions of our project and data processing steps, including code snippets and explanations.</strong></p>
+</section>
+<section id="why-the-bwiewr-market-pair" class="level3" data-number="2.4">
+<h3 data-number="2.4" class="anchored" data-anchor-id="why-the-bwiewr-market-pair"><span class="header-section-number">2.4</span> Why the BWI–EWR Market Pair</h3>
 <p>The BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.</p>
 <p>Flights between these airports are vulnerable to multiple sources of disruption:</p>
 <ul>
@@ -317,8 +330,8 @@ window.Quarto = {
 <li>operational scheduling constraints</li>
 </ul>
 </section>
-<section id="what-this-research-contributes" class="level3" data-number="2.4">
-<h3 data-number="2.4" class="anchored" data-anchor-id="what-this-research-contributes"><span class="header-section-number">2.4</span> What This Research Contributes</h3>
+<section id="what-this-research-contributes" class="level3" data-number="2.5">
+<h3 data-number="2.5" class="anchored" data-anchor-id="what-this-research-contributes"><span class="header-section-number">2.5</span> What This Research Contributes</h3>
 <p>This study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays.</p>
 <hr>
 </section>

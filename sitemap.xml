@@ -26,7 +26,7 @@
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/network_analysis.html</loc>
-    <lastmod>2026-03-20T11:36:06.080Z</lastmod>
+    <lastmod>2026-03-26T11:50:11.849Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/python/flight_delay_eda_plots.html</loc>
@@ -39,6 +39,10 @@
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/r/01_report.html</loc>
     <lastmod>2026-03-13T12:54:51.553Z</lastmod>
+  </url>
+  <url>
+    <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/ml-pipeline.html</loc>
+    <lastmod>2026-03-27T11:27:39.605Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/val/python/01_eda_model.html</loc>
@@ -74,7 +78,7 @@
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/notebooks/jon/r/network_analysis.html</loc>
-    <lastmod>2026-03-20T00:43:08.980Z</lastmod>
+    <lastmod>2026-03-26T12:24:02.266Z</lastmod>
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/shared-notebooks/index.html</loc>
@@ -86,6 +90,6 @@
   </url>
   <url>
     <loc>https://jonathanwilsonami.github.io/OR568_ML_Project/paper.html</loc>
-    <lastmod>2026-03-20T00:43:08.980Z</lastmod>
+    <lastmod>2026-03-26T13:06:19.230Z</lastmod>
   </url>
 </urlset>
