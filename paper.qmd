@@ -33,8 +33,15 @@ Flight delays represent one of the most visible operational challenges in modern
 
 Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.
 
+### Related Works 
+
 ### Data and Methods
 Aircraft registry features were initially considered, but because only a 2025 FAA registry snapshot was available while the flight dataset represents 2019 operations, these features could introduce temporal inconsistencies. Therefore, the analysis focuses primarily on operational variables derived directly from the flight dataset, such as aircraft rotation features, turnaround time, and previous-flight delays, which more directly capture delay propagation mechanisms.
+
+- Add diagram of data pipeline and processing of features 
+- Add diagram of model training and evaluation process
+
+**Note: create a section of the site that represents reproducable instructions of our project and data processing steps, including code snippets and explanations.**
 
 ### Why the BWI–EWR Market Pair
 

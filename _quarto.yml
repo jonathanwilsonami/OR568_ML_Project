@@ -7,7 +7,7 @@ project:
     - OR568_ML_Project/shared-notebooks/data/**
 
 website:
-  title: "OR 568 Machine Learning Project"
+  title: "Flight Delays: A Machine Learning Approach"
   site-url: https://jonathanwilsonami.github.io/OR568_ML_Project/
   repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
 
@@ -19,6 +19,8 @@ website:
         text: "About"
       - href: paper.qmd
         text: "Paper"
+      - href: ml-pipeline.qmd
+        text: "ML Pipeline"
       - href: slides.qmd
         text: "Slides"
       - href: shared-notebooks/index.qmd

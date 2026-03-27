@@ -1,0 +1,84 @@
+---
+title: "Machine Learning Pipeline"
+date: 2026-03-13
+format: html 
+toc: true 
+code-fold: false 
+code-tools: true
+---
+
+# Purpose of This Page
+
+This page provides the code and setup needed to run the machine learning workflow in a repeatable way from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines. The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team.
+
+# Setups and Pulling Code 
+
+## Project Setup and Environnement
+
+To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.
+
+1. Clone the project
+
+Start by cloning the repository to your local machine and moving into the project directory.
+
+```bash
+git clone <repo-url>
+cd <repo-folder>
+```
+
+2. Create the Conda environment
+
+This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.
+
+```bash
+conda env create -f environment.yml
+```
+
+Then activate it:
+
+```bash
+conda activate or568_ml_project
+```
+
+3. Run the ML Pipeline
+
+Option 1: Run this notebook in RStudio or Jupyter with R kernel. Make sure to have the Conda environment activated before launching your IDE.
+
+Option 2: Use quarto render path/to/notebook.qmd to render the notebook into HTML. This will execute the code and generate the output in a reproducible way.
+
+Option 3 (not recommended): Render the entire site using Quarto. This will execute all notebooks and generate the HTML pages. 
+
+```bash
+quarto render
+quarto preview
+```
+
+## Data Loading and Cleaning - Raw Data
+The following setup pulls the data from S3 using the `load_flight_data()` function defined in `shared-notebooks/common_utils/r/load_flight_data.r`. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.
+
+However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the `pipeline_main.py` as the entry point for the data pipeline for more details.
+
+::: {.callout-note}
+### Warning - Big Data, well kind of big data
+The flight dataset is quite large (over 7 million records). That's just for a single year of data. Running the `pipeline_main.py` on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 128 GB of RAM (with some GPUs as a backup) to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.
+
+Also, don't use pandas. I personally avoid using it any chance I get to be honest although it still has some good features I like to use. No world is perfect I guess. Use something that does lazy loading and processing like Dask or Polars to handle the large dataset more efficiently without running into memory issues.
+:::
+
+```{r}
+#| message: false
+
+## Project Setup
+source("shared-notebooks/common_utils/r/load_flight_data.r")
+load_project_packages() # Optional 
+
+# flights_enriched_network_2019.parquet
+# Load data and clean column names
+df <- load_flight_data() %>%
+  janitor::clean_names()
+
+set.seed(42)
+
+```
+
+## Feature Engineering and Preprocessing
