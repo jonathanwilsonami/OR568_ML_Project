@@ -214,6 +214,32 @@ Pass both url and file_name
 enriched_flights_2019 <- load_flight_data() %>%
   janitor::clean_names()
 
+# Loading the larger data 
+# WARNING!!!! 
+# The function will download the full file locally ~1 GB compressed for 1 year
+# When you load data into a data frame DO NOT load the whole thing in memory. 
+# The function uses lazy loading. You should filter on the data you need not 
+# all the data. There are over 100 features in the dataset. We don't need 
+# them all. 
+big_data_flights_2019 <- load_flight_data(file_name="flights_canonical_2019.parquet")
+
+model_df <- big_data_flights_2019 %>%
+  select(
+    DepDelay, # Filter on data you need 
+    FlightDate,
+    Origin,
+    Dest
+  ) %>%
+  filter(
+    !is.na(DepDelay), # This can be done later 
+    !is.na(FlightDate),
+    !is.na(Origin),
+    !is.na(Dest),
+  ) %>%
+  slice_head(n = 500) %>% # You can leave this out but here for an example 
+  collect() %>%
+  janitor::clean_names()
+
 ###################################################
 # End Code to Load Data from S3
 ###################################################

@@ -39,7 +39,8 @@ load_project_packages <- function() {
 
 load_flight_data <- function(
   url = "https://or568-flight-delay-data-411750981882-us-east-1-an.s3.us-east-1.amazonaws.com/enriched_flights_2019.parquet",
-  file_name = NULL
+  file_name = NULL,
+  lazy = TRUE
 ) {
   if (!requireNamespace("arrow", quietly = TRUE)) {
     stop("Package 'arrow' required. Install with install.packages('arrow')")
@@ -75,5 +76,9 @@ load_flight_data <- function(
     download.file(resolved_url, destfile = local_file, mode = "wb")
   }
 
-  arrow::read_parquet(local_file)
+  if (lazy) {
+    return(arrow::open_dataset(local_file, format = "parquet"))
+  } else {
+    return(arrow::read_parquet(local_file))
+  }
 }

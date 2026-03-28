@@ -57,26 +57,16 @@ def _infer_local_filename(resolved_url: str) -> str:
 
 def load_flight_data(
     url: str = URL,
-    file_name: str | None = None
-) -> pl.DataFrame:
+    file_name: str | None = None,
+    lazy: bool = True
+):
     """
     Load flight data from local cache or S3.
 
-    Parameters
-    ----------
-    url : str, optional
-        Full dataset URL. Defaults to the current 2019 parquet file.
-    file_name : str | None, optional
-        Optional file name such as 'enriched_flights_2018.parquet'.
-        If provided, it replaces the file part of `url` so callers do not need
-        to specify the full bucket path.
-
-    Examples
-    --------
-    load_flight_data()
-    load_flight_data(file_name="enriched_flights_2018.parquet")
-    load_flight_data(url="https://my-bucket.s3.amazonaws.com/custom.parquet")
+    Returns:
+        LazyFrame (default) or DataFrame if lazy=False
     """
+
     module_file = Path(__file__).resolve()
     shared_notebooks_dir = module_file.parents[2]
 
@@ -91,9 +81,21 @@ def load_flight_data(
         print(f"Downloading dataset from S3: {resolved_url}")
         urllib.request.urlretrieve(resolved_url, local_file)
 
-    df = pl.read_parquet(local_file)
-    df.columns = _clean_names(df.columns)
-    return df
+    if lazy:
+        # LAZY LOAD (SAFE FOR LARGE DATA)
+        lf = pl.scan_parquet(local_file)
+
+        # rename columns lazily
+        cleaned = _clean_names(lf.columns)
+        lf = lf.rename(dict(zip(lf.columns, cleaned)))
+
+        return lf
+
+    else:
+        # FULL LOAD (ONLY USE IF DATA IS SMALL)
+        df = pl.read_parquet(local_file)
+        df.columns = _clean_names(df.columns)
+        return df
 
 
 def _hhmm_to_minutes(col_name: str, alias: str) -> pl.Expr:
