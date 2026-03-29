@@ -87,6 +87,10 @@ Despite these limitations, the dataset provides a strong foundation for studying
 
 ---
 
+## EDA  
+
+- Show network map of airports and flight routes - some kind of data visualization that shows the network structure of the flights between BWI and EWR, as well as other connecting routes. This could be a graph or a map visualization that highlights the frequency of flights and the connections between different airports.
+
 ## Feature Engineering
 
 ### Delay Indicator
@@ -315,3 +319,8 @@ Future work could extend this framework to larger airline networks and incorpora
 ---
 
 ## References
+
+
+## Appendix  
+
+### Data Catalog 

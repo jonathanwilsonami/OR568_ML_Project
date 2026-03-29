@@ -211,6 +211,7 @@ Pass both url and file_name
       file_name = 'alternate_file.parquet'
     )
 """
+# Loads default dataset 
 enriched_flights_2019 <- load_flight_data() %>%
   janitor::clean_names()
 

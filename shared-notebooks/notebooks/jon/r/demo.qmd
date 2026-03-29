@@ -1,0 +1,213 @@
+# Simple Demo of new Dataset 
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(ggplot2)
+library(janitor)
+library(lubridate)
+library(rsample)
+library(recipes)
+library(parsnip)
+library(workflows)
+library(yardstick)
+library(tune)
+library(ranger)
+library(vip)
+library(broom)
+```
+
+## Load Data 
+
+```{r}
+
+## Project Setup
+source("shared-notebooks/common_utils/r/load_flight_data.r")
+load_project_packages() # Optional 
+
+# Load data and clean column names
+flights <- load_flight_data(file_name = "flights_canonical_2019.parquet") %>%
+  select(
+    ArrDelay, ArrDel15, Month, DayOfWeek,
+    Reporting_Airline, Origin, Dest, Distance,
+    dep_hour_local, dep_temp_c, dep_wind_speed_m_s,
+    dep_ceiling_height_m, prev_arr_delay, prev_dep_delay,
+    turnaround_minutes, prev_arr_late_15,
+    is_cancelled, is_diverted
+  ) %>%
+  filter(is_cancelled == FALSE, is_diverted == FALSE) %>%
+  collect() %>%
+  janitor::clean_names()
+
+glimpse(flights)
+```
+
+## Data Prep for Modeling
+
+```{r}
+model_df <- flights %>%
+  mutate(
+    arr_del15 = factor(ifelse(arr_del15 == 1, "late", "on_time"),
+                       levels = c("on_time", "late")),
+    prev_arr_late_15 = factor(
+      ifelse(prev_arr_late_15 == 1, "yes", "no"),
+      levels = c("no", "yes")
+    ),
+    month = as.factor(month),
+    day_of_week = as.factor(day_of_week),
+    reporting_airline = as.factor(reporting_airline),
+    origin = as.factor(origin),
+    dest = as.factor(dest)
+  ) %>%
+  filter(
+    !is.na(arr_delay),
+    !is.na(arr_del15),
+    !is.na(dep_hour_local),
+    !is.na(distance),
+    !is.na(dep_temp_c),
+    !is.na(prev_arr_delay),
+    !is.na(turnaround_minutes)
+  ) %>%
+  slice_sample(n = 100000)
+
+summary(model_df)
+```
+
+## Simple EDA 
+
+```{r}
+ggplot(model_df, aes(x = arr_delay)) +
+  geom_histogram(bins = 60) +
+  coord_cartesian(xlim = c(-50, 200)) +
+  labs(title = "Arrival Delay Distribution") 
+
+
+ggplot(model_df, aes(x = arr_del15)) +
+  geom_bar() +
+  labs(title = "Late vs On-Time Flights") 
+
+
+ggplot(model_df, aes(x = prev_arr_delay, y = arr_delay)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Delay Propagation Effect") 
+
+
+
+```
+
+## Train/Test Split 
+
+```{r} 
+set.seed(123)
+
+split_obj <- initial_split(model_df, prop = 0.80, strata = arr_del15)
+train_df <- training(split_obj)
+test_df  <- testing(split_obj)
+```
+
+## Linear Regression (Predict Delay Minutes) 
+
+```{r}
+# lm_recipe <- recipe(
+#   arr_delay ~ month + day_of_week + dep_hour_local +
+#     reporting_airline + origin + dest + distance +
+#     dep_temp_c + dep_wind_speed_m_s + dep_ceiling_height_m +
+#     prev_arr_delay + prev_dep_delay + turnaround_minutes +
+#     prev_arr_late_15,
+#   data = train_df
+# ) %>%
+#   step_dummy(all_nominal_predictors()) %>%
+#   step_zv(all_predictors()) %>%
+#   step_normalize(all_numeric_predictors())
+# 
+# lm_model <- linear_reg() %>%
+#   set_engine("lm")
+# 
+# lm_fit <- workflow() %>%
+#   add_recipe(lm_recipe) %>%
+#   add_model(lm_model) %>%
+#   fit(data = train_df)
+```
+
+
+```{r}
+# lm_preds <- predict(lm_fit, test_df) %>%
+#   bind_cols(test_df %>% select(arr_delay))
+# 
+# bind_rows(
+#   rmse(lm_preds, truth = arr_delay, estimate = .pred),
+#   mae(lm_preds, truth = arr_delay, estimate = .pred),
+#   rsq(lm_preds, truth = arr_delay, estimate = .pred)
+# )
+```
+
+
+```{r}
+# ggplot(lm_preds, aes(x = arr_delay, y = .pred)) +
+  # geom_point(alpha = 0.15) +
+  # geom_abline(linetype = "dashed") +
+  # labs(title = "Linear Regression: Actual vs Predicted")
+```
+
+## Logistic 
+
+```{r}
+log_recipe <- recipe(
+  arr_del15 ~ month + day_of_week + dep_hour_local +
+    reporting_airline + origin + dest + distance +
+    dep_temp_c + dep_wind_speed_m_s + dep_ceiling_height_m +
+    prev_arr_delay + prev_dep_delay + turnaround_minutes +
+    prev_arr_late_15,
+  data = train_df
+) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_numeric_predictors())
+
+log_model <- logistic_reg() %>%
+  set_engine("glm")
+
+log_fit <- workflow() %>%
+  add_recipe(log_recipe) %>%
+  add_model(log_model) %>%
+  fit(data = train_df)
+```
+
+## Trees 
+```{r}
+rf_model <- rand_forest(trees = 300, min_n = 10) %>%
+  set_engine("ranger", importance = "impurity") %>%
+  set_mode("classification")
+
+rf_fit <- workflow() %>%
+  add_recipe(log_recipe) %>%  # reuse same features
+  add_model(rf_model) %>%
+  fit(data = train_df)
+```
+
+
+
+```{r}
+rf_preds <- bind_cols(
+  test_df %>% select(arr_del15),
+  predict(rf_fit, test_df, type = "prob"),
+  predict(rf_fit, test_df, type = "class")
+)
+
+bind_rows(
+  accuracy(rf_preds, truth = arr_del15, estimate = .pred_class),
+  precision(rf_preds, truth = arr_del15, estimate = .pred_class, event_level = "second"),
+  recall(rf_preds, truth = arr_del15, estimate = .pred_class, event_level = "second"),
+  f_meas(rf_preds, truth = arr_del15, estimate = .pred_class, event_level = "second"),
+  roc_auc(rf_preds, truth = arr_del15, .pred_late, event_level = "second")
+)
+```
+
+
+```{r}
+rf_fit %>%
+  extract_fit_parsnip() %>%
+  vip(num_features = 15)
+```

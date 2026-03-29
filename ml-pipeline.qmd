@@ -74,11 +74,27 @@ load_project_packages() # Optional
 
 # flights_enriched_network_2019.parquet
 # Load data and clean column names
-df <- load_flight_data() %>%
+flights <- load_flight_data() %>%
+
+model_df <- flights %>%
+  select(
+    DepDelay,
+    FlightDate,
+    Origin,
+    Dest
+  ) %>%
+  filter(
+    !is.na(DepDelay),
+    !is.na(FlightDate),
+    !is.na(Origin),
+    !is.na(Dest),
+  ) %>%
+  slice_head(n = 500) %>%
+  collect() %>%
   janitor::clean_names()
 
 set.seed(42)
 
 ```
 
-## Feature Engineering and Preprocessing
+# Feature Engineering and Preprocessing
