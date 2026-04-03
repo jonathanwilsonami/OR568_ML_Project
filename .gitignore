@@ -38,3 +38,6 @@ data_pipeline/data/*
 data/*
 shared-notebooks/data/
 shared-notebooks/notebooks/val/r/enriched_flights_NEW.csv
+
+
+images/other/*

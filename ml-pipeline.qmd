@@ -68,13 +68,10 @@ Also, don't use pandas. I personally avoid using it any chance I get to be hones
 ```{r}
 #| message: false
 
-## Project Setup
-source("shared-notebooks/common_utils/r/load_flight_data.r")
-load_project_packages() # Optional 
-
-# flights_enriched_network_2019.parquet
 # Load data and clean column names
-flights <- load_flight_data() %>%
+source("shared-notebooks/common_utils/r/load_flight_data.r")
+flights <- load_flight_data()
+load_project_packages() # Optional 
 
 model_df <- flights %>%
   select(

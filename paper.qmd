@@ -1,14 +1,17 @@
 ---
 title: "Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors"
 date: 2026-03-13
-categories: [Machine Learning, Aviation, Flight Delays]
+categories: ["Machine Learning", "Aviation", "Flight Delays"]
 repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
 format:
   html:
     number-sections: true
     math:
       eq-prefix: "Model"
-authors: 
+  pdf:
+    number-sections: true
+    keep-tex: true
+authors:
   - "Jonathan Wilson"
   - "Karan [Last Name]"
   - "Irena [Last Name]"

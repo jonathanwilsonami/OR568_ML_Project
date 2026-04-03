@@ -2,9 +2,12 @@ project:
   type: website
   output-dir: docs
   execute-dir: project
+  render:
+    - "*.qmd"
+    - "!shared-notebooks/**"
   resources:
     - images/**
-    - OR568_ML_Project/shared-notebooks/data/**
+    # - shared-notebooks/data/**
 
 website:
   title: "Flight Delays: A Machine Learning Approach"
@@ -21,30 +24,6 @@ website:
         text: "Paper"
       - href: ml-pipeline.qmd
         text: "ML Pipeline"
-      - href: slides.qmd
-        text: "Slides"
-      - href: shared-notebooks/index.qmd
-        text: "Shared Notebooks"
-
-  sidebar:
-  - id: shared-notebooks
-    title: "Shared Notebooks"
-    style: docked
-    search: true
-    contents:
-      - shared-notebooks/index.qmd
-
-      - section: "Jon"
-        contents: "shared-notebooks/notebooks/jon/**/*"
-
-      - section: "Karan"
-        contents: "shared-notebooks/notebooks/karan/**/*"
-
-      - section: "Irena"
-        contents: "shared-notebooks/notebooks/irena/**/*"
-
-      - section: "Val"
-        contents: "shared-notebooks/notebooks/val/**/*"
 
 format:
   html:

@@ -76,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-1d01d20c23b42892bcc5a55fd51b757c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-d8a18cee56031974d1f8f6eead200d41.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -172,14 +172,6 @@ window.Quarto = {
     <a class="nav-link" href="./ml-pipeline.html"> 
 <span class="menu-text">ML Pipeline</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./slides.html"> 
-<span class="menu-text">Slides</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./shared-notebooks/index.html"> 
-<span class="menu-text">Shared Notebooks</span></a>
-  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -210,46 +202,51 @@ window.Quarto = {
   <li><a href="#dataset-overview" id="toc-dataset-overview" class="nav-link" data-scroll-target="#dataset-overview"><span class="header-section-number">3.1</span> Dataset Overview</a></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations"><span class="header-section-number">3.2</span> Limitations</a></li>
   </ul></li>
-  <li><a href="#feature-engineering" id="toc-feature-engineering" class="nav-link" data-scroll-target="#feature-engineering"><span class="header-section-number">4</span> Feature Engineering</a>
+  <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda"><span class="header-section-number">4</span> EDA</a></li>
+  <li><a href="#feature-engineering" id="toc-feature-engineering" class="nav-link" data-scroll-target="#feature-engineering"><span class="header-section-number">5</span> Feature Engineering</a>
   <ul class="collapse">
-  <li><a href="#delay-indicator" id="toc-delay-indicator" class="nav-link" data-scroll-target="#delay-indicator"><span class="header-section-number">4.1</span> Delay Indicator</a></li>
-  <li><a href="#prior-aircraft-delay" id="toc-prior-aircraft-delay" class="nav-link" data-scroll-target="#prior-aircraft-delay"><span class="header-section-number">4.2</span> Prior Aircraft Delay</a></li>
-  <li><a href="#turnaround-time" id="toc-turnaround-time" class="nav-link" data-scroll-target="#turnaround-time"><span class="header-section-number">4.3</span> Turnaround Time</a></li>
-  <li><a href="#weather-severity" id="toc-weather-severity" class="nav-link" data-scroll-target="#weather-severity"><span class="header-section-number">4.4</span> Weather Severity</a></li>
-  <li><a href="#temporal-features" id="toc-temporal-features" class="nav-link" data-scroll-target="#temporal-features"><span class="header-section-number">4.5</span> Temporal Features</a></li>
+  <li><a href="#delay-indicator" id="toc-delay-indicator" class="nav-link" data-scroll-target="#delay-indicator"><span class="header-section-number">5.1</span> Delay Indicator</a></li>
+  <li><a href="#prior-aircraft-delay" id="toc-prior-aircraft-delay" class="nav-link" data-scroll-target="#prior-aircraft-delay"><span class="header-section-number">5.2</span> Prior Aircraft Delay</a></li>
+  <li><a href="#turnaround-time" id="toc-turnaround-time" class="nav-link" data-scroll-target="#turnaround-time"><span class="header-section-number">5.3</span> Turnaround Time</a></li>
+  <li><a href="#weather-severity" id="toc-weather-severity" class="nav-link" data-scroll-target="#weather-severity"><span class="header-section-number">5.4</span> Weather Severity</a></li>
+  <li><a href="#temporal-features" id="toc-temporal-features" class="nav-link" data-scroll-target="#temporal-features"><span class="header-section-number">5.5</span> Temporal Features</a></li>
   </ul></li>
-  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis"><span class="header-section-number">5</span> Exploratory Data Analysis</a>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis"><span class="header-section-number">6</span> Exploratory Data Analysis</a>
   <ul class="collapse">
-  <li><a href="#distribution-of-delays" id="toc-distribution-of-delays" class="nav-link" data-scroll-target="#distribution-of-delays"><span class="header-section-number">5.1</span> Distribution of Delays</a></li>
-  <li><a href="#delays-by-time-of-day" id="toc-delays-by-time-of-day" class="nav-link" data-scroll-target="#delays-by-time-of-day"><span class="header-section-number">5.2</span> Delays by Time of Day</a></li>
-  <li><a href="#weather-vs-delay" id="toc-weather-vs-delay" class="nav-link" data-scroll-target="#weather-vs-delay"><span class="header-section-number">5.3</span> Weather vs Delay</a></li>
-  <li><a href="#delay-propagation" id="toc-delay-propagation" class="nav-link" data-scroll-target="#delay-propagation"><span class="header-section-number">5.4</span> Delay Propagation</a></li>
+  <li><a href="#distribution-of-delays" id="toc-distribution-of-delays" class="nav-link" data-scroll-target="#distribution-of-delays"><span class="header-section-number">6.1</span> Distribution of Delays</a></li>
+  <li><a href="#delays-by-time-of-day" id="toc-delays-by-time-of-day" class="nav-link" data-scroll-target="#delays-by-time-of-day"><span class="header-section-number">6.2</span> Delays by Time of Day</a></li>
+  <li><a href="#weather-vs-delay" id="toc-weather-vs-delay" class="nav-link" data-scroll-target="#weather-vs-delay"><span class="header-section-number">6.3</span> Weather vs Delay</a></li>
+  <li><a href="#delay-propagation" id="toc-delay-propagation" class="nav-link" data-scroll-target="#delay-propagation"><span class="header-section-number">6.4</span> Delay Propagation</a></li>
   </ul></li>
-  <li><a href="#research-questions" id="toc-research-questions" class="nav-link" data-scroll-target="#research-questions"><span class="header-section-number">6</span> Research Questions</a></li>
-  <li><a href="#building-classifiers" id="toc-building-classifiers" class="nav-link" data-scroll-target="#building-classifiers"><span class="header-section-number">7</span> Building Classifiers</a>
+  <li><a href="#research-questions" id="toc-research-questions" class="nav-link" data-scroll-target="#research-questions"><span class="header-section-number">7</span> Research Questions</a></li>
+  <li><a href="#building-classifiers" id="toc-building-classifiers" class="nav-link" data-scroll-target="#building-classifiers"><span class="header-section-number">8</span> Building Classifiers</a>
   <ul class="collapse">
-  <li><a href="#logistic-regression" id="toc-logistic-regression" class="nav-link" data-scroll-target="#logistic-regression"><span class="header-section-number">7.1</span> Logistic Regression</a></li>
-  <li><a href="#ridge-logistic-regression" id="toc-ridge-logistic-regression" class="nav-link" data-scroll-target="#ridge-logistic-regression"><span class="header-section-number">7.2</span> Ridge Logistic Regression</a></li>
-  <li><a href="#classification-tree" id="toc-classification-tree" class="nav-link" data-scroll-target="#classification-tree"><span class="header-section-number">7.3</span> Classification Tree</a></li>
-  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest"><span class="header-section-number">7.4</span> Random Forest</a></li>
-  <li><a href="#k-nearest-neighbors" id="toc-k-nearest-neighbors" class="nav-link" data-scroll-target="#k-nearest-neighbors"><span class="header-section-number">7.5</span> K-Nearest Neighbors</a></li>
+  <li><a href="#logistic-regression" id="toc-logistic-regression" class="nav-link" data-scroll-target="#logistic-regression"><span class="header-section-number">8.1</span> Logistic Regression</a></li>
+  <li><a href="#ridge-logistic-regression" id="toc-ridge-logistic-regression" class="nav-link" data-scroll-target="#ridge-logistic-regression"><span class="header-section-number">8.2</span> Ridge Logistic Regression</a></li>
+  <li><a href="#classification-tree" id="toc-classification-tree" class="nav-link" data-scroll-target="#classification-tree"><span class="header-section-number">8.3</span> Classification Tree</a></li>
+  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest"><span class="header-section-number">8.4</span> Random Forest</a></li>
+  <li><a href="#k-nearest-neighbors" id="toc-k-nearest-neighbors" class="nav-link" data-scroll-target="#k-nearest-neighbors"><span class="header-section-number">8.5</span> K-Nearest Neighbors</a></li>
   </ul></li>
-  <li><a href="#unsupervised-analysis" id="toc-unsupervised-analysis" class="nav-link" data-scroll-target="#unsupervised-analysis"><span class="header-section-number">8</span> Unsupervised Analysis</a>
+  <li><a href="#unsupervised-analysis" id="toc-unsupervised-analysis" class="nav-link" data-scroll-target="#unsupervised-analysis"><span class="header-section-number">9</span> Unsupervised Analysis</a>
   <ul class="collapse">
-  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis"><span class="header-section-number">8.1</span> Principal Component Analysis</a></li>
-  <li><a href="#k-means-clustering" id="toc-k-means-clustering" class="nav-link" data-scroll-target="#k-means-clustering"><span class="header-section-number">8.2</span> K-Means Clustering</a></li>
+  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis"><span class="header-section-number">9.1</span> Principal Component Analysis</a></li>
+  <li><a href="#k-means-clustering" id="toc-k-means-clustering" class="nav-link" data-scroll-target="#k-means-clustering"><span class="header-section-number">9.2</span> K-Means Clustering</a></li>
   </ul></li>
-  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison"><span class="header-section-number">9</span> Model Comparison</a></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">10</span> Results</a>
+  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison"><span class="header-section-number">10</span> Model Comparison</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">11</span> Results</a>
   <ul class="collapse">
-  <li><a href="#key-findings" id="toc-key-findings" class="nav-link" data-scroll-target="#key-findings"><span class="header-section-number">10.1</span> Key Findings</a></li>
-  <li><a href="#operational-interpretation" id="toc-operational-interpretation" class="nav-link" data-scroll-target="#operational-interpretation"><span class="header-section-number">10.2</span> Operational Interpretation</a></li>
+  <li><a href="#key-findings" id="toc-key-findings" class="nav-link" data-scroll-target="#key-findings"><span class="header-section-number">11.1</span> Key Findings</a></li>
+  <li><a href="#operational-interpretation" id="toc-operational-interpretation" class="nav-link" data-scroll-target="#operational-interpretation"><span class="header-section-number">11.2</span> Operational Interpretation</a></li>
   </ul></li>
-  <li><a href="#discussion-limitations" id="toc-discussion-limitations" class="nav-link" data-scroll-target="#discussion-limitations"><span class="header-section-number">11</span> Discussion &amp; Limitations</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">12</span> Conclusion</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">13</span> References</a></li>
+  <li><a href="#discussion-limitations" id="toc-discussion-limitations" class="nav-link" data-scroll-target="#discussion-limitations"><span class="header-section-number">12</span> Discussion &amp; Limitations</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">13</span> Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">14</span> References</a></li>
+  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="header-section-number">15</span> Appendix</a>
+  <ul class="collapse">
+  <li><a href="#data-catalog" id="toc-data-catalog" class="nav-link" data-scroll-target="#data-catalog"><span class="header-section-number">15.1</span> Data Catalog</a></li>
+  </ul></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="paper.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -363,10 +360,16 @@ window.Quarto = {
 <hr>
 </section>
 </section>
-<section id="feature-engineering" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="feature-engineering"><span class="header-section-number">4</span> Feature Engineering</h2>
-<section id="delay-indicator" class="level3" data-number="4.1">
-<h3 data-number="4.1" class="anchored" data-anchor-id="delay-indicator"><span class="header-section-number">4.1</span> Delay Indicator</h3>
+<section id="eda" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="eda"><span class="header-section-number">4</span> EDA</h2>
+<ul>
+<li>Show network map of airports and flight routes - some kind of data visualization that shows the network structure of the flights between BWI and EWR, as well as other connecting routes. This could be a graph or a map visualization that highlights the frequency of flights and the connections between different airports.</li>
+</ul>
+</section>
+<section id="feature-engineering" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="feature-engineering"><span class="header-section-number">5</span> Feature Engineering</h2>
+<section id="delay-indicator" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="delay-indicator"><span class="header-section-number">5.1</span> Delay Indicator</h3>
 <p>To simplify classification, we define a binary delay variable:</p>
 <p><span class="math display">\[
 Delayed_i =
@@ -376,29 +379,29 @@ Delayed_i =
 \end{cases}
 \]</span></p>
 </section>
-<section id="prior-aircraft-delay" class="level3" data-number="4.2">
-<h3 data-number="4.2" class="anchored" data-anchor-id="prior-aircraft-delay"><span class="header-section-number">4.2</span> Prior Aircraft Delay</h3>
+<section id="prior-aircraft-delay" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="prior-aircraft-delay"><span class="header-section-number">5.2</span> Prior Aircraft Delay</h3>
 <p>Upstream delays are captured by the delay of the previous aircraft flight:</p>
 <p><span class="math display">\[
 PriorDelay_i = ArrivalDelay_{previous}
 \]</span></p>
 </section>
-<section id="turnaround-time" class="level3" data-number="4.3">
-<h3 data-number="4.3" class="anchored" data-anchor-id="turnaround-time"><span class="header-section-number">4.3</span> Turnaround Time</h3>
+<section id="turnaround-time" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="turnaround-time"><span class="header-section-number">5.3</span> Turnaround Time</h3>
 <p>Turnaround time captures the buffer between flights:</p>
 <p><span class="math display">\[
 Turnaround_i = DepartureTime_i - PreviousArrivalTime_i
 \]</span></p>
 </section>
-<section id="weather-severity" class="level3" data-number="4.4">
-<h3 data-number="4.4" class="anchored" data-anchor-id="weather-severity"><span class="header-section-number">4.4</span> Weather Severity</h3>
+<section id="weather-severity" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="weather-severity"><span class="header-section-number">5.4</span> Weather Severity</h3>
 <p>Weather features combine several meteorological indicators:</p>
 <p><span class="math display">\[
 WeatherSeverity = f(wind, visibility, precipitation, storm\ indicators)
 \]</span></p>
 </section>
-<section id="temporal-features" class="level3" data-number="4.5">
-<h3 data-number="4.5" class="anchored" data-anchor-id="temporal-features"><span class="header-section-number">4.5</span> Temporal Features</h3>
+<section id="temporal-features" class="level3" data-number="5.5">
+<h3 data-number="5.5" class="anchored" data-anchor-id="temporal-features"><span class="header-section-number">5.5</span> Temporal Features</h3>
 <p>Time-based indicators include:</p>
 <ul>
 <li>departure hour</li>
@@ -410,38 +413,38 @@ WeatherSeverity = f(wind, visibility, precipitation, storm\ indicators)
 <hr>
 </section>
 </section>
-<section id="exploratory-data-analysis" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="exploratory-data-analysis"><span class="header-section-number">5</span> Exploratory Data Analysis</h2>
-<section id="distribution-of-delays" class="level3" data-number="5.1">
-<h3 data-number="5.1" class="anchored" data-anchor-id="distribution-of-delays"><span class="header-section-number">5.1</span> Distribution of Delays</h3>
+<section id="exploratory-data-analysis" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="exploratory-data-analysis"><span class="header-section-number">6</span> Exploratory Data Analysis</h2>
+<section id="distribution-of-delays" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="distribution-of-delays"><span class="header-section-number">6.1</span> Distribution of Delays</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Histogram of departure delays</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ggplot(df, aes(x = DepDelayMinutes)) +</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   geom_histogram(bins = 50)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="delays-by-time-of-day" class="level3" data-number="5.2">
-<h3 data-number="5.2" class="anchored" data-anchor-id="delays-by-time-of-day"><span class="header-section-number">5.2</span> Delays by Time of Day</h3>
+<section id="delays-by-time-of-day" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="delays-by-time-of-day"><span class="header-section-number">6.2</span> Delays by Time of Day</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delay frequency by departure hour</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="weather-vs-delay" class="level3" data-number="5.3">
-<h3 data-number="5.3" class="anchored" data-anchor-id="weather-vs-delay"><span class="header-section-number">5.3</span> Weather vs Delay</h3>
+<section id="weather-vs-delay" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="weather-vs-delay"><span class="header-section-number">6.3</span> Weather vs Delay</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Weather severity vs delay outcome</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="delay-propagation" class="level3" data-number="5.4">
-<h3 data-number="5.4" class="anchored" data-anchor-id="delay-propagation"><span class="header-section-number">5.4</span> Delay Propagation</h3>
+<section id="delay-propagation" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="delay-propagation"><span class="header-section-number">6.4</span> Delay Propagation</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Previous arrival delay vs next departure delay</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
 </section>
-<section id="research-questions" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="research-questions"><span class="header-section-number">6</span> Research Questions</h2>
+<section id="research-questions" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="research-questions"><span class="header-section-number">7</span> Research Questions</h2>
 <p>This study seeks to answer the following questions:</p>
 <ol type="1">
 <li>Which operational and weather variables most strongly predict flight delays?</li>
@@ -451,10 +454,10 @@ WeatherSeverity = f(wind, visibility, precipitation, storm\ indicators)
 </ol>
 <hr>
 </section>
-<section id="building-classifiers" class="level2" data-number="7">
-<h2 data-number="7" class="anchored" data-anchor-id="building-classifiers"><span class="header-section-number">7</span> Building Classifiers</h2>
-<section id="logistic-regression" class="level3" data-number="7.1">
-<h3 data-number="7.1" class="anchored" data-anchor-id="logistic-regression"><span class="header-section-number">7.1</span> Logistic Regression</h3>
+<section id="building-classifiers" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="building-classifiers"><span class="header-section-number">8</span> Building Classifiers</h2>
+<section id="logistic-regression" class="level3" data-number="8.1">
+<h3 data-number="8.1" class="anchored" data-anchor-id="logistic-regression"><span class="header-section-number">8.1</span> Logistic Regression</h3>
 <p>We begin with a baseline logistic regression model.</p>
 <p><span class="math display">\[
 P(Y_i = 1|X_i) =
@@ -468,32 +471,32 @@ P(Y_i = 1|X_i) =
 </div>
 <hr>
 </section>
-<section id="ridge-logistic-regression" class="level3" data-number="7.2">
-<h3 data-number="7.2" class="anchored" data-anchor-id="ridge-logistic-regression"><span class="header-section-number">7.2</span> Ridge Logistic Regression</h3>
+<section id="ridge-logistic-regression" class="level3" data-number="8.2">
+<h3 data-number="8.2" class="anchored" data-anchor-id="ridge-logistic-regression"><span class="header-section-number">8.2</span> Ridge Logistic Regression</h3>
 <p>To address multicollinearity and improve stability we apply ridge regularization.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ridge logistic regression</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
-<section id="classification-tree" class="level3" data-number="7.3">
-<h3 data-number="7.3" class="anchored" data-anchor-id="classification-tree"><span class="header-section-number">7.3</span> Classification Tree</h3>
+<section id="classification-tree" class="level3" data-number="8.3">
+<h3 data-number="8.3" class="anchored" data-anchor-id="classification-tree"><span class="header-section-number">8.3</span> Classification Tree</h3>
 <p>Decision trees provide interpretable classification rules.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># classification tree</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
-<section id="random-forest" class="level3" data-number="7.4">
-<h3 data-number="7.4" class="anchored" data-anchor-id="random-forest"><span class="header-section-number">7.4</span> Random Forest</h3>
+<section id="random-forest" class="level3" data-number="8.4">
+<h3 data-number="8.4" class="anchored" data-anchor-id="random-forest"><span class="header-section-number">8.4</span> Random Forest</h3>
 <p>Random forests improve predictive accuracy through ensemble learning.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># random forest model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
 </section>
-<section id="k-nearest-neighbors" class="level3" data-number="7.5">
-<h3 data-number="7.5" class="anchored" data-anchor-id="k-nearest-neighbors"><span class="header-section-number">7.5</span> K-Nearest Neighbors</h3>
+<section id="k-nearest-neighbors" class="level3" data-number="8.5">
+<h3 data-number="8.5" class="anchored" data-anchor-id="k-nearest-neighbors"><span class="header-section-number">8.5</span> K-Nearest Neighbors</h3>
 <p>KNN classifies flights based on nearby observations in feature space.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># knn model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -501,17 +504,17 @@ P(Y_i = 1|X_i) =
 <hr>
 </section>
 </section>
-<section id="unsupervised-analysis" class="level2" data-number="8">
-<h2 data-number="8" class="anchored" data-anchor-id="unsupervised-analysis"><span class="header-section-number">8</span> Unsupervised Analysis</h2>
-<section id="principal-component-analysis" class="level3" data-number="8.1">
-<h3 data-number="8.1" class="anchored" data-anchor-id="principal-component-analysis"><span class="header-section-number">8.1</span> Principal Component Analysis</h3>
+<section id="unsupervised-analysis" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="unsupervised-analysis"><span class="header-section-number">9</span> Unsupervised Analysis</h2>
+<section id="principal-component-analysis" class="level3" data-number="9.1">
+<h3 data-number="9.1" class="anchored" data-anchor-id="principal-component-analysis"><span class="header-section-number">9.1</span> Principal Component Analysis</h3>
 <p>PCA identifies dominant dimensions in the feature space.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># PCA analysis</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="k-means-clustering" class="level3" data-number="8.2">
-<h3 data-number="8.2" class="anchored" data-anchor-id="k-means-clustering"><span class="header-section-number">8.2</span> K-Means Clustering</h3>
+<section id="k-means-clustering" class="level3" data-number="9.2">
+<h3 data-number="9.2" class="anchored" data-anchor-id="k-means-clustering"><span class="header-section-number">9.2</span> K-Means Clustering</h3>
 <p>Clustering reveals natural groupings among flight observations.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># kmeans clustering</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -519,8 +522,8 @@ P(Y_i = 1|X_i) =
 <hr>
 </section>
 </section>
-<section id="model-comparison" class="level2" data-number="9">
-<h2 data-number="9" class="anchored" data-anchor-id="model-comparison"><span class="header-section-number">9</span> Model Comparison</h2>
+<section id="model-comparison" class="level2" data-number="10">
+<h2 data-number="10" class="anchored" data-anchor-id="model-comparison"><span class="header-section-number">10</span> Model Comparison</h2>
 <p>We compare models using metrics such as:</p>
 <ul>
 <li>accuracy</li>
@@ -533,10 +536,10 @@ P(Y_i = 1|X_i) =
 </div>
 <hr>
 </section>
-<section id="results" class="level2" data-number="10">
-<h2 data-number="10" class="anchored" data-anchor-id="results"><span class="header-section-number">10</span> Results</h2>
-<section id="key-findings" class="level3" data-number="10.1">
-<h3 data-number="10.1" class="anchored" data-anchor-id="key-findings"><span class="header-section-number">10.1</span> Key Findings</h3>
+<section id="results" class="level2" data-number="11">
+<h2 data-number="11" class="anchored" data-anchor-id="results"><span class="header-section-number">11</span> Results</h2>
+<section id="key-findings" class="level3" data-number="11.1">
+<h3 data-number="11.1" class="anchored" data-anchor-id="key-findings"><span class="header-section-number">11.1</span> Key Findings</h3>
 <p>The analysis suggests that delay outcomes are influenced by several interacting factors:</p>
 <ul>
 <li>upstream aircraft delays</li>
@@ -545,14 +548,14 @@ P(Y_i = 1|X_i) =
 <li>temporal scheduling effects</li>
 </ul>
 </section>
-<section id="operational-interpretation" class="level3" data-number="10.2">
-<h3 data-number="10.2" class="anchored" data-anchor-id="operational-interpretation"><span class="header-section-number">10.2</span> Operational Interpretation</h3>
+<section id="operational-interpretation" class="level3" data-number="11.2">
+<h3 data-number="11.2" class="anchored" data-anchor-id="operational-interpretation"><span class="header-section-number">11.2</span> Operational Interpretation</h3>
 <p>Predictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions.</p>
 <hr>
 </section>
 </section>
-<section id="discussion-limitations" class="level2" data-number="11">
-<h2 data-number="11" class="anchored" data-anchor-id="discussion-limitations"><span class="header-section-number">11</span> Discussion &amp; Limitations</h2>
+<section id="discussion-limitations" class="level2" data-number="12">
+<h2 data-number="12" class="anchored" data-anchor-id="discussion-limitations"><span class="header-section-number">12</span> Discussion &amp; Limitations</h2>
 <p>Several limitations should be considered:</p>
 <ul>
 <li>missing operational factors such as crew and maintenance constraints</li>
@@ -562,18 +565,24 @@ P(Y_i = 1|X_i) =
 <p>Despite these challenges, the framework provides a replicable approach for studying delay behavior.</p>
 <hr>
 </section>
-<section id="conclusion" class="level2" data-number="12">
-<h2 data-number="12" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">12</span> Conclusion</h2>
+<section id="conclusion" class="level2" data-number="13">
+<h2 data-number="13" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">13</span> Conclusion</h2>
 <p>This study demonstrates how machine learning methods can be applied to understand delay dynamics in the BWI–EWR market pair.</p>
 <p>Tree-based methods and penalized regression provide the best balance of predictive performance and interpretability. The analysis highlights the importance of upstream delay propagation and temporal operational patterns.</p>
 <p>Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches.</p>
 <hr>
 </section>
-<section id="references" class="level2" data-number="13">
-<h2 data-number="13" class="anchored" data-anchor-id="references"><span class="header-section-number">13</span> References</h2>
+<section id="references" class="level2" data-number="14">
+<h2 data-number="14" class="anchored" data-anchor-id="references"><span class="header-section-number">14</span> References</h2>
+</section>
+<section id="appendix" class="level2" data-number="15">
+<h2 data-number="15" class="anchored" data-anchor-id="appendix"><span class="header-section-number">15</span> Appendix</h2>
+<section id="data-catalog" class="level3" data-number="15.1">
+<h3 data-number="15.1" class="anchored" data-anchor-id="data-catalog"><span class="header-section-number">15.1</span> Data Catalog</h3>
 
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
