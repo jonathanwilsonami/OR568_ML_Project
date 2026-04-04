@@ -1,44 +1,47 @@
 name: or568_ml_project
 channels:
-  - conda-forge
-  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
 dependencies:
-  - nb_conda_kernels
-  - r-data.table
-  - r-skimr
-  - scikit-learn
-  - r-broom
-  - r-here
-  - r-igraph
-  - jupytext
-  - r-xgboost
-  - xgboost
-  - r-tidyverse
-  - r-pacman
-  - matplotlib
-  - pandas
-  - r-base=4.3
-  - scipy
-  - lightgbm
-  - r-glmnet
   - fastparquet
-  - pyarrow
-  - r-caret
-  - pip
-  - seaborn
-  - r-irkernel
-  - r-kableextra
-  - r-tidygraph
-  - r-ggraph
-  - r-knitr
   - ipykernel
   - jupyterlab
-  - r-ranger
-  - python=3.11
+  - jupytext
+  - lightgbm
+  - matplotlib
+  - nb_conda_kernels
   - numpy
-  - statsmodels
-  - r-arrow
-  - r-janitor
-  - r-rmarkdown
-  - r-lubridate
+  - pandas
+  - pip
   - polars
+  - pyarrow
+  - python=3.11
+  - r-arrow
+  - r-base=4.3
+  - r-broom
+  - r-caret
+  - r-data.table
+  - r-ggraph
+  - r-glmnet
+  - r-here
+  - r-igraph
+  - r-irkernel
+  - r-janitor
+  - r-kableextra
+  - r-knitr
+  - r-lubridate
+  - r-pacman
+  - r-ranger
+  - r-rmarkdown
+  - r-skimr
+  - r-tidygraph
+  - r-tidyverse
+  - r-xgboost
+  - scikit-learn
+  - scipy
+  - seaborn
+  - statsmodels
+  - xgboost
+  - r-vip
+  - networkx
+  - tensorflow
