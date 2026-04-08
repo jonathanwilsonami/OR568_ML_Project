@@ -1,0 +1,3 @@
+model_family,params,test_auc,test_f1,test_precision,test_recall,test_accuracy,test_mae,test_rmse
+xgb_full_propagation,"{'n_estimators': 300, 'max_depth': 8, 'learning_rate': 0.03, 'subsample': 0.8, 'colsample_bytree': 0.8, 'min_child_weight': 5, 'reg_lambda': 5.0}",0.9882643768776354,0.875646124337621,0.9001793552124412,0.8524146588463648,0.9584358055858394,5.842822195166195,15.5804637036308
+lstm_context_full,"{'units1': 64, 'units2': 32, 'dropout': 0.2, 'batch_size': 256, 'epochs': 10, 'learning_rate': 0.001}",0.9755822429055024,0.8279211101303737,0.9172122370201279,0.7544727625638212,0.9461581507546425,6.454171657562256,15.703850360268188
