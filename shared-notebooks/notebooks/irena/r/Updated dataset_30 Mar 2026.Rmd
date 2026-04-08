@@ -1,0 +1,456 @@
+---
+title: "Updated dataset_30 Mar 2026"
+author: "Irena Austin"
+date: "2026-04-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+# ============================================================
+# Step 1. Setup: Load Packages & Data
+# ============================================================
+pacman::p_load(
+  tidyverse, janitor, lubridate, skimr, caret, glmnet, 
+  broom, ggplot2, knitr, kableExtra, arrow, corrplot,
+  rpart, rpart.plot, randomForest, ranger
+)
+
+# Load the full 186-column Parquet file
+flights_raw <- open_dataset("C:/Users/ZyrIr/OneDrive/Desktop/flights_canonical_2019.parquet") %>%
+  collect() %>%
+  clean_names()
+
+# ============================================================
+# Step 2. Master Cleaning & Feature Engineering Pipeline
+# ============================================================
+# This creates a single 'source of truth' for all subsequent analysis
+df_final <- flights_raw %>%
+  # 1. Filter for your target NYC hubs
+  filter(origin == "BWI", dest %in% c("JFK", "EWR")) %>%
+  
+  # 2. SELECT: Include every column needed for Models, Hubs, and Holidays
+  select(
+    flight_date, reporting_airline, tail_number, arr_delay, dep_delay, 
+    carrier_delay, weather_delay, taxi_out, dep_hour_local, 
+    day_of_week, month, dep_temp_c, dep_wind_speed_m_s, 
+    dep_ceiling_height_m, prev_arr_delay, turnaround_minutes, 
+    aircraft_leg_number_day, crs_elapsed_time, actual_elapsed_time, distance
+  ) %>%
+  
+  # 3. CLEAN: Handle NAs (The fix for na.fail errors)
+  mutate(
+    across(c(prev_arr_delay, weather_delay, carrier_delay), ~replace_na(., 0)),
+    month_day = format(as.Date(flight_date), "%m-%d")
+  ) %>%
+  filter(!is.na(arr_delay), !is.na(dep_delay)) %>%
+  
+  # 4. FEATURE ENGINEERING: Strategy, Holidays, and Plane Size Proxy
+  mutate(
+    is_delayed        = as.factor(ifelse(arr_delay >= 15, "Yes", "No")),
+    is_weekend        = as.factor(ifelse(day_of_week %in% c(6, 7), "Yes", "No")),
+    is_rush_hour      = as.factor(ifelse(dep_hour_local %in% c(7, 8, 16, 17, 18), "Yes", "No")),
+    reporting_airline = as.factor(reporting_airline),
+    buffer            = crs_elapsed_time - actual_elapsed_time,
+    is_holiday        = as.factor(case_when(
+      month_day >= "11-22" & month_day <= "12-02" ~ "Holiday", # Thanksgiving
+      month_day >= "12-19" | month_day <= "01-05" ~ "Holiday", # Winter
+      TRUE ~ "Non-Holiday"
+    )),
+    # PLANE SIZE PROXY: Feature Aggregation/Heuristic Classification
+    plane_size_score = case_when(
+      distance > 1500 ~ "Large",
+      distance > 600  ~ "Medium",
+      TRUE            ~ "Small"
+    )
+  )
+
+# ============================================================
+# Step 3. Descriptive Visuals & Business Intelligence
+# ============================================================
+
+# 1. Correlation Plot (Numeric only)
+df_final %>% select(where(is.numeric)) %>% drop_na() %>% 
+  cor() %>% corrplot(method = "color", addCoef.col = "black", tl.cex = 0.7, title="Predictor Matrix")
+
+# 2. Scheduling Honesty (Lollipop Chart)
+all_airline_buffers <- flights_raw %>%
+  filter(!is.na(crs_elapsed_time), !is.na(actual_elapsed_time)) %>%
+  mutate(buffer_mins = crs_elapsed_time - actual_elapsed_time) %>%
+  group_by(reporting_airline) %>%
+  summarise(avg_buffer = mean(buffer_mins, na.rm = TRUE), count = n()) %>%
+  filter(count > 100)
+
+ggplot(all_airline_buffers, aes(x = reorder(reporting_airline, avg_buffer), y = avg_buffer)) +
+  geom_segment(aes(xend = reporting_airline, yend = 0), color = "grey") +
+  geom_point(size = 4, aes(color = avg_buffer)) +
+  scale_color_gradient(low = "lightpink", high = "purple") + coord_flip() +
+  theme_minimal() + labs(title = "Airline Strategy: The Buffer Rankings", y="Avg Buffer (min)")
+
+# ============================================================
+# Step 4. Tree-Based Machine Learning (NO NA ERRORS)
+# ============================================================
+
+# Prepare the cleaned-subset for modeling
+df_model <- df_final %>%
+  select(is_delayed, dep_delay, dep_hour_local, dep_wind_speed_m_s, 
+         aircraft_leg_number_day, plane_size_score, is_holiday, is_weekend) %>%
+  drop_na() # <--- CRITICAL FIX: Removes any remaining missing values
+
+# 1. Decision Tree (The 'Logic Map')
+tree_fit <- rpart(is_delayed ~ ., data = df_model, method = "class")
+rpart.plot(tree_fit, extra = 101, main = "Decision Tree: BWI-NYC Delay Logic")
+
+# 2. Random Forest (The 'Powerhouse')
+rf_fit <- randomForest(is_delayed ~ ., data = df_model, ntree = 100, importance = TRUE)
+varImpPlot(rf_fit, main = "Variable Importance: What truly causes NYC delays?")
+
+# 3. National Scale Model (Ranger)
+df_full_national <- flights_raw %>%
+  select(arr_delay, dep_delay, dep_hour_local, dep_wind_speed_m_s, aircraft_leg_number_day, distance) %>%
+  mutate(is_delayed = as.factor(ifelse(arr_delay >= 15, "Yes", "No"))) %>%
+  drop_na()
+
+full_rf_ranger <- ranger(is_delayed ~ ., data = df_full_national, 
+                         importance = "impurity", num.trees = 100,
+                         num.threads = parallel::detectCores() - 1)
+
+print(full_rf_ranger)
+
+
+```
+```{r cars}
+# ============================================================
+# OR568 | Flight Delay Analysis — BWI–NYC Hub
+# Enhanced: PCA + Nonlinear Modeling
+# ============================================================
+
+# ============================================================
+# Step 1. Setup: Load Packages & Data
+# ============================================================
+pacman::p_load(
+  tidyverse, janitor, lubridate, skimr, caret, glmnet,
+  broom, ggplot2, knitr, kableExtra, arrow, corrplot,
+  rpart, rpart.plot, randomForest, ranger,
+  e1071,        # SVM (nonlinear kernel)
+  nnet,         # Neural net (nonlinear)
+  kernlab,      # ksvm with RBF kernel
+  factoextra,   # PCA biplots & scree plots
+  FactoMineR    # PCA engine
+)
+
+# Load the full Parquet file
+flights_raw <- open_dataset("C:/Users/ZyrIr/OneDrive/Desktop/flights_canonical_2019.parquet") %>%
+  collect() %>%
+  clean_names()
+
+# ============================================================
+# Step 2. Master Cleaning & Feature Engineering Pipeline
+# ============================================================
+df_final <- flights_raw %>%
+  filter(origin == "BWI", dest %in% c("JFK", "EWR")) %>%
+  select(
+    flight_date, reporting_airline, tail_number, arr_delay, dep_delay,
+    carrier_delay, weather_delay, taxi_out, dep_hour_local,
+    day_of_week, month, dep_temp_c, dep_wind_speed_m_s,
+    dep_ceiling_height_m, prev_arr_delay, turnaround_minutes,
+    aircraft_leg_number_day, crs_elapsed_time, actual_elapsed_time, distance
+  ) %>%
+  mutate(
+    across(c(prev_arr_delay, weather_delay, carrier_delay), ~replace_na(., 0)),
+    month_day = format(as.Date(flight_date), "%m-%d")
+  ) %>%
+  filter(!is.na(arr_delay), !is.na(dep_delay)) %>%
+  mutate(
+    is_delayed        = as.factor(ifelse(arr_delay >= 15, "Yes", "No")),
+    is_weekend        = as.factor(ifelse(day_of_week %in% c(6, 7), "Yes", "No")),
+    is_rush_hour      = as.factor(ifelse(dep_hour_local %in% c(7, 8, 16, 17, 18), "Yes", "No")),
+    reporting_airline = as.factor(reporting_airline),
+    buffer            = crs_elapsed_time - actual_elapsed_time,
+    is_holiday        = as.factor(case_when(
+      month_day >= "11-22" & month_day <= "12-02" ~ "Holiday",
+      month_day >= "12-19" | month_day <= "01-05" ~ "Holiday",
+      TRUE ~ "Non-Holiday"
+    )),
+    plane_size_score  = case_when(
+      distance > 1500 ~ "Large",
+      distance > 600  ~ "Medium",
+      TRUE            ~ "Small"
+    )
+  )
+
+# ============================================================
+# Step 3. Descriptive Visuals & Business Intelligence
+# ============================================================
+
+# Correlation Plot (Numeric only)
+df_final %>% select(where(is.numeric)) %>% drop_na() %>%
+  cor() %>% corrplot(method = "color", addCoef.col = "black",
+                     tl.cex = 0.7, title = "Predictor Correlation Matrix")
+
+# Scheduling Honesty (Lollipop Chart — national scope)
+all_airline_buffers <- flights_raw %>%
+  filter(!is.na(crs_elapsed_time), !is.na(actual_elapsed_time)) %>%
+  mutate(buffer_mins = crs_elapsed_time - actual_elapsed_time) %>%
+  group_by(reporting_airline) %>%
+  summarise(avg_buffer = mean(buffer_mins, na.rm = TRUE), count = n()) %>%
+  filter(count > 100)
+
+ggplot(all_airline_buffers, aes(x = reorder(reporting_airline, avg_buffer), y = avg_buffer)) +
+  geom_segment(aes(xend = reporting_airline, yend = 0), color = "grey") +
+  geom_point(size = 4, aes(color = avg_buffer)) +
+  scale_color_gradient(low = "lightpink", high = "purple") + coord_flip() +
+  theme_minimal() + labs(title = "Airline Strategy: The Buffer Rankings", y = "Avg Buffer (min)")
+
+# ============================================================
+# Step 4. PCA — Dimensionality Reduction on Numeric Predictors
+# ============================================================
+# Select only numeric predictors relevant to delay
+df_pca_input <- df_final %>%
+  select(
+    dep_delay, dep_hour_local, dep_wind_speed_m_s, dep_temp_c,
+    dep_ceiling_height_m, prev_arr_delay, turnaround_minutes,
+    aircraft_leg_number_day, crs_elapsed_time, actual_elapsed_time,
+    buffer, distance, taxi_out, weather_delay, carrier_delay
+  ) %>%
+  drop_na() %>%
+  scale() %>%                   # z-score standardize: REQUIRED before PCA
+  as.data.frame()
+
+# Run PCA
+pca_result <- PCA(df_pca_input, graph = FALSE)
+
+# 4a. Scree Plot — How many PCs explain the variance?
+fviz_eig(pca_result, addlabels = TRUE, barfill = "#7B68EE", barcolor = "#7B68EE") +
+  labs(title = "PCA Scree Plot: Variance Explained per Component",
+       x = "Principal Component", y = "% Variance Explained") +
+  theme_minimal()
+
+# 4b. Biplot — Variable loadings on PC1 & PC2
+fviz_pca_var(pca_result,
+             col.var    = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel      = TRUE) +
+  labs(title = "PCA Biplot: Variable Contributions to PC1 & PC2")
+
+# 4c. Extract PC scores (retain enough PCs to explain ~80% variance)
+n_pcs <- which(cumsum(pca_result$eig[, "percentage of variance"]) >= 80)[1]
+cat("PCs needed to explain 80% variance:", n_pcs, "\n")
+
+pca_scores <- as.data.frame(pca_result$ind$coord[, 1:n_pcs])
+colnames(pca_scores) <- paste0("PC", 1:n_pcs)
+
+# Re-attach target label (rows must align — use same drop_na logic)
+df_pca_labeled <- df_final %>%
+  select(
+    is_delayed,
+    dep_delay, dep_hour_local, dep_wind_speed_m_s, dep_temp_c,
+    dep_ceiling_height_m, prev_arr_delay, turnaround_minutes,
+    aircraft_leg_number_day, crs_elapsed_time, actual_elapsed_time,
+    buffer, distance, taxi_out, weather_delay, carrier_delay
+  ) %>%
+  drop_na()
+
+# Safety check: row counts must match before binding
+stopifnot(nrow(df_pca_labeled) == nrow(pca_scores))
+df_pca_model <- bind_cols(select(df_pca_labeled, is_delayed), pca_scores)
+
+# ============================================================
+# Step 5. Train/Test Split (shared across all models)
+# ============================================================
+set.seed(42)
+
+# Split A: Original feature set (for tree-based models)
+df_model <- df_final %>%
+  select(is_delayed, dep_delay, dep_hour_local, dep_wind_speed_m_s,
+         aircraft_leg_number_day, plane_size_score, is_holiday, is_weekend) %>%
+  drop_na()
+
+train_idx  <- createDataPartition(df_model$is_delayed, p = 0.75, list = FALSE)
+train_orig <- df_model[train_idx, ]
+test_orig  <- df_model[-train_idx, ]
+
+# Split B: PCA feature set (for nonlinear models)
+train_pca_idx <- createDataPartition(df_pca_model$is_delayed, p = 0.75, list = FALSE)
+train_pca     <- df_pca_model[train_pca_idx, ]
+test_pca      <- df_pca_model[-train_pca_idx, ]
+
+# ============================================================
+# Step 6. Tree-Based Models (Original Features)
+# ============================================================
+
+# 6a. Decision Tree
+tree_fit <- rpart(is_delayed ~ ., data = train_orig, method = "class",
+                  control = rpart.control(cp = 0.01, maxdepth = 6))
+rpart.plot(tree_fit, extra = 101, main = "Decision Tree: BWI–NYC Delay Logic")
+
+tree_preds <- predict(tree_fit, test_orig, type = "class")
+cat("\n--- Decision Tree Confusion Matrix ---\n")
+print(confusionMatrix(tree_preds, test_orig$is_delayed))
+
+# 6b. Random Forest
+rf_fit <- randomForest(is_delayed ~ ., data = train_orig,
+                       ntree = 200, importance = TRUE)
+varImpPlot(rf_fit, main = "Variable Importance: What Drives BWI–NYC Delays?")
+
+rf_preds <- predict(rf_fit, test_orig)
+cat("\n--- Random Forest Confusion Matrix ---\n")
+print(confusionMatrix(rf_preds, test_orig$is_delayed))
+
+# 6c. Ranger (National Scale)
+df_full_national <- flights_raw %>%
+  select(arr_delay, dep_delay, dep_hour_local, dep_wind_speed_m_s,
+         aircraft_leg_number_day, distance) %>%
+  mutate(is_delayed = as.factor(ifelse(arr_delay >= 15, "Yes", "No"))) %>%
+  drop_na()
+
+full_rf_ranger <- ranger(
+  is_delayed ~ ., data = df_full_national,
+  importance  = "impurity", num.trees = 100,
+  num.threads = parallel::detectCores() - 1
+)
+print(full_rf_ranger)
+
+# ============================================================
+# Step 7. Nonlinear Models on PCA Components
+# ============================================================
+# Using PCA scores removes multicollinearity — ideal for kernel methods
+
+# 7a. SVM with Radial Basis Function (RBF) Kernel
+# RBF maps inputs into a high-dimensional space to find nonlinear boundaries
+cat("\nFitting SVM (RBF kernel) on PCA components...\n")
+svm_fit <- ksvm(
+  is_delayed ~ ., data = train_pca,
+  kernel = "rbfdot",     # Radial Basis Function — captures nonlinear structure
+  C      = 1,            # Regularization: higher = tighter fit
+  kpar   = "automatic",  # Auto-tune gamma via median heuristic
+  prob.model = TRUE
+)
+
+svm_preds <- predict(svm_fit, test_pca)
+cat("\n--- SVM (RBF) Confusion Matrix ---\n")
+print(confusionMatrix(svm_preds, test_pca$is_delayed))
+
+# 7b. Neural Network (nnet — single hidden layer)
+# Nonlinear activation functions capture complex relationships between PCs
+cat("\nFitting Neural Network on PCA components...\n")
+nnet_fit <- nnet(
+  is_delayed ~ ., data = train_pca,
+  size    = 8,      # 8 hidden neurons
+  decay   = 0.01,   # L2 weight decay (regularization)
+  maxit   = 300,    # Max training iterations
+  trace   = FALSE
+)
+
+nnet_preds <- predict(nnet_fit, test_pca, type = "class") %>% as.factor()
+cat("\n--- Neural Network Confusion Matrix ---\n")
+print(confusionMatrix(nnet_preds, test_pca$is_delayed))
+
+# 7c. Polynomial SVM (degree-3) — an alternative nonlinear kernel
+cat("\nFitting SVM (Polynomial kernel, degree=3) on PCA components...\n")
+svm_poly_fit <- ksvm(
+  is_delayed ~ ., data = train_pca,
+  kernel = "polydot",
+  kpar   = list(degree = 3, scale = 1, offset = 1),
+  C      = 1
+)
+
+svm_poly_preds <- predict(svm_poly_fit, test_pca)
+cat("\n--- SVM (Polynomial) Confusion Matrix ---\n")
+print(confusionMatrix(svm_poly_preds, test_pca$is_delayed))
+
+# ============================================================
+# Step 8. Model Comparison Summary Table
+# ============================================================
+# Helper to extract accuracy + kappa from a confusionMatrix object
+extract_metrics <- function(cm, model_name, feature_set) {
+  tibble(
+    Model       = model_name,
+    Features    = feature_set,
+    Accuracy    = round(cm$overall["Accuracy"], 4),
+    Kappa       = round(cm$overall["Kappa"], 4),
+    Sensitivity = round(cm$byClass["Sensitivity"], 4),
+    Specificity = round(cm$byClass["Specificity"], 4)
+  )
+}
+
+cm_tree     <- confusionMatrix(tree_preds,     test_orig$is_delayed)
+cm_rf       <- confusionMatrix(rf_preds,       test_orig$is_delayed)
+cm_svm      <- confusionMatrix(svm_preds,      test_pca$is_delayed)
+cm_nnet     <- confusionMatrix(nnet_preds,     test_pca$is_delayed)
+cm_svm_poly <- confusionMatrix(svm_poly_preds, test_pca$is_delayed)
+
+model_comparison <- bind_rows(
+  extract_metrics(cm_tree,     "Decision Tree",         "Original"),
+  extract_metrics(cm_rf,       "Random Forest",         "Original"),
+  extract_metrics(cm_svm,      "SVM (RBF)",             "PCA"),
+  extract_metrics(cm_nnet,     "Neural Network",        "PCA"),
+  extract_metrics(cm_svm_poly, "SVM (Polynomial d=3)",  "PCA")
+)
+
+cat("\n========== MODEL COMPARISON ==========\n")
+print(model_comparison)
+
+# Visual comparison
+ggplot(model_comparison, aes(x = reorder(Model, Accuracy), y = Accuracy, fill = Features)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = scales::percent(Accuracy, accuracy = 0.1)),
+            hjust = -0.1, size = 3.5) +
+  coord_flip(ylim = c(0.5, 1.0)) +
+  scale_fill_manual(values = c("Original" = "#7B68EE", "PCA" = "#20B2AA")) +
+  theme_minimal(base_size = 13) +
+  labs(title   = "Model Accuracy Comparison: Tree-Based vs. Nonlinear (PCA)",
+       x = NULL, y = "Test Set Accuracy",
+       caption = "PCA models trained on retained principal components (≥80% variance)")
+
+# ============================================================
+# Step 9. PCA Insight — Delay Group Separation on PC1 vs PC2
+# ============================================================
+# Do delayed/non-delayed flights cluster differently in PC space?
+df_pca_viz <- df_pca_labeled %>%
+  select(is_delayed) %>%
+  bind_cols(as.data.frame(pca_result$ind$coord[, 1:2]) %>%
+              rename(PC1 = Dim.1, PC2 = Dim.2))
+
+ggplot(df_pca_viz, aes(x = PC1, y = PC2, color = is_delayed)) +
+  geom_point(alpha = 0.3, size = 1.2) +
+  scale_color_manual(values = c("Yes" = "#E63946", "No" = "#457B9D"),
+                     labels = c("Yes" = "Delayed ≥15min", "No" = "On Time")) +
+  stat_ellipse(level = 0.90, linewidth = 1) +
+  theme_minimal(base_size = 13) +
+  labs(title   = "PCA Space: Do Delayed Flights Cluster Separately?",
+       subtitle = "90% confidence ellipses by delay class",
+       color   = "Delayed?",
+       caption = "BWI–NYC flights, 2019 BTS data")
+
+ggplot(df_final, aes(x = is_holiday, y = arr_delay, fill = is_holiday)) +
+  geom_boxplot(outlier.shape = NA) +
+  coord_cartesian(ylim = c(-20, 100)) +
+  scale_fill_manual(values = c("Holiday" = "firebrick", "Non-Holiday" = "darkgrey")) +
+  labs(title = "The Holiday Tax: BWI-NYC Arrival Delays",
+       subtitle = "Comparing FAA-defined delays during peak travel windows",
+       x = "Season", y = "Arrival Delay (min)") +
+  theme_minimal()
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
