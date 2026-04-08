@@ -1,0 +1,12 @@
+jupyterlab
+notebook
+ipykernel
+pandas
+polars
+pyarrow
+numpy
+matplotlib
+scikit-learn
+xgboost
+lightgbm
+tensorflow[and-cuda]
