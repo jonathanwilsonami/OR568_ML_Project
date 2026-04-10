@@ -107,6 +107,7 @@
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -192,7 +193,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors},
+  pdftitle={Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather{,} Network Effects{,} and Operational Factors},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -670,6 +671,108 @@ incorporate time-series modeling approaches.
 \section{Appendix}\label{appendix}
 
 \subsection{Data Catalog}\label{data-catalog}
+
+\section{Hardware}\label{hardware}
+
+The models were trained on a high-performance local workstation running
+Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is
+equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores
+and boost speeds up to 5.65 GHz, along with approximately 96 GB of
+system memory. The machine also includes both integrated AMD graphics
+and a discrete NVIDIA GPU, although model training was conducted using
+CPU resources. This hardware configuration provides substantial parallel
+processing capability and memory bandwidth, enabling efficient handling
+of large-scale data processing, feature engineering, and machine
+learning model training workflows.
+
+\section{Models}\label{models}
+
+We are interested in building an multi-output model that both classifies
+an arrival delay and determins how long that arrival delay will be using
+features that are available during the present time.
+
+Models: LSTM -
+
+Model Arch Break data into a step matrix - each example is broken into
+ordered steps in time or sequence, rather than treated as one flat row.
+The LSTM model needs this 3D matrix to work on. We apply some scaling to
+the data to standardize each feature this allows our neural network to
+train more effectively thus improving stability and convergence.
+
+Flights contexts in 2 hop would be 3 different time steps. t-2, t-1, t0.
+One sample would be 3 rows.
+
+Varients - Use same training function but different inputs and model
+sizes.
+
+Making the model bigger adds more context: Answers Does adding richer
+operational context improve sequence-based delay prediction?
+
+By keeping the layers to only 2 hops we prevent the exploding gradient
+problem To prevent the vanishing gradient problem we\ldots.else we would
+never reach our optimal value LSTMs help us avoid the vanishing and
+exploding gradient problems by using two seperate paths that are for
+long and short term memories. The gates helps us make relavant
+predictions only remmebering what is needed and forgetting what is not.
+(explain)
+
+Regularlization - We applied a dropout regularization to the LSTM
+outputs, randomly turning off a fraction (dropout, e.g., 20\%) of the
+neurons during training. This helps prevent the model from overfitting
+by forcing it to not rely too heavily on any single pattern or feature.
+
+Loss Functions Binary Cross-Entroy
+
+\[
+\mathcal{L}_{BCE} = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \right]
+\]
+
+MSE \[
+\mathcal{L}_{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
+\]
+
+Evaluation Metrics
+
+Cross Validation and Hyper Parameter Tuning
+
+Train-Test Splits for CV. Expanding window folds inside Jan-Oct training
+period.
+
+\begin{verbatim}
+Fold 1: train Jan-Jun, validate Jul
+Fold 2: train Jan-Jul, validate Aug
+Fold 3: train Jan-Aug, validate Sep
+Fold 4: train Jan-Sep, validate Oct
+\end{verbatim}
+
+FINAL TEST SPLIT \# Keep Nov-Dec untouched
+
+Tree -
+
+Metrics: Classification - AUC, F1, precision, recall, accuracy\\
+Regression - MAE, RMSE
+
+\begin{itemize}
+\tightlist
+\item
+  Explain why used and are there better ones to use
+\end{itemize}
+
+Rows in final modeling table: 6594553 Train rows: 5490189 (Jan 1-Oct 31)
+Test rows : 1104364 (Nov 1-Dec 31)
+
+The code performs a time-based train/test split on the flights dataset
+using November 1, 2019 as the cutoff. A temporal split like this is the
+correct approach for LSTM modeling on time-series data, as it mirrors
+real-world prediction conditions and prevents data leakage from future
+records into training.it is important to split your training and test
+sets by a fixed date rather than randomly. Random splitting allows
+future data to leak into the training set, meaning the model
+inadvertently learns from information it would not have had access to in
+a real-world scenario. By splitting on a specific date like November 1,
+2019, we ensure the model is only trained on the past and evaluated on
+truly unseen future data, which gives a more honest and reliable measure
+of model performance.
 
 
 
