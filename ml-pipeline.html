@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -10,6 +10,9 @@
 
 <title>Machine Learning Pipeline – Flight Delays: A Machine Learning Approach</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-d8a18cee56031974d1f8f6eead200d41.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-8b9b450fba28b21070ed4f8d6716e9d1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -165,7 +167,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#project-setup-and-environnement" id="toc-project-setup-and-environnement" class="nav-link" data-scroll-target="#project-setup-and-environnement">Project Setup and Environnement</a></li>
   <li><a href="#data-loading-and-cleaning---raw-data" id="toc-data-loading-and-cleaning---raw-data" class="nav-link" data-scroll-target="#data-loading-and-cleaning---raw-data">Data Loading and Cleaning - Raw Data</a></li>
   </ul></li>
-  <li><a href="#feature-engineering-and-preprocessing" id="toc-feature-engineering-and-preprocessing" class="nav-link" data-scroll-target="#feature-engineering-and-preprocessing">Feature Engineering and Preprocessing</a></li>
+  <li><a href="#training-deep-learning-models" id="toc-training-deep-learning-models" class="nav-link" data-scroll-target="#training-deep-learning-models">Training Deep Learning Models</a>
+  <ul class="collapse">
+  <li><a href="#setups" id="toc-setups" class="nav-link" data-scroll-target="#setups">Setups</a></li>
+  <li><a href="#hardware-optimizations" id="toc-hardware-optimizations" class="nav-link" data-scroll-target="#hardware-optimizations">Hardware optimizations</a></li>
+  <li><a href="#note-on-gpu-vs-cpu-usage" id="toc-note-on-gpu-vs-cpu-usage" class="nav-link" data-scroll-target="#note-on-gpu-vs-cpu-usage">Note on GPU vs CPU usage</a></li>
+  </ul></li>
+  <li><a href="#feature-engineering-and-preprocessing" id="toc-feature-engineering-and-preprocessing" class="nav-link" data-scroll-target="#feature-engineering-and-preprocessing">Feature Engineering and Preprocessing</a>
+  <ul class="collapse">
+  <li><a href="#full-train-and-evaluate-pipeline" id="toc-full-train-and-evaluate-pipeline" class="nav-link" data-scroll-target="#full-train-and-evaluate-pipeline">full train-and-evaluate pipeline</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -273,12 +284,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </section>
 </section>
+<section id="training-deep-learning-models" class="level1">
+<h1>Training Deep Learning Models</h1>
+<section id="setups" class="level2">
+<h2 class="anchored" data-anchor-id="setups">Setups</h2>
+</section>
+<section id="hardware-optimizations" class="level2">
+<h2 class="anchored" data-anchor-id="hardware-optimizations">Hardware optimizations</h2>
+<p>The pipeline was optimized across three layers of the hardware stack. First, CPU threading was configured so that all available cores are used across NumPy, scikit-learn, and TensorFlow operations rather than defaulting to single-threaded execution. These settings have to be applied before any libraries are loaded, which is why they appear at the very top of the script. Second, XGBoost was configured to run on the GPU in addition to using all CPU cores, which speeds up tree construction particularly for the larger feature sets. Third, TensorFlow’s LSTM training was directed to the GPU, where matrix operations map efficiently to CUDA cores and result in significantly faster epoch times compared to CPU. GPU memory allocation was also set to grow on demand rather than reserving all available VRAM upfront, which keeps the setup stable in a Jupyter environment where the kernel persists between runs.</p>
+<p>Doing this significantly improved training time. For XGBoost went from 162.1 to 44.78 That’s a reduction of 117.32 seconds — roughly 3.6x faster.</p>
+</section>
+<section id="note-on-gpu-vs-cpu-usage" class="level2">
+<h2 class="anchored" data-anchor-id="note-on-gpu-vs-cpu-usage">Note on GPU vs CPU usage</h2>
+<p>GPU - 23 min CPU - 32 min</p>
+<p>GPU config and hard hardware</p>
+<p>CPU config and hard hardware</p>
+</section>
+</section>
 <section id="feature-engineering-and-preprocessing" class="level1">
 <h1>Feature Engineering and Preprocessing</h1>
+<section id="full-train-and-evaluate-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="full-train-and-evaluate-pipeline">full train-and-evaluate pipeline</h2>
+<p>builds the LSTM input tensors scales the inputs trains a multi-output LSTM predicts on the test set evaluates both classification and regression performance returns everything needed for later comparison</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_lstm_variant(train_df, test_df, variant_name, current_variant<span class="op">=</span><span class="st">"delay_only"</span>, units1<span class="op">=</span><span class="dv">32</span>, units2<span class="op">=</span><span class="dv">16</span>, epochs<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    t_variant <span class="op">=</span> time.perf_counter()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    X_train, y_train_cls, y_train_reg, train_pdf <span class="op">=</span> build_lstm_step_matrix(train_df, current_variant<span class="op">=</span>current_variant)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    X_test, y_test_cls, y_test_reg, test_pdf <span class="op">=</span> build_lstm_step_matrix(test_df, current_variant<span class="op">=</span>current_variant)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    X_train_scaled, X_test_scaled, scaler <span class="op">=</span> scale_lstm(X_train, X_test)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    y_train_cls <span class="op">=</span> np.asarray(y_train_cls, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    y_train_reg <span class="op">=</span> np.asarray(y_train_reg, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    y_test_cls <span class="op">=</span> np.asarray(y_test_cls, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    y_test_reg <span class="op">=</span> np.asarray(y_test_reg, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> build_lstm_model(</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        input_shape<span class="op">=</span>(X_train_scaled.shape[<span class="dv">1</span>], X_train_scaled.shape[<span class="dv">2</span>]),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        units1<span class="op">=</span>units1,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        units2<span class="op">=</span>units2,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        dropout<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    early_stop <span class="op">=</span> EarlyStopping(</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        monitor<span class="op">=</span><span class="st">"val_loss"</span>,</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        patience<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        restore_best_weights<span class="op">=</span><span class="va">True</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    history <span class="op">=</span> model.fit(</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        X_train_scaled,</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"cls"</span>: y_train_cls, <span class="st">"reg"</span>: y_train_reg},</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        validation_split<span class="op">=</span><span class="fl">0.15</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        epochs<span class="op">=</span>epochs,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        batch_size<span class="op">=</span><span class="dv">256</span>,         <span class="co"># increase if you have RAM headroom (e.g. 512 or 1024)</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        callbacks<span class="op">=</span>[early_stop],</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        verbose<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    pred_cls, pred_reg <span class="op">=</span> model.predict(X_test_scaled, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    pred_cls <span class="op">=</span> pred_cls.ravel()</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    pred_reg <span class="op">=</span> pred_reg.ravel()</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    cls_metrics <span class="op">=</span> classification_metrics(y_test_cls.astype(<span class="bu">int</span>), pred_cls)</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    reg_metrics <span class="op">=</span> regression_metrics(y_test_reg, pred_reg)</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    timer_log(<span class="ss">f"LSTM </span><span class="sc">{</span>variant_name<span class="sc">}</span><span class="ss">"</span>, t_variant)</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>        <span class="st">"variant_name"</span>: variant_name,</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>        <span class="st">"model"</span>: model,</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>        <span class="st">"history"</span>: history,</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        <span class="st">"X_test"</span>: X_test_scaled,</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>        <span class="st">"test_pdf"</span>: test_pdf,</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y_test_cls"</span>: y_test_cls,</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y_test_reg"</span>: y_test_reg,</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        <span class="st">"pred_cls"</span>: pred_cls,</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>        <span class="st">"pred_reg"</span>: pred_reg,</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cls_metrics"</span>: cls_metrics,</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"reg_metrics"</span>: reg_metrics,</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>        <span class="st">"scaler"</span>: scaler,</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 
 
 <!-- -->
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -733,103 +826,195 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Machine Learning Pipeline"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> 2026-03-13</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="an">toc:</span><span class="co"> true </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="an">code-fold:</span><span class="co"> false </span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="an">code-tools:</span><span class="co"> true</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Purpose of This Page</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>This page provides the code and setup needed to run the machine learning workflow in a repeatable way from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines. The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team.</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu"># Setups and Pulling Code </span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Setup and Environnement</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Clone the project</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>Start by cloning the repository to your local machine and moving into the project directory.</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>repo-url<span class="op">&gt;</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>repo-folder<span class="op">&gt;</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create the Conda environment</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">-f</span> environment.yml</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>Then activate it:</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate or568_ml_project</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Run the ML Pipeline</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>Option 1: Run this notebook in RStudio or Jupyter with R kernel. Make sure to have the Conda environment activated before launching your IDE.</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>Option 2: Use quarto render path/to/notebook.qmd to render the notebook into HTML. This will execute the code and generate the output in a reproducible way.</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>Option 3 (not recommended): Render the entire site using Quarto. This will execute all notebooks and generate the HTML pages. </span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Loading and Cleaning - Raw Data</span></span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>The following setup pulls the data from S3 using the <span class="in">`load_flight_data()`</span> function defined in <span class="in">`shared-notebooks/common_utils/r/load_flight_data.r`</span>. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.</span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the <span class="in">`pipeline_main.py`</span> as the entry point for the data pipeline for more details.</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="fu">### Warning - Big Data, well kind of big data</span></span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>The flight dataset is quite large (over 7 million records). That's just for a single year of data. Running the <span class="in">`pipeline_main.py`</span> on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 128 GB of RAM (with some GPUs as a backup) to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.</span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>Also, don't use pandas. I personally avoid using it any chance I get to be honest although it still has some good features I like to use. No world is perfect I guess. Use something that does lazy loading and processing like Dask or Polars to handle the large dataset more efficiently without running into memory issues.</span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data and clean column names</span></span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"shared-notebooks/common_utils/r/load_flight_data.r"</span>)</span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>flights <span class="ot">&lt;-</span> <span class="fu">load_flight_data</span>()</span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="fu">load_project_packages</span>() <span class="co"># Optional </span></span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>model_df <span class="ot">&lt;-</span> flights <span class="sc">%&gt;%</span></span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>    DepDelay,</span>
-<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    FlightDate,</span>
-<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    Origin,</span>
-<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>    Dest</span>
-<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(DepDelay),</span>
-<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(FlightDate),</span>
-<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(Origin),</span>
-<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(Dest),</span>
-<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">500</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>()</span>
-<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a><span class="fu"># Feature Engineering and Preprocessing</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Machine Learning Pipeline"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> 2026-03-13</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> html </span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="an">toc:</span><span class="co"> true </span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="an">code-fold:</span><span class="co"> false </span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="an">code-tools:</span><span class="co"> true</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Purpose of This Page</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>This page provides the code and setup needed to run the machine learning workflow in a repeatable way from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines. The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team.</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu"># Setups and Pulling Code </span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Setup and Environnement</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Clone the project</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>Start by cloning the repository to your local machine and moving into the project directory.</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>repo-url<span class="op">&gt;</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>repo-folder<span class="op">&gt;</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create the Conda environment</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">-f</span> environment.yml</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>Then activate it:</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate or568_ml_project</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Run the ML Pipeline</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>Option 1: Run this notebook in RStudio or Jupyter with R kernel. Make sure to have the Conda environment activated before launching your IDE.</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>Option 2: Use quarto render path/to/notebook.qmd to render the notebook into HTML. This will execute the code and generate the output in a reproducible way.</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>Option 3 (not recommended): Render the entire site using Quarto. This will execute all notebooks and generate the HTML pages. </span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Loading and Cleaning - Raw Data</span></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>The following setup pulls the data from S3 using the <span class="in">`load_flight_data()`</span> function defined in <span class="in">`shared-notebooks/common_utils/r/load_flight_data.r`</span>. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the <span class="in">`pipeline_main.py`</span> as the entry point for the data pipeline for more details.</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="fu">### Warning - Big Data, well kind of big data</span></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>The flight dataset is quite large (over 7 million records). That's just for a single year of data. Running the <span class="in">`pipeline_main.py`</span> on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 128 GB of RAM (with some GPUs as a backup) to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>Also, don't use pandas. I personally avoid using it any chance I get to be honest although it still has some good features I like to use. No world is perfect I guess. Use something that does lazy loading and processing like Dask or Polars to handle the large dataset more efficiently without running into memory issues.</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data and clean column names</span></span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"shared-notebooks/common_utils/r/load_flight_data.r"</span>)</span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>flights <span class="ot">&lt;-</span> <span class="fu">load_flight_data</span>()</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="fu">load_project_packages</span>() <span class="co"># Optional </span></span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>model_df <span class="ot">&lt;-</span> flights <span class="sc">%&gt;%</span></span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>    DepDelay,</span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>    FlightDate,</span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>    Origin,</span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>    Dest</span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(DepDelay),</span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(FlightDate),</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(Origin),</span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(Dest),</span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">500</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>()</span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="fu"># Training Deep Learning Models</span></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="fu">## Setups </span></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Hardware optimizations</span></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>The pipeline was optimized across three layers of the hardware stack. First, CPU threading was configured so that all available cores are used across NumPy, scikit-learn, and TensorFlow operations rather than defaulting to single-threaded execution. These settings have to be applied before any libraries are loaded, which is why they appear at the very top of the script. Second, XGBoost was configured to run on the GPU in addition to using all CPU cores, which speeds up tree construction particularly for the larger feature sets. Third, TensorFlow's LSTM training was directed to the GPU, where matrix operations map efficiently to CUDA cores and result in significantly faster epoch times compared to CPU. GPU memory allocation was also set to grow on demand rather than reserving all available VRAM upfront, which keeps the setup stable in a Jupyter environment where the kernel persists between runs.</span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>Doing this significantly improved training time. For XGBoost went from 162.1 to 44.78 That's a reduction of 117.32 seconds — roughly 3.6x faster.</span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a><span class="fu">## Note on GPU vs CPU usage </span></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>GPU - 23 min </span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>CPU - 32 min</span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>GPU config and hard hardware</span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>CPU config and hard hardware</span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a><span class="fu"># Feature Engineering and Preprocessing</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="fu">## full train-and-evaluate pipeline </span></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>builds the LSTM input tensors</span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>scales the inputs</span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>trains a multi-output LSTM</span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>predicts on the test set</span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>evaluates both classification and regression performance</span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a>returns everything needed for later comparison</span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_lstm_variant(train_df, test_df, variant_name, current_variant<span class="op">=</span><span class="st">"delay_only"</span>, units1<span class="op">=</span><span class="dv">32</span>, units2<span class="op">=</span><span class="dv">16</span>, epochs<span class="op">=</span><span class="dv">10</span>):</span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>    t_variant <span class="op">=</span> time.perf_counter()</span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>    X_train, y_train_cls, y_train_reg, train_pdf <span class="op">=</span> build_lstm_step_matrix(train_df, current_variant<span class="op">=</span>current_variant)</span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>    X_test, y_test_cls, y_test_reg, test_pdf <span class="op">=</span> build_lstm_step_matrix(test_df, current_variant<span class="op">=</span>current_variant)</span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>    X_train_scaled, X_test_scaled, scaler <span class="op">=</span> scale_lstm(X_train, X_test)</span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>    y_train_cls <span class="op">=</span> np.asarray(y_train_cls, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>    y_train_reg <span class="op">=</span> np.asarray(y_train_reg, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>    y_test_cls <span class="op">=</span> np.asarray(y_test_cls, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>    y_test_reg <span class="op">=</span> np.asarray(y_test_reg, dtype<span class="op">=</span>np.float32)</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> build_lstm_model(</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>        input_shape<span class="op">=</span>(X_train_scaled.shape[<span class="dv">1</span>], X_train_scaled.shape[<span class="dv">2</span>]),</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>        units1<span class="op">=</span>units1,</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>        units2<span class="op">=</span>units2,</span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>        dropout<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>    early_stop <span class="op">=</span> EarlyStopping(</span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>        monitor<span class="op">=</span><span class="st">"val_loss"</span>,</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>        patience<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>        restore_best_weights<span class="op">=</span><span class="va">True</span></span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>    history <span class="op">=</span> model.fit(</span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>        X_train_scaled,</span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"cls"</span>: y_train_cls, <span class="st">"reg"</span>: y_train_reg},</span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>        validation_split<span class="op">=</span><span class="fl">0.15</span>,</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>        epochs<span class="op">=</span>epochs,</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a>        batch_size<span class="op">=</span><span class="dv">256</span>,         <span class="co"># increase if you have RAM headroom (e.g. 512 or 1024)</span></span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>        callbacks<span class="op">=</span>[early_stop],</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>        verbose<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>    pred_cls, pred_reg <span class="op">=</span> model.predict(X_test_scaled, verbose<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>    pred_cls <span class="op">=</span> pred_cls.ravel()</span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>    pred_reg <span class="op">=</span> pred_reg.ravel()</span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>    cls_metrics <span class="op">=</span> classification_metrics(y_test_cls.astype(<span class="bu">int</span>), pred_cls)</span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>    reg_metrics <span class="op">=</span> regression_metrics(y_test_reg, pred_reg)</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>    timer_log(<span class="ss">f"LSTM </span><span class="sc">{</span>variant_name<span class="sc">}</span><span class="ss">"</span>, t_variant)</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>        <span class="st">"variant_name"</span>: variant_name,</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>        <span class="st">"model"</span>: model,</span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>        <span class="st">"history"</span>: history,</span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>        <span class="st">"X_test"</span>: X_test_scaled,</span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>        <span class="st">"test_pdf"</span>: test_pdf,</span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y_test_cls"</span>: y_test_cls,</span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y_test_reg"</span>: y_test_reg,</span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>        <span class="st">"pred_cls"</span>: pred_cls,</span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>        <span class="st">"pred_reg"</span>: pred_reg,</span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cls_metrics"</span>: cls_metrics,</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>        <span class="st">"reg_metrics"</span>: reg_metrics,</span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>        <span class="st">"scaler"</span>: scaler,</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

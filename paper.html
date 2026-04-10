@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -10,6 +10,9 @@
 
 <title>Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors – Flight Delays: A Machine Learning Approach</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-d8a18cee56031974d1f8f6eead200d41.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-8b9b450fba28b21070ed4f8d6716e9d1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -107,7 +109,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -245,6 +247,8 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#data-catalog" id="toc-data-catalog" class="nav-link" data-scroll-target="#data-catalog"><span class="header-section-number">15.1</span> Data Catalog</a></li>
   </ul></li>
+  <li><a href="#hardware" id="toc-hardware" class="nav-link" data-scroll-target="#hardware"><span class="header-section-number">16</span> Hardware</a></li>
+  <li><a href="#models" id="toc-models" class="nav-link" data-scroll-target="#models"><span class="header-section-number">17</span> Models</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="paper.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
@@ -579,10 +583,48 @@ P(Y_i = 1|X_i) =
 <h2 data-number="15" class="anchored" data-anchor-id="appendix"><span class="header-section-number">15</span> Appendix</h2>
 <section id="data-catalog" class="level3" data-number="15.1">
 <h3 data-number="15.1" class="anchored" data-anchor-id="data-catalog"><span class="header-section-number">15.1</span> Data Catalog</h3>
-
-
-
 </section>
+</section>
+<section id="hardware" class="level2" data-number="16">
+<h2 data-number="16" class="anchored" data-anchor-id="hardware"><span class="header-section-number">16</span> Hardware</h2>
+<p>The models were trained on a high-performance local workstation running Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores and boost speeds up to 5.65 GHz, along with approximately 96 GB of system memory. The machine also includes both integrated AMD graphics and a discrete NVIDIA GPU, although model training was conducted using CPU resources. This hardware configuration provides substantial parallel processing capability and memory bandwidth, enabling efficient handling of large-scale data processing, feature engineering, and machine learning model training workflows.</p>
+</section>
+<section id="models" class="level2" data-number="17">
+<h2 data-number="17" class="anchored" data-anchor-id="models"><span class="header-section-number">17</span> Models</h2>
+<p>We are interested in building an multi-output model that both classifies an arrival delay and determins how long that arrival delay will be using features that are available during the present time.</p>
+<p>Models: LSTM -</p>
+<p>Model Arch Break data into a step matrix - each example is broken into ordered steps in time or sequence, rather than treated as one flat row. The LSTM model needs this 3D matrix to work on. We apply some scaling to the data to standardize each feature this allows our neural network to train more effectively thus improving stability and convergence.</p>
+<p>Flights contexts in 2 hop would be 3 different time steps. t-2, t-1, t0. One sample would be 3 rows.</p>
+<p>Varients - Use same training function but different inputs and model sizes.</p>
+<p>Making the model bigger adds more context: Answers Does adding richer operational context improve sequence-based delay prediction?</p>
+<p>By keeping the layers to only 2 hops we prevent the exploding gradient problem To prevent the vanishing gradient problem we….else we would never reach our optimal value LSTMs help us avoid the vanishing and exploding gradient problems by using two seperate paths that are for long and short term memories. The gates helps us make relavant predictions only remmebering what is needed and forgetting what is not. (explain)</p>
+<p>Regularlization - We applied a dropout regularization to the LSTM outputs, randomly turning off a fraction (dropout, e.g., 20%) of the neurons during training. This helps prevent the model from overfitting by forcing it to not rely too heavily on any single pattern or feature.</p>
+<p>Loss Functions Binary Cross-Entroy</p>
+<p><span class="math display">\[
+\mathcal{L}_{BCE} = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \right]
+\]</span></p>
+<p>MSE <span class="math display">\[
+\mathcal{L}_{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
+\]</span></p>
+<p>Evaluation Metrics</p>
+<p>Cross Validation and Hyper Parameter Tuning</p>
+<p>Train-Test Splits for CV. Expanding window folds inside Jan-Oct training period.</p>
+<pre><code>Fold 1: train Jan-Jun, validate Jul
+Fold 2: train Jan-Jul, validate Aug
+Fold 3: train Jan-Aug, validate Sep
+Fold 4: train Jan-Sep, validate Oct</code></pre>
+<p>FINAL TEST SPLIT # Keep Nov-Dec untouched</p>
+<p>Tree -</p>
+<p>Metrics: Classification - AUC, F1, precision, recall, accuracy<br>
+Regression - MAE, RMSE</p>
+<ul>
+<li>Explain why used and are there better ones to use</li>
+</ul>
+<p>Rows in final modeling table: 6594553 Train rows: 5490189 (Jan 1-Oct 31) Test rows : 1104364 (Nov 1-Dec 31)</p>
+<p>The code performs a time-based train/test split on the flights dataset using November 1, 2019 as the cutoff. A temporal split like this is the correct approach for LSTM modeling on time-series data, as it mirrors real-world prediction conditions and prevents data leakage from future records into training.it is important to split your training and test sets by a fixed date rather than randomly. Random splitting allows future data to leak into the training set, meaning the model inadvertently learns from information it would not have had access to in a real-world scenario. By splitting on a specific date like November 1, 2019, we ensure the model is only trained on the past and evaluated on truly unseen future data, which gives a more honest and reliable measure of model performance.</p>
+
+
+
 </section>
 
 </main> <!-- /main -->
