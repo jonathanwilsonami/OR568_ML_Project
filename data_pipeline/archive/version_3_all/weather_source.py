@@ -2,17 +2,14 @@ from __future__ import annotations
 
 import math
 import time
-from datetime import date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 from urllib.parse import urlencode
-import requests
-import json
-from typing import Any
 
 import polars as pl
 
-from config import WeatherConfig
-from utils import ensure_dir, make_retry_session
+from data_pipeline.archive.version_3_all.config import WeatherConfig
+from data_pipeline.archive.version_3_all.utils import ensure_dir, make_retry_session
 
 
 def build_year_date_window(year: int) -> tuple[str, str]:
@@ -61,99 +58,73 @@ def _fetch_weather_json_chunk(
     stations: list[str],
     start: str,
     end: str,
-    cfg,
-) -> list[dict[str, Any]]:
-    params = {
-        "dataset": cfg.dataset,
-        "stations": ",".join(stations),
-        "startDate": start,
-        "endDate": end,
-        "format": "json",
-        "units": cfg.units,
-        "includeAttributes": "false",
-    }
+    cfg: WeatherConfig,
+) -> list[dict]:
+    url = _build_weather_url(stations, start, end, cfg)
+    session = make_retry_session(max_retries=cfg.max_retries, user_agent="OR568-Weather/1.0")
 
-    last_error = None
+    print(
+        f"Fetching weather chunk: {len(stations)} stations, "
+        f"{start} -> {end}"
+    )
 
-    for attempt in range(1, 2):
-        try:
-            r = requests.get(
-                cfg.base_url,
-                params=params,
-                timeout=cfg.timeout,
-                verify=cfg.verify_ssl,
-            )
-            r.raise_for_status()
+    r = session.get(url, timeout=cfg.timeout, verify=cfg.verify_ssl)
+    if not r.ok:
+        print(f"Weather request failed: status={r.status_code}")
+        print(f"URL length: {len(url)}")
+        print(f"First 300 chars of URL: {url[:300]}")
+        print(f"Response text preview: {r.text[:1000]}")
+        r.raise_for_status()
 
-            try:
-                payload = r.json()
-            except requests.exceptions.JSONDecodeError as e:
-                snippet = r.text[max(0, e.pos - 300): e.pos + 300]
-                print(
-                    f"[weather] JSON decode failed on attempt {attempt}/{cfg.max_retries} "
-                    f"for {start} -> {end} with {len(stations)} stations."
-                )
-                print(f"[weather] Response length: {len(r.text):,}")
-                print(f"[weather] Error near char {e.pos}:")
-                print(snippet)
-                raise
+    payload = r.json()
 
-            if payload is None:
-                return []
+    if isinstance(payload, dict):
+        if "results" in payload and isinstance(payload["results"], list):
+            return payload["results"]
+        if "data" in payload and isinstance(payload["data"], list):
+            return payload["data"]
 
-            if not isinstance(payload, list):
-                raise ValueError(
-                    f"Expected weather payload to be a list, got {type(payload).__name__}"
-                )
+    if isinstance(payload, list):
+        return payload
 
-            return payload
-
-        except (
-            requests.RequestException,
-            requests.exceptions.JSONDecodeError,
-            json.JSONDecodeError,
-            ValueError,
-        ) as e:
-            last_error = e
-            sleep_s = cfg.backoff_base_seconds * (2 ** (attempt - 1))
-            print(
-                f"[weather] Attempt {attempt}/{cfg.max_retries} failed for "
-                f"{start} -> {end}, stations={len(stations)}. Retrying in {sleep_s:.1f}s..."
-            )
-            time.sleep(sleep_s)
-
-    raise RuntimeError(
-        f"Weather fetch failed after {cfg.max_retries} attempts "
-        f"for {start} -> {end}, stations={len(stations)}"
-    ) from last_error
+    raise ValueError(f"Unexpected weather payload type: {type(payload)}")
 
 
 def _fetch_weather_json(
     stations: list[str],
     start: str,
     end: str,
-    cfg,
-) -> list[dict[str, Any]]:
-    all_records: list[dict[str, Any]] = []
+    cfg: WeatherConfig,
+) -> list[dict]:
+    """
+    Fetch weather in station batches to avoid NOAA request-size failures.
+    """
+    stations = sorted(set(stations))
+    if not stations:
+        return []
 
-    station_chunks = [
-        stations[i:i + cfg.station_chunk_size]
-        for i in range(0, len(stations), cfg.station_chunk_size)
-    ]
+    station_chunk_size = getattr(cfg, "station_chunk_size", 25)
+    station_chunks = _chunk_list(stations, station_chunk_size)
 
-    for idx, station_chunk in enumerate(station_chunks, start=1):
-        print(f"  Station chunk {idx}/{len(station_chunks)}")
-        print(f"    Stations: {station_chunk}")
+    print(
+        f"Fetching weather across {len(stations):,} stations in "
+        f"{len(station_chunks)} chunk(s) "
+        f"(chunk size={station_chunk_size})"
+    )
 
-        records = fetch_window_with_fallback(
-            station_chunk,
-            start,
-            end,
-            cfg,
+    all_records: list[dict] = []
+
+    for i, station_chunk in enumerate(station_chunks, start=1):
+        print(f"  Station chunk {i}/{len(station_chunks)}")
+        records = _fetch_weather_json_chunk(
+            stations=station_chunk,
+            start=start,
+            end=end,
+            cfg=cfg,
         )
         all_records.extend(records)
 
-        if cfg.chunk_pause_seconds:
+        if cfg.chunk_pause_seconds > 0:
             time.sleep(cfg.chunk_pause_seconds)
 
     return all_records
@@ -341,94 +312,3 @@ def pull_weather_for_year_chunked(
         print(f"Wrote yearly clean weather -> {clean_output_path}")
 
     return weather_df
-
-def split_date_range(start: str, end: str, max_days: int) -> list[tuple[str, str]]:
-    """
-    Split an inclusive YYYY-MM-DD range into smaller inclusive windows.
-    """
-    start_dt = datetime.strptime(start, "%Y-%m-%d").date()
-    end_dt = datetime.strptime(end, "%Y-%m-%d").date()
-
-    windows: list[tuple[str, str]] = []
-    cur = start_dt
-
-    while cur <= end_dt:
-        chunk_end = min(cur + timedelta(days=max_days - 1), end_dt)
-        windows.append((cur.isoformat(), chunk_end.isoformat()))
-        cur = chunk_end + timedelta(days=1)
-
-    return windows
-
-
-def fetch_window_with_fallback(
-    stations: list[str],
-    start: str,
-    end: str,
-    cfg,
-) -> list[dict[str, Any]]:
-    """
-    Fetch one station/date request, progressively shrinking the date window
-    if the NOAA response is truncated or malformed.
-    """
-
-    # Try full window first
-    try:
-        return _fetch_weather_json_chunk(stations, start, end, cfg)
-    except Exception:
-        print(
-            f"[weather] Initial fetch failed for {start} -> {end} "
-            f"with {len(stations)} stations. Trying smaller date windows..."
-        )
-
-    # Progressive date fallback
-    for max_days in [15, 7, 3, 1]:
-        sub_windows = split_date_range(start, end, max_days=max_days)
-
-        if len(sub_windows) == 1 and sub_windows[0] == (start, end):
-            continue
-
-        try:
-            records: list[dict[str, Any]] = []
-            print(f"[weather] Retrying using {max_days}-day windows...")
-
-            for sub_start, sub_end in sub_windows:
-                print(f"      {sub_start} -> {sub_end}")
-                sub_records = _fetch_weather_json_chunk(
-                    stations,
-                    sub_start,
-                    sub_end,
-                    cfg,
-                )
-                records.extend(sub_records)
-
-                if cfg.chunk_pause_seconds:
-                    time.sleep(cfg.chunk_pause_seconds)
-
-            return records
-
-        except Exception:
-            print(f"[weather] {max_days}-day fallback failed.")
-
-    # 🔥 FINAL FALLBACK GOES HERE 🔥
-    print(
-        f"[weather] Final fallback: isolating bad stations for "
-        f"{start} -> {end}"
-    )
-
-    records: list[dict[str, Any]] = []
-
-    for station in stations:
-        try:
-            print(f"    Trying station individually: {station}")
-            sub_records = _fetch_weather_json_chunk(
-                [station],
-                start,
-                end,
-                cfg,
-            )
-            records.extend(sub_records)
-
-        except Exception:
-            print(f"[weather] ❌ Dropping bad station: {station}")
-
-    return records
