@@ -1,47 +1,48 @@
 name: or568_ml_project
 channels:
-  - https://repo.anaconda.com/pkgs/main
-  - https://repo.anaconda.com/pkgs/r
+  - conda-forge
+  - defaults
 dependencies:
   - fastparquet
-  - ipykernel
-  - jupyterlab
-  - jupytext
-  - lightgbm
-  - matplotlib
-  - nb_conda_kernels
-  - numpy
-  - pandas
-  - pip
-  - polars
   - pyarrow
-  - python=3.11
-  - r-arrow
-  - r-base=4.3
-  - r-broom
-  - r-caret
-  - r-data.table
-  - r-ggraph
-  - r-glmnet
-  - r-here
-  - r-igraph
-  - r-irkernel
-  - r-janitor
-  - r-kableextra
-  - r-knitr
-  - r-lubridate
-  - r-pacman
-  - r-ranger
-  - r-rmarkdown
-  - r-skimr
-  - r-tidygraph
-  - r-tidyverse
   - r-xgboost
-  - scikit-learn
-  - scipy
-  - seaborn
+  - r-tidyverse
+  - r-ggraph
+  - r-data.table
+  - r-janitor
   - statsmodels
+  - r-here
+  - r-arrow
   - xgboost
-  - r-vip
-  - networkx
+  - python=3.11
+  - jupyterlab
+  - pandas
   - tensorflow
+  - networkx
+  - r-vip
+  - scikit-learn
+  - nb_conda_kernels
+  - polars
+  - r-rmarkdown
+  - r-broom
+  - r-tidygraph
+  - r-pacman
+  - jupytext
+  - matplotlib
+  - r-caret
+  - scipy
+  - numpy
+  - lightgbm
+  - r-skimr
+  - r-lubridate
+  - seaborn
+  - ipykernel
+  - r-irkernel
+  - r-base=4.3.3
+  - r-ranger
+  - r-kableextra
+  - pip
+  - r-glmnet
+  - r-knitr
+  - r-igraph
+  - r-reticulate
