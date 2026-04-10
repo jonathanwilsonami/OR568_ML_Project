@@ -70,8 +70,9 @@ Also, don't use pandas. I personally avoid using it any chance I get to be hones
 
 # Load data and clean column names
 source("shared-notebooks/common_utils/r/load_flight_data.r")
-flights <- load_flight_data()
 load_project_packages() # Optional 
+flights <- load_flight_data()
+
 
 model_df <- flights %>%
   select(
@@ -100,6 +101,10 @@ set.seed(42)
 
 ## Hardware optimizations
 The pipeline was optimized across three layers of the hardware stack. First, CPU threading was configured so that all available cores are used across NumPy, scikit-learn, and TensorFlow operations rather than defaulting to single-threaded execution. These settings have to be applied before any libraries are loaded, which is why they appear at the very top of the script. Second, XGBoost was configured to run on the GPU in addition to using all CPU cores, which speeds up tree construction particularly for the larger feature sets. Third, TensorFlow's LSTM training was directed to the GPU, where matrix operations map efficiently to CUDA cores and result in significantly faster epoch times compared to CPU. GPU memory allocation was also set to grow on demand rather than reserving all available VRAM upfront, which keeps the setup stable in a Jupyter environment where the kernel persists between runs.
+
+CPU with 24 cores and ~96 GB RAM was more performant than 8 GB VRAM on GPU. Ideally for training like this we would like to see 40-80 VRAM acording to....This is were the cost-benefit of training larger models comes into play. We could got out to AWS and purchase 10 min or so of GPU. If we assume usage cost is $10 per hour this could add up if we have to train many models over long periods of time. Purchasing a 40-80 GB VRAM GPU is way out of the question where cost range in the 10s of thousands of dollars. Alas, we will stick with using CPU and RAM and get over the fact that training takes 30 min to 1-2 hours depending on if we are running CV or hyper parameter tuning. 
+
+Fortuantly running the model only takes mili seconds. 
 
 Doing this significantly improved training time. For XGBoost went from 162.1 to 44.78 That's a reduction of 117.32 seconds — roughly 3.6x faster.
 

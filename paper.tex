@@ -134,6 +134,39 @@
 \makeatother
 
 
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -193,7 +226,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Predicting Flight Delays Between BWI and EWR: A Machine Learning Analysis of Weather{,} Network Effects{,} and Operational Factors},
+  pdftitle={Predicting Flight Delays in the United States: A Machine Learning Analysis of Weather{,} Network Effects{,} and Operational Factors},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -202,7 +235,7 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Predicting Flight Delays Between BWI and EWR: A Machine Learning
+\title{Predicting Flight Delays in the United States: A Machine Learning
 Analysis of Weather, Network Effects, and Operational Factors}
 \author{Jonathan Wilson \and Karan {[}Last Name{]} \and Irena {[}Last
 Name{]} \and Val {[}Last Name{]}}
@@ -216,23 +249,21 @@ Name{]} \and Val {[}Last Name{]}}
 Flight delays remain one of the most persistent operational challenges
 in modern aviation, affecting airline efficiency, passenger
 satisfaction, and the broader transportation network. In this study, we
-examine flight delays within the BWI--EWR market pair using machine
-learning, exploratory data analysis, and engineered operational
-features.
+examine flight delays within the United States using machine learning,
+exploratory data analysis, and engineered operational features.
 
 Using Bureau of Transportation Statistics (BTS) flight records enriched
 with weather and temporal features, we construct predictors related to
 schedule timing, prior aircraft movement, weather conditions, and
-airport-level activity. We evaluate multiple supervised learning
-approaches including logistic regression, ridge regression,
-classification trees, random forests, and K-nearest neighbors.
+airport-level activity. We evaluate multiple supervised and unsupervised
+learning approaches and even some neural networks using LSTMs.
 
 Our findings suggest that delay behavior is shaped by a combination of
 operational and environmental effects, especially upstream aircraft
 delay propagation, airport congestion patterns, and weather-related
-variables. Tree-based approaches and penalized regression provide the
-most stable predictive performance, while simpler baseline models remain
-valuable for interpretation.
+variables. Tree-based (with extreme gradient boosting) approaches and
+penalized regression provide the most stable predictive performance,
+while simpler baseline models remain valuable for interpretation.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -250,30 +281,208 @@ airline efficiency and passenger reliability.
 
 \subsection{Related Works}\label{related-works}
 
-\subsection{Data and Methods}\label{data-and-methods}
+\begin{itemize}
+\tightlist
+\item
+  Add at least 3
+\end{itemize}
 
-Aircraft registry features were initially considered, but because only a
-2025 FAA registry snapshot was available while the flight dataset
-represents 2019 operations, these features could introduce temporal
-inconsistencies. Therefore, the analysis focuses primarily on
-operational variables derived directly from the flight dataset, such as
-aircraft rotation features, turnaround time, and previous-flight delays,
-which more directly capture delay propagation mechanisms.
+\section{Data and Methods}\label{data-and-methods}
+
+\subsection{Data Sources}\label{data-sources}
+
+Our analytical dataset was constructed by integrating multiple aviation
+and environmental data sources into a unified preprocessing and
+feature-engineering pipeline. The primary data sources for this project
+were:
+
+\begin{itemize}
+\item
+  The Bureau of Transportation Statistics (BTS) Airline On-Time
+  Performance dataset and the National Oceanic and Atmospheric
+  Administration (NOAA) National Centers for Environmental Information
+  (NCEI) global hourly weather dataset
+  \citeproc{ref-bts_ontime}{{[}1{]}}, \citeproc{ref-noaa_ncei}{{[}2{]}}.
+\item
+  To support geospatial alignment between flights and environmental
+  conditions, additional metadata sources were incorporated, including
+  the NOAA Integrated Surface Database (ISD) station history dataset for
+  weather station metadata and the OurAirports global airport dataset
+  for airport identifiers and geographic coordinates
+  \citeproc{ref-noaa_isd_history}{{[}3{]}},
+  \citeproc{ref-ourairports}{{[}4{]}}.
+\end{itemize}
+
+The data pipeline also relied on auxiliary airport and station reference
+data to connect flights to airport metadata, time zones, and weather
+stations. The overall pipeline included BTS ingestion, airport and
+station reference construction, weather ingestion, temporal and spatial
+joins, and downstream feature engineering. These stages were implemented
+as a modular, cached pipeline to support reproducibility and scalable
+re-runs.
+
+The BTS data provided detailed flight-level operational records for
+2019, including scheduled and actual departure and arrival times, origin
+and destination airports, carrier information, delay durations,
+cancellation indicators, diversion indicators, taxi times, and
+delay-cause variables. The NOAA weather data provided airport-associated
+weather observations such as temperature, wind speed, wind direction,
+and ceiling height, which were joined to flights using a
+backward-looking as-of temporal join.
+
+Aircraft registry variables from the FAA were initially considered.
+However, because only a 2025 registry snapshot was available while the
+operational flight data represented 2019 activity, these variables were
+excluded from the final predictive analysis to avoid temporal
+inconsistency and possible bias.
+
+\subsection{Prediction Targets}\label{prediction-targets}
+
+We considered flight delay prediction as both a regression and
+classification problem. Let
+
+\[
+Y_i^{(reg)} = \text{ArrDelay}_i
+\]
+
+denote the arrival delay in minutes for flight \(i\), and let
+
+\[
+Y_i^{(cls)} =
+\begin{cases}
+1 & \text{if } \text{ArrDel15}_i = 1 \\
+0 & \text{otherwise}
+\end{cases}
+\]
+
+denote whether the flight arrived at least 15 minutes late.
+
+Thus, our predictive tasks were:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Regression:} predict continuous arrival delay in minutes.
+\item
+  \textbf{Classification:} predict whether a flight experiences a
+  material arrival delay.
+\end{enumerate}
+
+\subsection{Raw Predictors and Important Data
+Elements}\label{raw-predictors-and-important-data-elements}
+
+Table Table~\ref{tbl-predictors} summarizes the major predictors and
+supporting data elements used in the pipeline.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\caption{Major predictors and important data items used in the flight
+delay pipeline.}\label{tbl-predictors}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Category
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Variables / Data Items
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description and Role in Modeling
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Category
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Variables / Data Items
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description and Role in Modeling
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Flight identifiers and route & \texttt{FlightDate},
+\texttt{Reporting\_Airline}, \texttt{Tail\_Number}, \texttt{Origin},
+\texttt{Dest}, \texttt{route\_key}, \texttt{flight\_id} & Core
+identifiers used to define each flight, link feature tables, and
+represent route-level context. \\
+Schedule and realized timing & \texttt{CRSDepTime}, \texttt{DepTime},
+\texttt{CRSArrTime}, \texttt{ArrTime}, \texttt{dep\_ts\_sched},
+\texttt{dep\_ts\_actual}, \texttt{arr\_ts\_sched},
+\texttt{arr\_ts\_actual}, UTC timestamp variants & Used to represent
+schedule adherence, construct valid temporal ordering, and support
+weather joins and aircraft rotation logic. \\
+Delay targets and related operational outcomes & \texttt{ArrDelay},
+\texttt{ArrDel15}, \texttt{DepDelay}, \texttt{DepDel15},
+\texttt{Cancelled}, \texttt{Diverted} & Primary response variables and
+closely related operational outputs used in modeling and filtering. \\
+Surface movement and flight characteristics & \texttt{TaxiOut},
+\texttt{TaxiIn}, \texttt{Distance}, \texttt{ActualElapsedTime} & Capture
+operational complexity, congestion effects, and route structure. \\
+Delay cause information & \texttt{CarrierDelay}, \texttt{WeatherDelay},
+\texttt{NASDelay}, \texttt{LateAircraftDelay} & Useful for descriptive
+analysis, route aggregation, and interpretation of operational drivers
+of delay. \\
+Temporal features & Departure hour, weekday, month, local date, UTC
+date, seasonal indicators, holiday indicators & Capture cyclic demand,
+seasonal traffic patterns, and calendar effects. \\
+Airport reference data & Airport name, municipality, country, latitude,
+longitude, IATA code, ICAO code, airport timezone & Used to map BTS
+airports to weather stations, assign time zones, and support timestamp
+normalization. \\
+Weather station reference data & NOAA station ID, station timezone,
+airport-to-station mapping & Used to associate flights with nearby
+weather observations and enable correct UTC conversion of NOAA
+timestamps. \\
+Weather predictors & \texttt{dep\_temp\_c},
+\texttt{dep\_wind\_speed\_m\_s}, \texttt{dep\_wind\_dir\_deg},
+\texttt{dep\_ceiling\_height\_m}, \texttt{arr\_temp\_c},
+\texttt{arr\_wind\_speed\_m\_s}, \texttt{arr\_wind\_dir\_deg},
+\texttt{arr\_ceiling\_height\_m} & Represent meteorological conditions
+associated with the departure and arrival environments. These are joined
+temporally using the most recent prior observation within a two-hour
+window. \\
+Aircraft rotation / propagation features & Previous flight ID, previous
+origin and destination, previous arrival delay, previous departure
+delay, turnaround time, continuity flag, aircraft leg number, cumulative
+delay by aircraft-day & Capture propagation effects caused by late
+inbound aircraft and tight turnarounds. These were among the most
+meaningful operational predictors. \\
+Chain and cascade indicators & \texttt{has\_prev\_leg},
+\texttt{has\_next\_leg}, \texttt{is\_middle\_leg}, tight turnaround
+flags & Represent whether a flight is embedded within a larger aircraft
+sequence and whether it is vulnerable to upstream or downstream delay
+propagation. \\
+Airport-time aggregate context & Hourly airport flight counts, average
+delay, median delay, delay rate, cancellation rate, diversion rate, taxi
+metrics, rolling means over 1h/3h/6h & Capture airport congestion and
+short-horizon system state. \\
+Route-time aggregate context & Hourly route counts, mean route delay,
+route delay rate, average weather, rolling means over 1h/3h/6h & Capture
+recent route-specific operating conditions and network-level delay
+tendencies. \\
+\end{longtable}
 
 \begin{itemize}
 \tightlist
 \item
-  Add diagram of data pipeline and processing of features
+  Add diagram of data pipeline and processing of features - appendix?
 \item
-  Add diagram of model training and evaluation process
+  Add catalog as appendix item
+\item
+  Add diagram of model training and evaluation process - move to
+  modeling section
 \end{itemize}
 
 \textbf{Note: create a section of the site that represents reproducable
 instructions of our project and data processing steps, including code
 snippets and explanations.}
 
-\subsection{Why the BWI--EWR Market
-Pair}\label{why-the-bwiewr-market-pair}
+\subsection{Why the BWI--EWR Market Pair (keep? Might be focusig on the
+wider nation but to keep things simple we did start with a market
+pair)}\label{why-the-bwiewr-market-pair-keep-might-be-focusig-on-the-wider-nation-but-to-keep-things-simple-we-did-start-with-a-market-pair}
 
 The BWI--EWR corridor sits within one of the most operationally complex
 airspaces in the United States. Newark Liberty International Airport
@@ -693,11 +902,17 @@ features that are available during the present time.
 
 Models: LSTM -
 
-Model Arch Break data into a step matrix - each example is broken into
-ordered steps in time or sequence, rather than treated as one flat row.
-The LSTM model needs this 3D matrix to work on. We apply some scaling to
-the data to standardize each feature this allows our neural network to
-train more effectively thus improving stability and convergence.
+Model Arch units1 is the number of hidden units (neurons) in that LSTM
+layer Each unit produces one value in the hidden state vector at each
+time step. each neuron learns a pattern or signal from your inputs over
+time. More units → more capacity → can learn more complex patterns Fewer
+units → simpler model → less risk of overfitting
+
+Break data into a step matrix - each example is broken into ordered
+steps in time or sequence, rather than treated as one flat row. The LSTM
+model needs this 3D matrix to work on. We apply some scaling to the data
+to standardize each feature this allows our neural network to train more
+effectively thus improving stability and convergence.
 
 Flights contexts in 2 hop would be 3 different time steps. t-2, t-1, t0.
 One sample would be 3 rows.
@@ -773,6 +988,36 @@ a real-world scenario. By splitting on a specific date like November 1,
 2019, we ensure the model is only trained on the past and evaluated on
 truly unseen future data, which gives a more honest and reliable measure
 of model performance.
+
+\protect\phantomsection\label{refs}
+\begin{CSLReferences}{0}{0}
+\bibitem[\citeproctext]{ref-bts_ontime}
+\CSLLeftMargin{{[}1{]} }%
+\CSLRightInline{Bureau of Transportation Statistics, {``Airline on-time
+performance data.''} \url{https://transtats.bts.gov/}; U.S. Department
+of Transportation, 2025.}
+
+\bibitem[\citeproctext]{ref-noaa_ncei}
+\CSLLeftMargin{{[}2{]} }%
+\CSLRightInline{National Oceanic and Atmospheric Administration, {``NCEI
+global hourly weather dataset.''}
+\url{https://www.ncei.noaa.gov/access/services/data/v1}; NOAA National
+Centers for Environmental Information, 2025.}
+
+\bibitem[\citeproctext]{ref-noaa_isd_history}
+\CSLLeftMargin{{[}3{]} }%
+\CSLRightInline{National Oceanic and Atmospheric Administration,
+{``Integrated surface database (ISD) station history.''}
+\url{https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv}; NOAA,
+2025.}
+
+\bibitem[\citeproctext]{ref-ourairports}
+\CSLLeftMargin{{[}4{]} }%
+\CSLRightInline{OurAirports, {``OurAirports global airport database.''}
+\url{https://davidmegginson.github.io/ourairports-data/airports.csv};
+OurAirports, 2025.}
+
+\end{CSLReferences}
 
 
 
