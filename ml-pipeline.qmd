@@ -53,47 +53,170 @@ quarto render
 quarto preview
 ```
 
-## Data Loading and Cleaning - Raw Data
-The following setup pulls the data from S3 using the `load_flight_data()` function defined in `shared-notebooks/common_utils/r/load_flight_data.r`. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.
+# Data Pipeline
 
-However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the `pipeline_main.py` as the entry point for the data pipeline for more details.
-
-::: {.callout-note}
-### Warning - Big Data, well kind of big data
-The flight dataset is quite large (over 7 million records). That's just for a single year of data. Running the `pipeline_main.py` on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 128 GB of RAM (with some GPUs as a backup) to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.
-
-Also, don't use pandas. I personally avoid using it any chance I get to be honest although it still has some good features I like to use. No world is perfect I guess. Use something that does lazy loading and processing like Dask or Polars to handle the large dataset more efficiently without running into memory issues.
-:::
+The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.
 
 ```{r}
+#| label: fig-pipeline
+#| fig-cap: "Overview of the flight delay data pipeline, from raw data sources through ingestion, cleaning, temporal alignment, feature engineering, and final output."
+#| fig-alt: "A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/common_site/data-pipeline.png")
+```
+
+## Running the Data Pipeline 
+
+::: {.callout-note}
+### Big Data Warning
+The flight dataset is quite large (over 7 million records for a single year). Running the `pipeline_main.py` to build it on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 96 GB of RAM to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 96-128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.
+:::
+
+If you are interested in generating the original data you can run the data pipeline with the following command: 
+
+```{bash}
+#| eval: false 
+
+python3 run_canonical_years.py --year 2019
+```
+
+This assumes you followed the project setups above and are in the data_pipeline directory. 
+
+## Data Loading and Cleaning
+
+The following setup pulls the data from S3 using the `load_flight_data()` function defined in `shared-notebooks/common_utils/r/utils.r`. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.
+
+If you want to see what is there you can reach the URL provided in the `load_flight_data` function and enter that into a browser. That will output some XML the name of the files are nested under Contents/Key. 
+
+However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the `pipeline_main.py` and `run_canonical_years`` as the entry points for the data pipeline for more details.
+
+::: {.callout-note}
+### Big Data Warning
+This project uses lazy-loaded data via Apache Arrow. Lazy loading means that when you open a 
+dataset, no data is actually read into memory — instead you get a query object that represents 
+the data. Operations like `filter()` and `select()` are pushed down to the data source and only 
+execute when you explicitly call `collect()`, at which point only the rows and columns you 
+actually need are pulled into memory. This makes working with large datasets fast and memory 
+efficient.
+
+The setup below loads all required packages via `load_project_packages()`, defined in `utils.r`, 
+which installs any missing packages and attaches them to the session. Flight data is loaded from 
+the project's data source and cached locally as a parquet file at `data/flights_raw.parquet` on 
+first run — subsequent renders skip the 30-40 second load and read directly from the local cache 
+instead. To refresh the data, delete `data/flights_raw.parquet` and re-render.
+
+For anyone extending this project, I strongly recommend sticking to Arrow in R or switching to 
+Polars in Python rather than pandas. Pandas loads everything into memory eagerly, which becomes 
+a bottleneck quickly on datasets of this size. Arrow and Polars are both built around the same 
+columnar memory format, are significantly faster, and support the same lazy evaluation pattern 
+used here — filter and select on the lazy frame first, then collect only what you need.
+:::
+
+The setup below loads all required packages via `load_project_packages()`, defined in `utils.r`, 
+which installs any missing packages and attaches them to the session. Flight data is loaded from 
+the project's data source and cached locally as a parquet file at `data/flights_raw.parquet` on 
+first run — subsequent renders skip the 30-40 second load and read directly from the local cache 
+instead. To refresh the data, delete `data/flights_raw.parquet` and re-render. `flights_raw` is 
+returned as an Arrow lazy frame, meaning no data is held in memory until explicitly collected 
+downstream.
+
+```{r}
+#| label: install-packages
 #| message: false
+#| warning: false
 
-# Load data and clean column names
-source("shared-notebooks/common_utils/r/load_flight_data.r")
-load_project_packages() # Optional 
-flights <- load_flight_data()
-
-
-model_df <- flights %>%
-  select(
-    DepDelay,
-    FlightDate,
-    Origin,
-    Dest
-  ) %>%
-  filter(
-    !is.na(DepDelay),
-    !is.na(FlightDate),
-    !is.na(Origin),
-    !is.na(Dest),
-  ) %>%
-  slice_head(n = 500) %>%
-  collect() %>%
-  janitor::clean_names()
-
+source("shared-notebooks/common_utils/r/utils.r") # common utils
+load_project_packages()
 set.seed(42)
+```
+
+```{r}
+#| label: load-raw-data
+#| message: false
+#| warning: false
+
+if (!file.exists("data/flights_raw.parquet")) {
+  message("No cache found, loading and writing parquet...")
+  load_flight_data() %>% 
+    collect() %>% 
+    janitor::clean_names() %>%
+    arrow::write_parquet("data/flights_raw.parquet")
+  message("Cache written to data/flights_raw.parquet")
+}
+
+flights_raw <- arrow::open_dataset("data/flights_raw.parquet")
 
 ```
+
+# Holiday Analysis 
+
+```{r}
+#| label: build-df-final
+#| message: false
+#| dependson: "load-raw-data"
+
+# Define 2019 Federal Holidays
+us_holidays_2019 <- as.Date(c(
+  "2019-01-01", "2019-01-21", "2019-02-18", "2019-05-27",
+  "2019-07-04", "2019-09-02", "2019-10-14", "2019-11-11",
+  "2019-11-28", "2019-12-25"
+))
+
+# Generate travel windows (+/- 3 days around each holiday)
+holiday_windows <- map(us_holidays_2019, ~ seq(.x - 3, .x + 3, by = "day")) %>%
+  flatten_dbl() %>%
+  as.Date(origin = "1970-01-01")
+
+df_final <- flights_raw %>%
+  filter(origin == "BWI", 
+          dest %in% c("JFK", "EWR"),
+          !is.na(dep_delay),
+          !is.na(flight_date),
+          !is.na(origin),
+          !is.na(dest)) %>%
+  select(
+    flight_date, arr_delay, dep_delay, carrier_delay, weather_delay,
+    dep_hour_local, day_of_week, month,
+    dep_temp_c, dep_wind_speed_m_s, dep_ceiling_height_m,
+    reporting_airline, taxi_out,
+    prev_arr_delay, turnaround_minutes, aircraft_leg_number_day,
+    crs_elapsed_time, actual_elapsed_time, distance
+  ) %>%
+  collect() %>%                        # collect before any mutates
+  mutate(
+    across(c(prev_arr_delay, weather_delay, carrier_delay), ~replace_na(., 0)),
+    flight_date_clean = as.Date(as.character(flight_date), format = "%Y-%m-%d")
+  ) %>%
+  filter(!is.na(arr_delay), !is.na(dep_delay)) %>%
+  mutate(
+    is_delayed        = as.factor(ifelse(arr_delay >= 15, "Yes", "No")),
+    is_weekend        = as.factor(ifelse(day_of_week %in% c(6, 7), "Yes", "No")),
+    is_rush_hour      = as.factor(ifelse(dep_hour_local %in% c(7, 8, 16, 17, 18), "Yes", "No")),
+    reporting_airline = as.factor(reporting_airline),
+    buffer            = crs_elapsed_time - actual_elapsed_time,
+    is_holiday        = as.factor(ifelse(as.Date(flight_date_clean) %in% holiday_windows, "Holiday", "Non-Holiday")),
+    plane_size_score  = case_when(
+      distance > 1500 ~ "Large",
+      distance > 500  ~ "Medium",
+      TRUE            ~ "Small"
+    )
+  )
+
+# Output Holiday Frequency Table
+holiday_freq <- as.data.frame(table(df_final$is_holiday))
+names(holiday_freq) <- c("Holiday Status", "Count")
+
+holiday_freq %>%
+  knitr::kable(caption = "Flight Count by Holiday Status") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width        = FALSE,
+    position          = "left"
+  )
+```
+
+# Feature Engineering and Preprocessing
 
 # Training Deep Learning Models
 
@@ -116,7 +239,7 @@ GPU config and hard hardware
 
 CPU config and hard hardware
 
-# Feature Engineering and Preprocessing
+
 
 
 ## full train-and-evaluate pipeline 

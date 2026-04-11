@@ -237,8 +237,8 @@
 
 \title{Predicting Flight Delays in the United States: A Machine Learning
 Analysis of Weather, Network Effects, and Operational Factors}
-\author{Jonathan Wilson \and Karan {[}Last Name{]} \and Irena {[}Last
-Name{]} \and Val {[}Last Name{]}}
+\author{Jonathan Wilson \and Karan Nindra \and Irena Austin \and Val
+Sokolow}
 \date{2026-03-13}
 \begin{document}
 \maketitle
@@ -287,14 +287,71 @@ airline efficiency and passenger reliability.
   Add at least 3
 \end{itemize}
 
+\subsection{Research Questions}\label{research-questions}
+
+This study seeks to answer the following questions:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Which operational and weather variables most strongly predict flight
+  delays?
+\item
+  How strongly do delays propagate from prior flights?
+\item
+  Which machine learning models best classify delayed flights?
+\end{enumerate}
+
+\subsection{What This Research
+Contributes}\label{what-this-research-contributes}
+
+This study contributes a route-focused machine learning framework for
+airline delay analysis. By combining exploratory analysis, feature
+engineering, classification modeling, and model comparison, we provide a
+systematic approach for identifying the drivers of flight delays.
+
 \section{Data and Methods}\label{data-and-methods}
 
-\subsection{Data Sources}\label{data-sources}
+\subsection{Data Sources \& Pipeline}\label{data-sources-pipeline}
 
-Our analytical dataset was constructed by integrating multiple aviation
-and environmental data sources into a unified preprocessing and
-feature-engineering pipeline. The primary data sources for this project
-were:
+\subsubsection{Data Pipeline}\label{data-pipeline}
+
+The pipeline integrates three independent data streams --- Bureau of
+Transportation Statistics (BTS) on-time performance records, NOAA Global
+Surface Hourly weather observations, and airport reference dimensions
+--- into a single analytical dataset suitable for delay prediction
+modelling. Figure~\ref{fig-pipeline} provides a schematic overview of
+each stage. The sections below describe each stage in turn.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output.}]{images/common_site/data-pipeline.png}
+
+}
+
+\caption{\label{fig-pipeline}Overview of the flight delay data pipeline,
+from raw data sources through ingestion, cleaning, temporal alignment,
+feature engineering, and final output.}
+
+\end{figure}%
+
+\subsubsection{Data sources}\label{data-sources}
+
+Flight performance data are sourced from the BTS Transtats PREZIP
+endpoint, which publishes monthly on-time reporting files for all US
+carriers. Weather observations are obtained from the NOAA National
+Centers for Environmental Information (NCEI) global-hourly dataset via a
+REST API, providing sub-hourly surface measurements at reporting
+stations worldwide. Airport and station reference data are drawn from
+the OurAirports CSV registry and the NOAA Integrated Surface Database
+(ISD) station history file, which together supply the geographic
+coordinates and ICAO codes required to link flight records to their
+corresponding weather stations.
+
+The primary data sources for this project were:
 
 \begin{itemize}
 \item
@@ -336,7 +393,194 @@ operational flight data represented 2019 activity, these variables were
 excluded from the final predictive analysis to avoid temporal
 inconsistency and possible bias.
 
-\subsection{Prediction Targets}\label{prediction-targets}
+\paragraph{Data Source Resource Links}\label{data-source-resource-links}
+
+The pipeline draws on four publicly available data sources, summarised
+in Table~\ref{tbl-sources}. All sources are freely accessible and
+updated on a regular basis.
+
+{
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1790}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5486}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2724}}@{}}
+
+\caption{\label{tbl-sources}Primary data sources used in the flight
+delay pipeline.}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+URL
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BTS Transtats --- On-Time Performance & Monthly carrier on-time
+performance records; the primary source of flight departure, arrival,
+and delay data. &
+\href{https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr}{transtats.bts.gov} \\
+BTS Transtats --- On-Time Overview & Landing page for the BTS on-time
+reporting programme, including data documentation and field
+descriptions. &
+\href{https://www.transtats.bts.gov/ontime/}{transtats.bts.gov/ontime} \\
+NOAA NCEI --- Integrated Surface Database (ISD) & Global hourly surface
+weather observations compiled from over 100 sources, spanning 1901 to
+present across more than 14,000 active stations. &
+\href{https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database}{ncei.noaa.gov/products/land-based-station/integrated-surface-database} \\
+NOAA NCEI --- Global Hourly data search & Interactive and programmatic
+access to the NCEI global-hourly subset, supporting station search and
+date-range subsetting. &
+\href{https://www.ncei.noaa.gov/access/search/data-search/global-hourly}{ncei.noaa.gov/access/search/data-search/global-hourly} \\
+OurAirports --- Open data downloads & Open-data download page for
+airport reference files, including airports.csv with IATA/ICAO codes,
+coordinates, and metadata. &
+\href{https://ourairports.com/data/}{ourairports.com/data} \\
+OurAirports --- GitHub repository & GitHub-hosted daily data dumps for
+all OurAirports CSV files; the canonical source since November 2021. &
+\href{https://github.com/davidmegginson/ourairports-data}{github.com/davidmegginson/ourairports-data} \\
+
+\end{longtable}
+
+}
+
+\subsubsection{Ingestion}\label{ingestion}
+
+Each data stream is ingested independently. BTS monthly ZIP archives are
+downloaded with exponential backoff, extracted, and parsed into Polars
+DataFrames with explicit schema inference and null handling before being
+serialised to Parquet. Weather records are retrieved in station-month
+chunks of 25 stations per request, returned as JSON, and similarly
+persisted to monthly Parquet cache files. Airport and station reference
+data are loaded from CSV and held in memory as dimension tables. Caching
+intermediate outputs at this stage is deliberate: it decouples the
+computationally expensive download and format-conversion steps from all
+downstream transformations, allowing the pipeline to be re-run from
+clean intermediates without re-fetching raw data.
+
+\subsubsection{Cleaning and
+normalisation}\label{cleaning-and-normalisation}
+
+Flight records are filtered to a defined route universe --- a set of
+core airport pairs plus permissible two-hop connections --- and
+deduplicated. Weather records undergo field-level parsing to extract
+temperature (\texttt{TMP}), wind speed and direction (\texttt{WND}), and
+ceiling height (\texttt{CIG}) from their packed NOAA format
+representations; observations with missing values across all primary
+meteorological fields are dropped. On the reference side, each airport
+in the BTS route universe is matched to its best-candidate ISD weather
+station using a nearest-neighbour procedure over geodetic distance, with
+timezone resolution falling back to a longitude-based estimate where the
+\texttt{timezonefinder} library cannot resolve a canonical IANA zone.
+
+\subsubsection{Timestamp alignment and temporal
+join}\label{timestamp-alignment-and-temporal-join}
+
+Correct temporal alignment between flight records and weather
+observations is the most consequential step in the pipeline, and the one
+most susceptible to subtle error. Flight departure and arrival times in
+BTS data are recorded in \textbf{local airport time} as four-digit
+integers (HHMM), with no timezone annotation and a known edge case at
+midnight where the integer representation rolls over incorrectly. These
+are first converted to timezone-aware datetimes using the IANA timezone
+resolved for each airport, then projected to \textbf{UTC} by applying
+\texttt{ZoneInfo}-based offsets. Weather observations from NOAA are
+similarly recorded in station-local time; these are converted to UTC
+using station-level timezone mappings derived from the reference
+dimension stage.
+
+Once both datasets share a common UTC timeline, flight records are
+joined to weather observations using an \textbf{as-of join}: for each
+departure or arrival event, the most recent weather observation at the
+corresponding station that precedes the event time is selected. This
+approach correctly handles the irregular and variable cadence of surface
+weather reporting --- stations do not report on a fixed schedule, and
+naive equi-joins on rounded timestamps would systematically introduce
+look-ahead bias or large temporal gaps. Separate as-of joins are
+performed for the origin station at departure time and the destination
+station at arrival time, yielding paired meteorological conditions for
+both endpoints of every flight.
+
+Failure to handle timezones rigorously at this stage would propagate
+systematic errors through all downstream features. A one-hour offset
+error at a UTC−5 airport, for example, would cause the as-of join to
+select weather observations from the wrong side of a frontal passage,
+corrupting both the meteorological predictors and any propagation-chain
+features that depend on accurate sequencing of events.
+
+\subsubsection{Feature engineering}\label{feature-engineering}
+
+Three families of derived features are constructed from the aligned
+dataset. \textbf{Flight-level features} include a unique flight
+identifier constructed from carrier, tail number, origin, destination,
+and scheduled departure time; aircraft rotation sequences linking
+successive legs flown by the same tail number; and the standard BTS
+delay component breakdown (carrier, weather, NAS, security, late
+aircraft). \textbf{Airport-level features} aggregate traffic volume and
+delay rates within configurable time windows around each departure,
+capturing congestion dynamics at both origin and destination.
+\textbf{Route-level features} encode delay propagation along rotation
+chains: a late-aircraft delay on an inbound leg is explicitly linked to
+the downstream departure it constrains, allowing the model to condition
+on upstream disruption state.
+
+A \textbf{two-hop flight} represents a single aircraft operating two
+consecutive legs on the same day, connected by a turnaround at an
+intermediate airport. When the first leg arrives late, the delayed
+aircraft becomes the inbound for the second leg, compressing or
+eliminating the scheduled ground time and propagating the delay forward.
+Figure~\ref{fig-two-hop} illustrates this for tail N471AA operating BOS
+→ ATL → MIA: a 52-minute departure delay on Leg 1 carries through the
+ATL turnaround and manifests as a 49-minute departure delay on Leg 2,
+despite no adverse weather at ATL. This propagation mechanism is
+captured in the dataset through the \texttt{prev\_arr\_late\_15} and
+\texttt{rotation\_continuity\_flag} columns, which allow the model to
+condition on upstream disruption state when predicting downstream
+delays.
+
+\begin{figure}
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={Diagram showing two flight legs sharing a tail number, with delay columns, weather as-of joins, and a propagation arrow connecting the delay on the first leg to the second.}]{images/paper/2-hop-prop.png}
+
+}
+
+\caption{\label{fig-two-hop}Two-hop delay propagation for tail N471AA
+(BOS → ATL → MIA, 2024-03-15). A 52-minute departure delay on Leg 1
+propagates to a 49-minute delay on Leg 2 via the tail rotation,
+independent of weather conditions at the intermediate airport.}
+
+\end{figure}%
+
+Turnaround time captures the buffer between flights:
+
+\[
+Turnaround_i = DepartureTime_i - PreviousArrivalTime_i
+\]
+
+See Table~\ref{tbl-predictors} for more information on engineered
+features.
+
+\subsubsection{Postprocessing and
+output}\label{postprocessing-and-output}
+
+A \texttt{PostProcessConfig} object specifies the column subset retained
+for modelling, allowing the full engineered dataset to be filtered to
+task-specific representations without rerunning upstream stages. Final
+outputs are written as monthly and annual Parquet files containing the
+joined flight-weather records, alongside separate Parquet tables for the
+canonical flight records, airport-time aggregates, route-time
+aggregates, aircraft rotation sequences, and delay propagation chains.
+
+\section{Prediction Targets}\label{prediction-targets}
 
 We considered flight delay prediction as both a regression and
 classification problem. Let
@@ -465,24 +709,39 @@ recent route-specific operating conditions and network-level delay
 tendencies. \\
 \end{longtable}
 
+\subsection{Limitations in Data}\label{limitations-in-data}
+
+Several limitations should be noted:
+
 \begin{itemize}
 \tightlist
 \item
-  Add diagram of data pipeline and processing of features - appendix?
+  BTS delay categories are aggregated and sometimes coarse
+\item
+  weather observations may not perfectly represent local flight
+  conditions
+\item
+  route-level analysis cannot capture all national network effects
+\item
+  airline operational decisions such as crew scheduling are not directly
+  observed
+\end{itemize}
+
+Despite these limitations, the dataset provides a strong foundation for
+studying delay patterns.
+
+\begin{itemize}
+\tightlist
 \item
   Add catalog as appendix item
-\item
-  Add diagram of model training and evaluation process - move to
-  modeling section
 \end{itemize}
 
 \textbf{Note: create a section of the site that represents reproducable
 instructions of our project and data processing steps, including code
 snippets and explanations.}
 
-\subsection{Why the BWI--EWR Market Pair (keep? Might be focusig on the
-wider nation but to keep things simple we did start with a market
-pair)}\label{why-the-bwiewr-market-pair-keep-might-be-focusig-on-the-wider-nation-but-to-keep-things-simple-we-did-start-with-a-market-pair}
+\subsection{Initially started with a BWI--EWR Market
+Pair}\label{initially-started-with-a-bwiewr-market-pair}
 
 The BWI--EWR corridor sits within one of the most operationally complex
 airspaces in the United States. Newark Liberty International Airport
@@ -504,64 +763,6 @@ disruption:
   operational scheduling constraints
 \end{itemize}
 
-\subsection{What This Research
-Contributes}\label{what-this-research-contributes}
-
-This study contributes a route-focused machine learning framework for
-airline delay analysis. By combining exploratory analysis, feature
-engineering, classification modeling, and model comparison, we provide a
-systematic approach for identifying the drivers of flight delays.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\section{Data}\label{data}
-
-\subsection{Dataset Overview}\label{dataset-overview}
-
-This analysis uses flight operations data from the Bureau of
-Transportation Statistics (BTS). These records contain detailed
-flight-level information including:
-
-\begin{itemize}
-\tightlist
-\item
-  scheduled departure and arrival times
-\item
-  actual departure and arrival times
-\item
-  delay categories
-\item
-  carrier information
-\item
-  origin and destination airports
-\end{itemize}
-
-The dataset is enriched with weather variables and engineered temporal
-features.
-
-\subsection{Limitations}\label{limitations}
-
-Several limitations should be noted:
-
-\begin{itemize}
-\tightlist
-\item
-  BTS delay categories are aggregated and sometimes coarse
-\item
-  weather observations may not perfectly represent local flight
-  conditions
-\item
-  route-level analysis cannot capture all national network effects
-\item
-  airline operational decisions such as crew scheduling are not directly
-  observed
-\end{itemize}
-
-Despite these limitations, the dataset provides a strong foundation for
-studying delay patterns.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
 \section{EDA}\label{eda}
 
 \begin{itemize}
@@ -574,44 +775,11 @@ studying delay patterns.
   the connections between different airports.
 \end{itemize}
 
-\section{Feature Engineering}\label{feature-engineering}
+\section{Feature Engineering}\label{feature-engineering-1}
 
 \subsection{Delay Indicator}\label{delay-indicator}
 
-To simplify classification, we define a binary delay variable:
-
-\[
-Delayed_i =
-\begin{cases}
-1 & \text{if DepartureDelay}_i > 15 \\
-0 & \text{otherwise}
-\end{cases}
-\]
-
 \subsection{Prior Aircraft Delay}\label{prior-aircraft-delay}
-
-Upstream delays are captured by the delay of the previous aircraft
-flight:
-
-\[
-PriorDelay_i = ArrivalDelay_{previous}
-\]
-
-\subsection{Turnaround Time}\label{turnaround-time}
-
-Turnaround time captures the buffer between flights:
-
-\[
-Turnaround_i = DepartureTime_i - PreviousArrivalTime_i
-\]
-
-\subsection{Weather Severity}\label{weather-severity}
-
-Weather features combine several meteorological indicators:
-
-\[
-WeatherSeverity = f(wind, visibility, precipitation, storm\ indicators)
-\]
 
 \subsection{Temporal Features}\label{temporal-features}
 
@@ -670,25 +838,6 @@ These help capture cyclical delay patterns.
 \end{Shaded}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\section{Research Questions}\label{research-questions}
-
-This study seeks to answer the following questions:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Which operational and weather variables most strongly predict flight
-  delays?
-\item
-  How strongly do delays propagate from prior flights?
-\item
-  Which machine learning models best classify delayed flights?
-\item
-  Can unsupervised methods reveal underlying structure in delay
-  patterns?
-\end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -988,6 +1137,13 @@ a real-world scenario. By splitting on a specific date like November 1,
 2019, we ensure the model is only trained on the past and evaluated on
 truly unseen future data, which gives a more honest and reliable measure
 of model performance.
+
+\begin{itemize}
+\tightlist
+\item
+  Add diagram of model training and evaluation process - move to
+  modeling section
+\end{itemize}
 
 \protect\phantomsection\label{refs}
 \begin{CSLReferences}{0}{0}
