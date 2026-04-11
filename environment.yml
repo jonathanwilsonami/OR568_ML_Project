@@ -46,3 +46,13 @@ dependencies:
   - r-knitr
   - r-igraph
   - r-reticulate
+  - r-mvtnorm
+  - r-factominer
+  - r-nnet
+  - r-kernlab
+  - r-rpart
+  - r-e1071
+  - r-corrplot
+  - r-rpart.plot
+  - r-randomforest
+  - r-factoextra
