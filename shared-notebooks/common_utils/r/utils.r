@@ -28,8 +28,11 @@ load_project_packages <- function() {
     "e1071",
     "nnet",
     "kernlab",
-    "factoextra"
+    "factoextra",
+    "scales",
+    "ggrepel"
   )
+
 
   missing_packages <- required_packages[
     !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)

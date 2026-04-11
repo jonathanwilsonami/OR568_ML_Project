@@ -216,7 +216,623 @@ holiday_freq %>%
   )
 ```
 
-# Feature Engineering and Preprocessing
+```{r}
+#| label: setup-palette
+#| include: false
+
+# ── Consistent academic colour palette ─────────────────────────
+pal_2 <- c("#2166ac", "#d6604d")   # blue / coral
+
+pal_hol <- c(
+  "Non-Holiday"   = "#4d9ab5",
+  "Thanksgiving"  = "#e08533",
+  "Christmas"     = "#3a7d44",
+  "July_4th"      = "#7b4f9e",
+  "Other_Holiday" = "#b5a642"
+)
+
+theme_paper <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title       = element_text(face = "bold", size = 13),
+    plot.subtitle    = element_text(colour = "grey40", size = 11),
+    legend.position  = "bottom",
+    panel.grid.minor = element_blank()
+  )
+```
+
+## Part 3 — Delays by Holiday Status
+
+Arrival delays are compared inside and outside a ±3-day window around
+every 2019 US public holiday. Outliers above 100 minutes are clipped to
+focus on the central distribution. The boxplot below reveals that holiday
+periods produce a heavier right tail of delays, not merely a higher median
+— a small share of flights incur very large delays during peak travel
+windows.
+
+```{r}
+#| label: fig-holiday-boxplot
+#| fig-cap: "Distribution of arrival delays for holiday versus non-holiday travel days (BWI–NYC, 2019). Whiskers extend to 1.5× IQR; outliers above 100 min are clipped."
+
+ggplot(df_final, aes(x = is_holiday, y = arr_delay, fill = is_holiday)) +
+  geom_boxplot(outlier.shape = NA, width = 0.5, colour = "grey30") +
+  coord_cartesian(ylim = c(-20, 100)) +
+  scale_fill_manual(values = c("Holiday"     = pal_2[2],
+                               "Non-Holiday" = pal_2[1])) +
+  labs(
+    title    = "The Holiday Tax: BWI–NYC Arrival Delays",
+    subtitle = "±3-day windows around all 2019 US public holidays",
+    x        = NULL,
+    y        = "Arrival delay (minutes)"
+  ) +
+  theme_paper +
+  theme(legend.position = "none")
+```
+
+---
+
+## Part 4 — Principal Component Analysis
+
+Before fitting non-linear models, 11 numeric predictors are standardised
+(zero mean, unit variance) and reduced via PCA. Standardisation is
+essential because the inputs span different units and scales — mixing
+minutes, degrees Celsius, and metres per second without rescaling would
+give disproportionate weight to high-magnitude variables such as
+`distance`.
+
+| Variable | Description |
+|---|---|
+| `dep_delay` | Departure delay (minutes) |
+| `dep_hour_local` | Scheduled departure hour (local time) |
+| `dep_wind_speed_m_s` | Surface wind speed at origin (m/s) |
+| `dep_temp_c` | Temperature at origin (°C) |
+| `dep_ceiling_height_m` | Cloud ceiling at origin (m) |
+| `prev_arr_delay` | Arrival delay of the same aircraft's prior leg |
+| `turnaround_minutes` | Ground time between inbound arrival and outbound departure |
+| `aircraft_leg_number_day` | Leg sequence number for the aircraft that day |
+| `buffer` | Scheduled elapsed time minus actual elapsed time |
+| `distance` | Great-circle route distance (km) |
+| `taxi_out` | Taxi-out time at origin (minutes) |
+
+The scree plot below guides the choice to retain the first five components
+for modelling, which together capture the majority of variance while
+discarding noise dimensions.
+
+```{r}
+#| label: fig-pca-scree
+#| fig-cap: "PCA scree plot. The elbow after component 3–4 supports retaining five components for downstream modelling."
+
+df_pca_input <- df_final %>%
+  select(dep_delay, dep_hour_local, dep_wind_speed_m_s, dep_temp_c,
+         dep_ceiling_height_m, prev_arr_delay, turnaround_minutes,
+         aircraft_leg_number_day, buffer, distance, taxi_out) %>%
+  drop_na() %>%
+  scale() %>%
+  as.data.frame()
+
+pca_result <- FactoMineR::PCA(df_pca_input, graph = FALSE)
+
+factoextra::fviz_eig(pca_result, addlabels = TRUE,
+                     barfill = pal_2[1], barcolor = "white") +
+  labs(title = "PCA Scree Plot — Variance Explained per Component",
+       y     = "Variance explained (%)") +
+  theme_paper
+
+pca_scores   <- as.data.frame(pca_result$ind$coord[, 1:5])
+df_pca_model <- bind_cols(
+  is_delayed = df_final$is_delayed[1:nrow(pca_scores)],
+  pca_scores
+)
+```
+
+---
+
+## Part 5 — Tree-Based Modelling
+
+Two tree-based classifiers are trained on the original feature space using
+a 75/25 stratified train–test split. The target variable `is_delayed` is a
+binary indicator for arrivals delayed by 15 or more minutes.
+
+```{r}
+#| label: tree-split
+
+set.seed(42)
+
+df_model <- df_final %>%
+  select(is_delayed, dep_delay, dep_hour_local, dep_wind_speed_m_s,
+         aircraft_leg_number_day, plane_size_score,
+         is_holiday, is_weekend) %>%
+  drop_na()
+
+train_idx <- createDataPartition(df_model$is_delayed, p = 0.75, list = FALSE)
+train_set <- df_model[ train_idx, ]
+test_set  <- df_model[-train_idx, ]
+```
+
+### Decision tree
+
+The single decision tree provides an interpretable decision path. Each
+leaf node shows the predicted class and the share of training observations
+reaching that node.
+
+```{r}
+#| label: fig-decision-tree
+#| fig-cap: "CART decision tree. Node labels show predicted class (0 = on-time, 1 = delayed ≥15 min) and the percentage of observations at each split."
+#| fig-height: 7
+
+tree_fit <- rpart(is_delayed ~ ., data = train_set, method = "class")
+rpart.plot(tree_fit, extra = 101,
+           main        = "Decision Path for BWI–NYC Delays",
+           box.palette = c(pal_2[1], pal_2[2]))
+```
+
+### Random forest
+
+The random forest aggregates 100 trees and provides a more robust
+variable importance estimate. `MeanDecreaseGini` measures how much each
+predictor reduces node impurity across all splits, averaged over the
+ensemble.
+
+```{r}
+#| label: fig-rf-varimp
+#| fig-cap: "Random forest variable importance (Mean Decrease in Gini). Higher values indicate predictors that most consistently improve split purity."
+
+rf_fit <- randomForest(is_delayed ~ ., data = train_set,
+                       ntree = 100, importance = TRUE)
+varImpPlot(rf_fit,
+           main = "What Truly Drives Your Delays?",
+           col  = pal_2[1], pch = 19, cex = 0.9)
+```
+
+---
+
+## Part 6 — Non-Linear Modelling with PCA Features
+
+Two non-linear classifiers are trained on the five PCA components derived
+above. Reducing inputs to orthogonal components removes multicollinearity
+and improves the stability of both SVM and neural network fits.
+
+- **SVM (RBF kernel):** Maps PCA scores into a higher-dimensional space
+  and finds a maximum-margin hyperplane. Cost parameter `C = 1` balances
+  margin width against training misclassification.
+- **Neural network (5 hidden neurons):** Single-hidden-layer network with
+  L2 weight decay (`decay = 0.01`) to limit overfitting on the
+  low-dimensional PCA input.
+
+```{r}
+#| label: tbl-nonlinear-accuracy
+#| tbl-cap: "Classification accuracy of SVM and neural network models on the held-out 25% test set."
+
+set.seed(42)
+pca_idx   <- createDataPartition(df_pca_model$is_delayed, p = 0.75, list = FALSE)
+train_pca <- df_pca_model[ pca_idx, ]
+test_pca  <- df_pca_model[-pca_idx, ]
+
+svm_fit   <- kernlab::ksvm(is_delayed ~ ., data = train_pca,
+                           kernel = "rbfdot", C = 1)
+svm_preds <- predict(svm_fit, test_pca)
+
+nnet_fit   <- nnet::nnet(is_delayed ~ ., data = train_pca,
+                         size = 5, decay = 0.01, trace = FALSE)
+nnet_preds <- as.factor(predict(nnet_fit, test_pca, type = "class"))
+
+svm_acc  <- confusionMatrix(svm_preds,  test_pca$is_delayed)$overall["Accuracy"]
+nnet_acc <- confusionMatrix(nnet_preds, test_pca$is_delayed)$overall["Accuracy"]
+
+tibble(
+  Model    = c("SVM (RBF kernel)", "Neural network (5 hidden neurons)"),
+  Accuracy = round(c(svm_acc, nnet_acc), 4)
+) %>%
+  kable(align = c("l", "r")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+---
+
+## Part 7 — Holiday Category Tree Model
+
+Holiday status is refined from a binary flag into five named categories to
+give tree-based models finer-grained temporal context.
+
+```{r}
+#| label: tbl-holiday-categories
+#| tbl-cap: "Distribution of flights across named holiday categories after re-coding."
+
+df_final <- df_final %>%
+  mutate(
+    is_holiday = factor(case_when(
+      flight_date_clean >= (as.Date("2019-11-28") - 3) &
+        flight_date_clean <= (as.Date("2019-11-28") + 3) ~ "Thanksgiving",
+      flight_date_clean >= (as.Date("2019-12-25") - 3) &
+        flight_date_clean <= (as.Date("2019-12-25") + 3) ~ "Christmas",
+      flight_date_clean >= (as.Date("2019-07-04") - 3) &
+        flight_date_clean <= (as.Date("2019-07-04") + 3) ~ "July_4th",
+      flight_date_clean %in% holiday_windows             ~ "Other_Holiday",
+      .default                                           = "Non-Holiday"
+    ), levels = c("Non-Holiday", "Thanksgiving", "Christmas",
+                  "July_4th", "Other_Holiday"))
+  )
+
+table(df_final$is_holiday) %>%
+  as.data.frame() %>%
+  rename(`Holiday period` = Var1, `Flight count` = Freq) %>%
+  arrange(desc(`Flight count`)) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+---
+
+## Part 8 — Hub and Airline Analysis
+
+This section examines scheduling behaviour across the full 2019 dataset,
+exploring how airlines build buffer time into published block hours and
+whether that strategy differs between weekdays and weekends.
+
+### Top destination hubs
+
+```{r}
+#| label: tbl-top-hubs
+#| tbl-cap: "Top 10 destination airports by total inbound flight volume (2019)."
+
+hub_counts <- flights_raw %>%
+  select(dest, reporting_airline, taxi_in) %>%
+  collect() %>%
+  group_by(dest) %>%
+  summarise(
+    total_flights   = n(),
+    unique_airlines = n_distinct(reporting_airline),
+    avg_taxi_in     = mean(taxi_in, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_flights))
+
+hub_counts %>%
+  head(10) %>%
+  kable(col.names = c("Destination", "Total flights",
+                      "Unique airlines", "Avg taxi-in (min)"),
+        digits = 1) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r}
+#| label: fig-top-hubs-all
+#| fig-cap: "Top 10 destination airports by total inbound flight volume (2019)."
+
+ggplot(head(hub_counts, 10),
+       aes(x = reorder(dest, total_flights), y = total_flights)) +
+  geom_col(fill = pal_2[1]) +
+  coord_flip() +
+  labs(title    = "Top 10 Destination Hubs — 2019",
+       subtitle = "Total inbound flight arrivals",
+       x = "Airport", y = "Total flights") +
+  theme_paper
+```
+
+### Top destinations from BWI
+
+```{r}
+#| label: fig-top-hubs-bwi
+#| fig-cap: "Top 10 destination airports from BWI by departure frequency (2019)."
+
+hub_data <- flights_raw %>%
+  filter(origin == "BWI") %>%
+  select(dest) %>%
+  collect() %>%
+  count(dest, sort = TRUE) %>%
+  slice_max(n, n = 10)
+
+ggplot(hub_data, aes(x = reorder(dest, n), y = n)) +
+  geom_col(fill = pal_2[1]) +
+  coord_flip() +
+  labs(title    = "Top 10 Destinations from BWI (2019)",
+       subtitle = "Based on total departure frequency",
+       x = "Destination", y = "Total flights") +
+  theme_paper
+```
+
+### Airline scheduling honesty
+
+The *scheduling buffer* — the difference between published block time
+(`crs_elapsed_time`) and actual flight time (`actual_elapsed_time`) —
+measures how much padding carriers build into their schedules. A large
+buffer can absorb operational variability but may also mask chronic
+performance problems.
+
+```{r}
+#| label: tbl-honesty
+#| tbl-cap: "Airline scheduling buffer versus average arrival delay. High padding alongside high average delay suggests the buffer is insufficient to absorb disruption."
+
+honesty_check <- df_final %>%
+  mutate(buffer = crs_elapsed_time - actual_elapsed_time) %>%
+  group_by(reporting_airline) %>%
+  summarise(
+    avg_padding_mins  = mean(buffer,    na.rm = TRUE),
+    avg_arrival_delay = mean(arr_delay, na.rm = TRUE),
+    flight_count      = n()
+  ) %>%
+  arrange(desc(avg_padding_mins))
+
+honesty_check %>%
+  kable(col.names = c("Airline", "Avg padding (min)",
+                      "Avg arrival delay (min)", "Flights"),
+        digits = 2) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r}
+#| label: fig-buffer-lollipop
+#| fig-cap: "Average scheduling buffer per airline. Points to the right of zero indicate carriers that routinely pad schedules beyond actual flight time."
+
+all_airline_buffers <- flights_raw %>%
+  filter(!is.na(crs_elapsed_time), !is.na(actual_elapsed_time)) %>%
+  select(reporting_airline, crs_elapsed_time, actual_elapsed_time, arr_delay) %>%
+  collect() %>%
+  mutate(buffer_mins = crs_elapsed_time - actual_elapsed_time) %>%
+  group_by(reporting_airline) %>%
+  summarise(
+    avg_buffer_mins      = mean(buffer_mins, na.rm = TRUE),
+    median_buffer        = median(buffer_mins, na.rm = TRUE),
+    flight_count         = n(),
+    on_time_arrival_rate = mean(arr_delay <= 0, na.rm = TRUE) * 100
+  ) %>%
+  filter(flight_count > 100) %>%
+  arrange(desc(avg_buffer_mins))
+
+ggplot(all_airline_buffers,
+       aes(x = reorder(reporting_airline, avg_buffer_mins),
+           y = avg_buffer_mins)) +
+  geom_segment(aes(xend = reporting_airline, yend = 0), colour = "grey70") +
+  geom_point(size = 4, colour = pal_2[1]) +
+  coord_flip() +
+  labs(title    = "Airlines: Scheduled vs Actual Block Time",
+       subtitle = "Average buffer (minutes) — positive = padded schedule",
+       x = "Reporting airline", y = "Average buffer (minutes)") +
+  theme_paper
+```
+
+### Weekday vs weekend scheduling strategy
+
+```{r}
+#| label: fig-weekday-weekend
+#| fig-cap: "Average scheduling buffer on weekdays versus weekends by airline. A larger weekend buffer may reflect anticipated congestion."
+
+weekend_comparison <- df_final %>%
+  mutate(
+    buffer_mins = crs_elapsed_time - actual_elapsed_time,
+    day_type    = ifelse(day_of_week %in% c(6, 7), "Weekend", "Weekday")
+  ) %>%
+  group_by(reporting_airline, day_type) %>%
+  summarise(
+    avg_buffer    = mean(buffer_mins, na.rm = TRUE),
+    avg_arr_delay = mean(arr_delay,   na.rm = TRUE),
+    flight_count  = n(),
+    .groups = "drop"
+  )
+
+ggplot(weekend_comparison,
+       aes(x = reporting_airline, y = avg_buffer, fill = day_type)) +
+  geom_col(position = "dodge", colour = "white") +
+  scale_fill_manual(values = c("Weekday" = pal_2[1], "Weekend" = pal_2[2])) +
+  labs(title    = "Scheduling Strategy: Weekdays vs Weekends",
+       subtitle = "Average buffer (minutes) by reporting carrier",
+       x = "Airline", y = "Avg buffer (minutes)", fill = NULL) +
+  theme_paper
+```
+
+---
+
+## Part 9 — Holiday Impact and Delay Propagation
+
+The analysis is expanded to the full `flights_raw` dataset (all routes,
+all airlines) with named holiday categories, providing a nationally
+representative picture of how each holiday window affects delay rates and
+where that delay originates.
+
+```{r}
+#| label: holiday-full-setup
+
+flights_holiday <- flights_raw %>%
+  filter(!is.na(arr_delay), !is.na(dep_delay)) %>%
+  collect() %>%
+  mutate(
+    flight_date_clean = as.Date(flight_date),
+    is_holiday = factor(case_when(
+      flight_date_clean >= (as.Date("2019-11-28") - 3) &
+        flight_date_clean <= (as.Date("2019-11-28") + 3) ~ "Thanksgiving",
+      flight_date_clean >= (as.Date("2019-12-25") - 3) &
+        flight_date_clean <= (as.Date("2019-12-25") + 3) ~ "Christmas",
+      flight_date_clean >= (as.Date("2019-07-04") - 3) &
+        flight_date_clean <= (as.Date("2019-07-04") + 3) ~ "July_4th",
+      flight_date_clean %in% holiday_windows             ~ "Other_Holiday",
+      .default                                           = "Non-Holiday"
+    ), levels = c("Non-Holiday", "Thanksgiving", "Christmas",
+                  "July_4th", "Other_Holiday"))
+  )
+```
+
+### Delay summary by airline and holiday
+
+```{r}
+#| label: tbl-holiday-airline
+#| tbl-cap: "Average arrival and departure delays and percentage of flights delayed ≥15 minutes, by airline and holiday period (all routes, 2019)."
+
+holiday_airline_summary <- flights_holiday %>%
+  group_by(reporting_airline, is_holiday) %>%
+  summarise(
+    avg_arr_delay = mean(arr_delay,       na.rm = TRUE),
+    avg_dep_delay = mean(dep_delay,       na.rm = TRUE),
+    pct_delayed   = mean(arr_delay >= 15, na.rm = TRUE) * 100,
+    flight_count  = n(),
+    .groups = "drop"
+  )
+
+holiday_airline_summary %>%
+  kable(digits = 2,
+        col.names = c("Airline", "Holiday period", "Avg arr delay (min)",
+                      "Avg dep delay (min)", "% Delayed ≥15 min", "Flights")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+  column_spec(5, bold = TRUE)
+```
+
+### Delay heatmap: airline × holiday
+
+```{r}
+#| label: fig-heatmap
+#| fig-cap: "Average arrival delay (minutes) by airline and holiday period. Red cells indicate worse-than-average performance; blue cells indicate better performance."
+#| fig-height: 7
+
+ggplot(holiday_airline_summary,
+       aes(x = is_holiday, y = reporting_airline, fill = avg_arr_delay)) +
+  geom_tile(colour = "white", linewidth = 0.4) +
+  geom_text(aes(label = round(avg_arr_delay, 1)),
+            size = 3, colour = "white", fontface = "bold") +
+  scale_fill_gradient2(low = pal_2[1], mid = "#f7f7f7", high = pal_2[2],
+                       midpoint = 0, name = "Avg delay\n(min)") +
+  labs(title    = "Holiday Delay Heatmap — Airline × Holiday Period",
+       subtitle = "Average arrival delay (min); red = worse, blue = better",
+       x = "Holiday period", y = "Airline") +
+  theme_paper +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
+
+### Share of flights delayed ≥15 minutes
+
+```{r}
+#| label: fig-pct-delayed
+#| fig-cap: "Percentage of all flights delayed ≥15 minutes during each holiday window versus non-holiday days (all airlines, all routes, 2019)."
+
+holiday_summary_overall <- flights_holiday %>%
+  group_by(is_holiday) %>%
+  summarise(
+    avg_arr_delay = mean(arr_delay,       na.rm = TRUE),
+    pct_delayed   = mean(arr_delay >= 15, na.rm = TRUE) * 100,
+    flight_count  = n(),
+    .groups = "drop"
+  )
+
+ggplot(holiday_summary_overall,
+       aes(x = is_holiday, y = pct_delayed, fill = is_holiday)) +
+  geom_col(show.legend = FALSE, width = 0.65) +
+  geom_text(aes(label = paste0(round(pct_delayed, 1), "%")),
+            vjust = -0.5, fontface = "bold", size = 3.5) +
+  scale_fill_manual(values = pal_hol) +
+  labs(title    = "Share of Flights Delayed ≥15 Minutes by Holiday Window",
+       subtitle = "All airlines, all routes — 2019",
+       x = NULL, y = "% of flights delayed") +
+  theme_paper
+```
+
+### Decomposing delay: inherited vs newly generated
+
+A key analytical distinction is whether a flight's departure delay was
+**inherited** from the previous leg flown by the same aircraft —
+propagated via tail number through `prev_arr_delay` — or **freshly
+generated** on the current leg. Understanding this split is important for
+the predictive model: inherited delay is knowable before departure and
+is captured by `prev_arr_late_15` and `rotation_continuity_flag`, whereas
+newly generated delay must be modelled from operational and weather
+conditions.
+
+```{r}
+#| label: propagation-setup
+
+propagation_df <- flights_holiday %>%
+  filter(!is.na(prev_arr_delay)) %>%
+  mutate(
+    inherited_delay = pmax(prev_arr_delay, 0),
+    new_delay       = pmax(dep_delay - prev_arr_delay, 0),
+    total_dep_delay = inherited_delay + new_delay
+  )
+
+propagation_summary <- propagation_df %>%
+  group_by(is_holiday) %>%
+  summarise(
+    avg_inherited = mean(inherited_delay,  na.rm = TRUE),
+    avg_new       = mean(new_delay,        na.rm = TRUE),
+    avg_total     = mean(total_dep_delay,  na.rm = TRUE),
+    pct_inherited = avg_inherited / avg_total * 100,
+    flight_count  = n(),
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: tbl-propagation
+#| tbl-cap: "Decomposition of average departure delay into inherited (propagated from the prior leg via tail rotation) and newly generated components, by holiday period."
+
+propagation_summary %>%
+  kable(digits = 2,
+        col.names = c("Holiday period", "Avg inherited (min)",
+                      "Avg new delay (min)", "Avg total dep delay (min)",
+                      "% Inherited", "Flights")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(5, bold = TRUE, color = "white",
+            background = spec_color(propagation_summary$pct_inherited,
+                                    option = "C", direction = -1))
+```
+
+```{r}
+#| label: fig-propagation-stacked
+#| fig-cap: "Average departure delay decomposed into the inherited component (coral; carried from prior leg via tail rotation) and the newly generated component (blue; created on the current leg)."
+
+propagation_summary %>%
+  select(is_holiday, avg_inherited, avg_new) %>%
+  pivot_longer(cols = c(avg_inherited, avg_new),
+               names_to  = "delay_type",
+               values_to = "minutes") %>%
+  mutate(delay_type = case_match(delay_type,
+    "avg_inherited" ~ "Inherited from prev. flight",
+    "avg_new"       ~ "Newly generated this leg"
+  )) %>%
+  ggplot(aes(x = is_holiday, y = minutes, fill = delay_type)) +
+  geom_col(position = "stack", colour = "white", linewidth = 0.3) +
+  geom_text(aes(label = round(minutes, 1)),
+            position = position_stack(vjust = 0.5),
+            colour = "white", fontface = "bold", size = 3.5) +
+  scale_fill_manual(values = c(
+    "Inherited from prev. flight" = pal_2[2],
+    "Newly generated this leg"    = pal_2[1]
+  )) +
+  labs(title    = "Where Does Holiday Delay Come From?",
+       subtitle = "Decomposing departure delay: inherited vs newly generated — all airlines 2019",
+       x = NULL, y = "Average delay (minutes)", fill = NULL) +
+  theme_paper
+```
+
+### Airlines as absorbers vs amplifiers of delay
+
+Each airline–holiday combination is classified by whether the carrier
+**absorbs** inherited disruption (points below the diagonal: newly
+generated delay < inherited delay) or **amplifies** it (points above:
+newly generated delay > inherited delay).
+
+```{r}
+#| label: fig-absorbers-amplifiers
+#| fig-cap: "Each point represents one airline during one holiday period. Points above the dashed diagonal indicate the airline generated more new delay than it inherited, effectively amplifying disruption."
+#| fig-height: 6.5
+
+propagation_df %>%
+  group_by(reporting_airline, is_holiday) %>%
+  summarise(
+    avg_inherited = mean(inherited_delay, na.rm = TRUE),
+    avg_new       = mean(new_delay,       na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  ggplot(aes(x = avg_inherited, y = avg_new,
+             colour = is_holiday, label = reporting_airline)) +
+  geom_abline(slope = 1, intercept = 0,
+              linetype = "dashed", colour = "grey50") +
+  geom_point(size = 3, alpha = 0.85) +
+  geom_text_repel(size = 2.8, max.overlaps = 15) +
+  scale_colour_manual(values = pal_hol) +
+  labs(title    = "Airlines: Absorbers vs Amplifiers of Delay",
+       subtitle = "Points above the diagonal → airline adds more delay than it inherited",
+       x      = "Avg inherited delay (min)",
+       y      = "Avg newly generated delay (min)",
+       colour = "Holiday period") +
+  theme_paper
+```
+
 
 # Training Deep Learning Models
 
