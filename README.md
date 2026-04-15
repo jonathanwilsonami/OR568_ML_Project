@@ -17,7 +17,12 @@ There are countless ways to structure a project, and while this setup is not per
 
 Some projects incorporate advanced automation tools such as Terraform, Ansible, and CI/CD pipelines, while others require more complex build environments involving compilers, package managers like npm, or distributed computing frameworks such as EMR. On the other end of the spectrum, some projects remain intentionally lightweight, like this one.
 
-My goal is for this project to give use a practical, hands-on introduction to how professional data science systems are structured and operated. In many ways, we can think of it as a “lightweight” or simplified version of platforms like Amazon SageMaker—designed to expose us to the core concepts without the overhead of enterprise-scale infrastructure.
+My goal is for this project to give use a practical, hands-on introduction to how professional data science systems are structured and operated. In many ways, we can think of it as a “lightweight” or simplified version of platforms like Amazon SageMaker—designed to expose us to the core concepts without the overhead of enterprise-scale infrastructure. 
+
+## See our Project Site
+
+[Flight Delay ML Project Site](https://jonathanwilsonami.github.io/OR568_ML_Project/)
+
 
 ## Clone and open project root (from Github)
 The exact commands will be found in Github. See the green Code button for the clone command and remote url.
