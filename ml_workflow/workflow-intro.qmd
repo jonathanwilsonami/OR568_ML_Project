@@ -1,0 +1,134 @@
+---
+title: "Workflow Introduction & Setups"
+date: 2026-03-13
+format: html 
+toc: true 
+code-fold: false 
+code-tools: true
+---
+
+# Purpose of This Page
+
+This page serves as the central entry point for understanding the machine learning workflow used throughout the project. It provides the setup, data pipeline, and reproducible code needed to run the models from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines.
+
+The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team. The subpages under **ML Workflow** demonstrate how this workflow is applied to specific analyses, including focused market pair studies and full network-scale modeling.
+
+## Main Pages:
+
+- **Workflow Overview** —  Pipeline overview, setups, and execution (for both Python and R based environments)  
+- **BWI–NY Market Pair** — Focused corridor analysis and delay behavior  
+- **U.S. Domestic Network** — Nationwide analysis and network-level patterns  
+- **Shared Notebooks** — Exploratory analysis and rapid prototyping (excluded for now but found in code base)
+
+---
+
+# Project Overview
+
+This project was developed in two distinct but connected phases. The first phase focused on building a strong foundation in data engineering and predictive modeling, while the second phase expanded into system-level thinking — exploring how delays propagate through a network and how this framework can evolve into a broader digital twin.
+
+## Phase 1: Data Pipeline and Predictive Modeling
+
+The first phase of the project focused on building a robust and reproducible machine learning workflow. This included sourcing and integrating data from the Bureau of Transportation Statistics (BTS) and NOAA weather datasets, constructing a scalable data pipeline, and engineering features suitable for predictive modeling.
+
+Key efforts in this phase included data cleaning, temporal alignment of weather and flight records, and the creation of features such as time-of-day, route characteristics, and initial delay indicators. Multiple machine learning models were trained and evaluated using structured train-test splits and cross-validation to predict arrival delays and delay probabilities.
+
+This phase established the core technical foundation of the project: a repeatable workflow that can ingest data, transform it, and produce predictive insights in a consistent and scalable manner.
+
+## Phase 2: Propagation, Network Effects, and System Thinking
+
+The second phase expanded the project beyond isolated predictions into a system-level understanding of flight delays. Instead of treating each flight independently, delays were modeled as events that propagate through aircraft rotations, airport congestion, and temporal dependencies.
+
+New features were introduced to capture these effects, including prior flight delays, turnaround time, and multi-hop propagation relationships. This allowed the model to better represent how disruptions spread across the network rather than occurring in isolation.
+
+This phase also lays the groundwork for future extensions into digital twin systems, real-time data integration, and broader applications across domains such as drone coordination, construction systems, and intelligent infrastructure.
+
+---
+
+# Setups and Pulling Code 
+
+## Project Setup and Environment
+
+To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.
+
+**Step 1: Clone the project**
+
+Start by cloning the repository to your local machine and moving into the project directory.
+
+```bash
+git clone <repo-url>
+cd <repo-folder>
+```
+
+**Step 2: Create the Conda environment**
+
+This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.
+
+```bash
+conda env create -f environment.yml
+conda activate or568_ml_project
+```
+
+**Step 3: Run the ML Pipeline**
+
+You have three options for running the pipeline:
+
+- **Option 1 (Recommended):** Run the target notebook in RStudio or Jupyter with an R kernel. Make sure to have the Conda environment activated before launching your IDE.
+- **Option 2:** Use `quarto render path/to/notebook.qmd` to render a specific notebook into HTML. This will execute the code and generate the output in a reproducible way.
+- **Option 3 (Not recommended):** Render the entire site using Quarto. This will execute all notebooks and generate all HTML pages.
+
+```bash
+quarto render
+quarto preview
+```
+
+---
+
+# Data Pipeline
+
+The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.
+
+```{r}
+#| label: fig-pipeline
+#| fig-cap: "Overview of the flight delay data pipeline, from raw data sources through ingestion, cleaning, temporal alignment, feature engineering, and final output."
+#| fig-alt: "A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/common_site/data-pipeline.png")
+```
+
+## Running the Data Pipeline 
+
+::: {.callout-warning}
+### Big Data Warning
+The flight dataset is quite large (over 7 million records for a single year). Running `pipeline_main.py` to build it on a laptop with 32 GB of RAM crashed. To overcome this, a tower desktop machine with 96 GB of RAM was used to run the data pipeline. If you want to run the data pipeline yourself, it is recommended you use a machine with at least 64 GB of RAM, but ideally 96–128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 high-memory instances to run the pipeline without issue.
+:::
+
+If you are interested in generating the original data, you can run the data pipeline with the following command (assumes you followed the project setup above and are in the `data_pipeline` directory):
+
+```{bash}
+#| eval: false 
+
+python3 run_canonical_years.py --year 2019
+```
+
+## Data Loading and Cleaning
+
+The following setup pulls the data from S3 using the `load_flight_data()` function defined in `shared-notebooks/common_utils/r/utils.r`. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps.
+
+::: {.callout-note}
+### S3 Access Note
+A policy is currently set up in the S3 bucket to allow public read access, so no credentials are needed to load the data. **This will not remain the case indefinitely** and will only be available for the duration of the project. To browse available files, navigate to the URL referenced in `load_flight_data()` in a browser — the file names are listed in the XML output under `Contents/Key`.
+
+If you want to regenerate the exact data used in this project, see `pipeline_main.py` and `run_canonical_years.py` in the `data_pipeline` directory as the entry points for the data pipeline.
+:::
+
+::: {.callout-note}
+### Lazy Loading and Memory Efficiency
+This project uses lazy-loaded data via Apache Arrow. Lazy loading means that when you open a dataset, no data is actually read into memory — instead you get a query object that represents the data. Operations like `filter()` and `select()` are pushed down to the data source and only execute when you explicitly call `collect()`, at which point only the rows and columns you actually need are pulled into memory. This makes working with large datasets fast and memory efficient.
+
+The setup below loads all required packages via `load_project_packages()`, defined in `utils.r`, which installs any missing packages and attaches them to the session. Flight data is loaded from the project's data source and cached locally as a Parquet file at `data/flights_raw.parquet` on first run — subsequent renders skip the 30–40 second load and read directly from the local cache instead. To refresh the data, delete `data/flights_raw.parquet` and re-render.
+
+For anyone extending this project, it is strongly recommended to stick with Arrow in R or switch to Polars in Python rather than pandas. Pandas loads everything into memory eagerly, which becomes a bottleneck quickly on datasets of this size. Arrow and Polars are both built around the same columnar memory format, are significantly faster, and support the same lazy evaluation pattern used here — filter and select on the lazy frame first, then collect only what you need.
+:::
+
+In the Medallion architecture nomenclature, this raw S3 data is considered our **bronze** layer — the unprocessed data that feeds into the feature engineering pipeline downstream.

@@ -22,8 +22,16 @@ website:
         text: "About"
       - href: paper.qmd
         text: "Paper"
-      - href: ml-pipeline.qmd
-        text: "ML Pipeline"
+      - text: "ML Workflow"
+        menu:
+          - href: ml_workflow/workflow-intro.qmd
+            text: "ML Worflow Overview"
+
+          - href: ml_workflow/bwi-ny.qmd
+            text: "BWI–NY Market Pair"
+
+          - href: ml_workflow/us-network.qmd
+            text: "U.S. Domestic Network"
 
 format:
   html:
@@ -34,9 +42,6 @@ format:
       - text: |
           <link rel="stylesheet"
                 href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  pdf:
-    number-sections: true
-    keep-tex: true
 
 bibliography: references.bib
 csl: https://www.zotero.org/styles/ieee

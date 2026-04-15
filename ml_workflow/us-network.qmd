@@ -1,0 +1,129 @@
+---
+title: "U.S. Domestic Network Modeling"
+format: html
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+
+## Overview
+
+This analysis expands the scope of the project from individual market pairs to the full U.S. domestic flight network. The network perspective allows us to capture how delays emerge, interact, and propagate across interconnected airports and aircraft rotations. Using all of our base dataset, we analyze patterns in delay behavior across the national system, including regional congestion, temporal effects, and downstream impacts of disruptions. This provides a more complete view of system dynamics and enables more realistic modeling of delay formation and propagation.
+
+This page serves as a foundation for large-scale analysis and modeling, building toward a network-aware understanding of flight delays and their behavior across the entire air transportation system.
+
+## Sample Data Load
+
+```{python}
+import pandas as pd
+
+# Example dataset (replace with real data later)
+data = {
+    "origin": ["BWI", "BWI", "ATL", "JFK", "ORD"],
+    "dest": ["JFK", "ATL", "BWI", "BWI", "ATL"],
+    "arr_delay": [10, -5, 30, 0, 15]
+}
+
+df = pd.DataFrame(data)
+df.head()
+```
+
+# Training Deep Learning Models
+
+## Setups 
+
+## Hardware optimizations
+The pipeline was optimized across three layers of the hardware stack. First, CPU threading was configured so that all available cores are used across NumPy, scikit-learn, and TensorFlow operations rather than defaulting to single-threaded execution. These settings have to be applied before any libraries are loaded, which is why they appear at the very top of the script. Second, XGBoost was configured to run on the GPU in addition to using all CPU cores, which speeds up tree construction particularly for the larger feature sets. Third, TensorFlow's LSTM training was directed to the GPU, where matrix operations map efficiently to CUDA cores and result in significantly faster epoch times compared to CPU. GPU memory allocation was also set to grow on demand rather than reserving all available VRAM upfront, which keeps the setup stable in a Jupyter environment where the kernel persists between runs.
+
+CPU with 24 cores and ~96 GB RAM was more performant than 8 GB VRAM on GPU. Ideally for training like this we would like to see 40-80 VRAM acording to....This is were the cost-benefit of training larger models comes into play. We could got out to AWS and purchase 10 min or so of GPU. If we assume usage cost is $10 per hour this could add up if we have to train many models over long periods of time. Purchasing a 40-80 GB VRAM GPU is way out of the question where cost range in the 10s of thousands of dollars. Alas, we will stick with using CPU and RAM and get over the fact that training takes 30 min to 1-2 hours depending on if we are running CV or hyper parameter tuning. 
+
+Fortuantly running the model only takes mili seconds. 
+
+Doing this significantly improved training time. For XGBoost went from 162.1 to 44.78 That's a reduction of 117.32 seconds — roughly 3.6x faster.
+
+## Note on GPU vs CPU usage 
+GPU - 23 min 
+CPU - 32 min
+
+GPU config and hard hardware
+
+CPU config and hard hardware
+
+
+
+
+## full train-and-evaluate pipeline 
+builds the LSTM input tensors
+scales the inputs
+trains a multi-output LSTM
+predicts on the test set
+evaluates both classification and regression performance
+returns everything needed for later comparison
+
+```{python} 
+#| message: false
+#| eval: false
+
+def train_lstm_variant(train_df, test_df, variant_name, current_variant="delay_only", units1=32, units2=16, epochs=10):
+    t_variant = time.perf_counter()
+
+    X_train, y_train_cls, y_train_reg, train_pdf = build_lstm_step_matrix(train_df, current_variant=current_variant)
+    X_test, y_test_cls, y_test_reg, test_pdf = build_lstm_step_matrix(test_df, current_variant=current_variant)
+
+    X_train_scaled, X_test_scaled, scaler = scale_lstm(X_train, X_test)
+
+    y_train_cls = np.asarray(y_train_cls, dtype=np.float32)
+    y_train_reg = np.asarray(y_train_reg, dtype=np.float32)
+    y_test_cls = np.asarray(y_test_cls, dtype=np.float32)
+    y_test_reg = np.asarray(y_test_reg, dtype=np.float32)
+
+    model = build_lstm_model(
+        input_shape=(X_train_scaled.shape[1], X_train_scaled.shape[2]),
+        units1=units1,
+        units2=units2,
+        dropout=0.2,
+    )
+
+    early_stop = EarlyStopping(
+        monitor="val_loss",
+        patience=3,
+        restore_best_weights=True
+    )
+
+    history = model.fit(
+        X_train_scaled,
+        {"cls": y_train_cls, "reg": y_train_reg},
+        validation_split=0.15,
+        epochs=epochs,
+        batch_size=256,         # increase if you have RAM headroom (e.g. 512 or 1024)
+        callbacks=[early_stop],
+        verbose=1,
+    )
+
+    pred_cls, pred_reg = model.predict(X_test_scaled, verbose=0)
+    pred_cls = pred_cls.ravel()
+    pred_reg = pred_reg.ravel()
+
+    cls_metrics = classification_metrics(y_test_cls.astype(int), pred_cls)
+    reg_metrics = regression_metrics(y_test_reg, pred_reg)
+
+    timer_log(f"LSTM {variant_name}", t_variant)
+
+    return {
+        "variant_name": variant_name,
+        "model": model,
+        "history": history,
+        "X_test": X_test_scaled,
+        "test_pdf": test_pdf,
+        "y_test_cls": y_test_cls,
+        "y_test_reg": y_test_reg,
+        "pred_cls": pred_cls,
+        "pred_reg": pred_reg,
+        "cls_metrics": cls_metrics,
+        "reg_metrics": reg_metrics,
+        "scaler": scaler,
+    }
+
+```

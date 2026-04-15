@@ -1,5 +1,5 @@
 ---
-title: "Machine Learning Pipeline"
+title: "BWI–NY Market Pair"
 date: 2026-03-13
 format: html 
 toc: true 
@@ -7,111 +7,14 @@ code-fold: false
 code-tools: true
 ---
 
-# Purpose of This Page
+# Overview
+This modeling and analysis focuses on a specific market pair between BWI and the New York area to provide a more detailed, localized view of flight delay behavior. By narrowing the scope, we can more closely examine the factors that influence delays within a constrained and highly trafficked corridor.
 
-This page provides the code and setup needed to run the machine learning workflow in a repeatable way from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines. The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team.
+This setting allows for deeper exploration of temporal patterns, weather effects, and aircraft rotation dynamics without the added complexity of the full national network. It also provides a controlled environment to test feature engineering approaches and modeling techniques.
 
-# Setups and Pulling Code 
+The insights gained from this focused analysis serve as a foundation for understanding delay behavior, which can then be extended and generalized to the broader U.S. domestic network. See the page on U.S. Domestic Network Modeling for more details. 
 
-## Project Setup and Environnement
-
-To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.
-
-1. Clone the project
-
-Start by cloning the repository to your local machine and moving into the project directory.
-
-```bash
-git clone <repo-url>
-cd <repo-folder>
-```
-
-2. Create the Conda environment
-
-This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.
-
-```bash
-conda env create -f environment.yml
-```
-
-Then activate it:
-
-```bash
-conda activate or568_ml_project
-```
-
-3. Run the ML Pipeline
-
-Option 1: Run this notebook in RStudio or Jupyter with R kernel. Make sure to have the Conda environment activated before launching your IDE.
-
-Option 2: Use quarto render path/to/notebook.qmd to render the notebook into HTML. This will execute the code and generate the output in a reproducible way.
-
-Option 3 (not recommended): Render the entire site using Quarto. This will execute all notebooks and generate the HTML pages. 
-
-```bash
-quarto render
-quarto preview
-```
-
-# Data Pipeline
-
-The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.
-
-```{r}
-#| label: fig-pipeline
-#| fig-cap: "Overview of the flight delay data pipeline, from raw data sources through ingestion, cleaning, temporal alignment, feature engineering, and final output."
-#| fig-alt: "A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output."
-#| echo: false
-#| out-width: "100%"
-knitr::include_graphics("images/common_site/data-pipeline.png")
-```
-
-## Running the Data Pipeline 
-
-::: {.callout-note}
-### Big Data Warning
-The flight dataset is quite large (over 7 million records for a single year). Running the `pipeline_main.py` to build it on a laptop with 32 GB of RAM crashed. In order to overcome this I had to use my tower desktop machine with 96 GB of RAM to run the data pipeline. If you want to run the data pipeline yourself, I would recommend using a machine with at least 64 GB of RAM, but ideally 96-128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 instances with high memory capacity to run the data pipeline without crashing.
-:::
-
-If you are interested in generating the original data you can run the data pipeline with the following command: 
-
-```{bash}
-#| eval: false 
-
-python3 run_canonical_years.py --year 2019
-```
-
-This assumes you followed the project setups above and are in the data_pipeline directory. 
-
-## Data Loading and Cleaning
-
-The following setup pulls the data from S3 using the `load_flight_data()` function defined in `shared-notebooks/common_utils/r/utils.r`. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps. Currently a policy is setup in the S3 bucket to allow public read access, so no credentials are needed to load the data. Unfortunately, this will not be the case in the future and will only remain here for the duration of the project. In the Medallion nomenclature this would be considered our bronze level data, which is the raw data that we will be using on our feature engineering pipeline.
-
-If you want to see what is there you can reach the URL provided in the `load_flight_data` function and enter that into a browser. That will output some XML the name of the files are nested under Contents/Key. 
-
-However, if you would like to regenerate the exact data we used you can run our data pipeline code in the data_pipeline directory. See the `pipeline_main.py` and `run_canonical_years`` as the entry points for the data pipeline for more details.
-
-::: {.callout-note}
-### Big Data Warning
-This project uses lazy-loaded data via Apache Arrow. Lazy loading means that when you open a 
-dataset, no data is actually read into memory — instead you get a query object that represents 
-the data. Operations like `filter()` and `select()` are pushed down to the data source and only 
-execute when you explicitly call `collect()`, at which point only the rows and columns you 
-actually need are pulled into memory. This makes working with large datasets fast and memory 
-efficient.
-
-The setup below loads all required packages via `load_project_packages()`, defined in `utils.r`, 
-which installs any missing packages and attaches them to the session. Flight data is loaded from 
-the project's data source and cached locally as a parquet file at `data/flights_raw.parquet` on 
-first run — subsequent renders skip the 30-40 second load and read directly from the local cache 
-instead. To refresh the data, delete `data/flights_raw.parquet` and re-render.
-
-For anyone extending this project, I strongly recommend sticking to Arrow in R or switching to 
-Polars in Python rather than pandas. Pandas loads everything into memory eagerly, which becomes 
-a bottleneck quickly on datasets of this size. Arrow and Polars are both built around the same 
-columnar memory format, are significantly faster, and support the same lazy evaluation pattern 
-used here — filter and select on the lazy frame first, then collect only what you need.
-:::
+## Setups 
 
 The setup below loads all required packages via `load_project_packages()`, defined in `utils.r`, 
 which installs any missing packages and attaches them to the session. Flight data is loaded from 
@@ -149,7 +52,9 @@ flights_raw <- arrow::open_dataset("data/flights_raw.parquet")
 
 ```
 
-# Holiday Analysis 
+# BWI-NY Modeling & Analysis 
+
+## Holiday Analysis
 
 ```{r}
 #| label: build-df-final
@@ -240,7 +145,7 @@ theme_paper <- theme_minimal(base_size = 12) +
   )
 ```
 
-## Part 3 — Delays by Holiday Status
+### Delays by Holiday Status
 
 Arrival delays are compared inside and outside a ±3-day window around
 every 2019 US public holiday. Outliers above 100 minutes are clipped to
@@ -270,7 +175,7 @@ ggplot(df_final, aes(x = is_holiday, y = arr_delay, fill = is_holiday)) +
 
 ---
 
-## Part 4 — Principal Component Analysis
+## Principal Component Analysis
 
 Before fitting non-linear models, 11 numeric predictors are standardised
 (zero mean, unit variance) and reduced via PCA. Standardisation is
@@ -326,7 +231,7 @@ df_pca_model <- bind_cols(
 
 ---
 
-## Part 5 — Tree-Based Modelling
+## Tree-Based Modelling
 
 Two tree-based classifiers are trained on the original feature space using
 a 75/25 stratified train–test split. The target variable `is_delayed` is a
@@ -385,7 +290,7 @@ varImpPlot(rf_fit,
 
 ---
 
-## Part 6 — Non-Linear Modelling with PCA Features
+## Non-Linear Modelling with PCA Features
 
 Two non-linear classifiers are trained on the five PCA components derived
 above. Reducing inputs to orthogonal components removes multicollinearity
@@ -428,7 +333,7 @@ tibble(
 
 ---
 
-## Part 7 — Holiday Category Tree Model
+## Holiday Category Tree Model
 
 Holiday status is refined from a binary flag into five named categories to
 give tree-based models finer-grained temporal context.
@@ -462,7 +367,7 @@ table(df_final$is_holiday) %>%
 
 ---
 
-## Part 8 — Hub and Airline Analysis
+## Hub and Airline Analysis
 
 This section examines scheduling behaviour across the full 2019 dataset,
 exploring how airlines build buffer time into published block hours and
@@ -621,7 +526,7 @@ ggplot(weekend_comparison,
 
 ---
 
-## Part 9 — Holiday Impact and Delay Propagation
+## Holiday Impact and Delay Propagation
 
 The analysis is expanded to the full `flights_raw` dataset (all routes,
 all airlines) with named holiday categories, providing a nationally
@@ -831,103 +736,4 @@ propagation_df %>%
        y      = "Avg newly generated delay (min)",
        colour = "Holiday period") +
   theme_paper
-```
-
-
-# Training Deep Learning Models
-
-## Setups 
-
-## Hardware optimizations
-The pipeline was optimized across three layers of the hardware stack. First, CPU threading was configured so that all available cores are used across NumPy, scikit-learn, and TensorFlow operations rather than defaulting to single-threaded execution. These settings have to be applied before any libraries are loaded, which is why they appear at the very top of the script. Second, XGBoost was configured to run on the GPU in addition to using all CPU cores, which speeds up tree construction particularly for the larger feature sets. Third, TensorFlow's LSTM training was directed to the GPU, where matrix operations map efficiently to CUDA cores and result in significantly faster epoch times compared to CPU. GPU memory allocation was also set to grow on demand rather than reserving all available VRAM upfront, which keeps the setup stable in a Jupyter environment where the kernel persists between runs.
-
-CPU with 24 cores and ~96 GB RAM was more performant than 8 GB VRAM on GPU. Ideally for training like this we would like to see 40-80 VRAM acording to....This is were the cost-benefit of training larger models comes into play. We could got out to AWS and purchase 10 min or so of GPU. If we assume usage cost is $10 per hour this could add up if we have to train many models over long periods of time. Purchasing a 40-80 GB VRAM GPU is way out of the question where cost range in the 10s of thousands of dollars. Alas, we will stick with using CPU and RAM and get over the fact that training takes 30 min to 1-2 hours depending on if we are running CV or hyper parameter tuning. 
-
-Fortuantly running the model only takes mili seconds. 
-
-Doing this significantly improved training time. For XGBoost went from 162.1 to 44.78 That's a reduction of 117.32 seconds — roughly 3.6x faster.
-
-## Note on GPU vs CPU usage 
-GPU - 23 min 
-CPU - 32 min
-
-GPU config and hard hardware
-
-CPU config and hard hardware
-
-
-
-
-## full train-and-evaluate pipeline 
-builds the LSTM input tensors
-scales the inputs
-trains a multi-output LSTM
-predicts on the test set
-evaluates both classification and regression performance
-returns everything needed for later comparison
-
-```{python} 
-#| message: false
-#| eval: false
-
-def train_lstm_variant(train_df, test_df, variant_name, current_variant="delay_only", units1=32, units2=16, epochs=10):
-    t_variant = time.perf_counter()
-
-    X_train, y_train_cls, y_train_reg, train_pdf = build_lstm_step_matrix(train_df, current_variant=current_variant)
-    X_test, y_test_cls, y_test_reg, test_pdf = build_lstm_step_matrix(test_df, current_variant=current_variant)
-
-    X_train_scaled, X_test_scaled, scaler = scale_lstm(X_train, X_test)
-
-    y_train_cls = np.asarray(y_train_cls, dtype=np.float32)
-    y_train_reg = np.asarray(y_train_reg, dtype=np.float32)
-    y_test_cls = np.asarray(y_test_cls, dtype=np.float32)
-    y_test_reg = np.asarray(y_test_reg, dtype=np.float32)
-
-    model = build_lstm_model(
-        input_shape=(X_train_scaled.shape[1], X_train_scaled.shape[2]),
-        units1=units1,
-        units2=units2,
-        dropout=0.2,
-    )
-
-    early_stop = EarlyStopping(
-        monitor="val_loss",
-        patience=3,
-        restore_best_weights=True
-    )
-
-    history = model.fit(
-        X_train_scaled,
-        {"cls": y_train_cls, "reg": y_train_reg},
-        validation_split=0.15,
-        epochs=epochs,
-        batch_size=256,         # increase if you have RAM headroom (e.g. 512 or 1024)
-        callbacks=[early_stop],
-        verbose=1,
-    )
-
-    pred_cls, pred_reg = model.predict(X_test_scaled, verbose=0)
-    pred_cls = pred_cls.ravel()
-    pred_reg = pred_reg.ravel()
-
-    cls_metrics = classification_metrics(y_test_cls.astype(int), pred_cls)
-    reg_metrics = regression_metrics(y_test_reg, pred_reg)
-
-    timer_log(f"LSTM {variant_name}", t_variant)
-
-    return {
-        "variant_name": variant_name,
-        "model": model,
-        "history": history,
-        "X_test": X_test_scaled,
-        "test_pdf": test_pdf,
-        "y_test_cls": y_test_cls,
-        "y_test_reg": y_test_reg,
-        "pred_cls": pred_cls,
-        "pred_reg": pred_reg,
-        "cls_metrics": cls_metrics,
-        "reg_metrics": reg_metrics,
-        "scaler": scaler,
-    }
-
 ```

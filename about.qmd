@@ -3,45 +3,56 @@ title: "About Us"
 page-navigation: false
 toc: false
 page-layout: full
-
-about:
-  id: hero-heading
-  template: trestles
-  image-width: 70%
 ---
 
-:::{#hero-heading}
+:::: {.grid}
 
-## [Jonathan Wilson](https://jonathanwil.com) {.fw-bold .text-center .mb-2 .fs-2}
+::: {.g-col-6}
+
+## [Jonathan Wilson](https://jonathanwil.com) {.fw-bold .text-center .mb-2 .fs-5}
 
 ![Jonathan Wilson](/images/about/jon.png){fig-alt="Jonathan Wilson" width="28%" fig-align="center"}
 
 ::: {.small .lh-sm}
-I’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University.
+I'm an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master's in Data Analytics Engineering at George Mason University.
 :::
 
-## [Karan Lastname](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}
+:::
 
-![Karan](/images/about/karan.png){fig-alt="Karan" width="28%" fig-align="center"}
+::: {.g-col-6}
+
+## [Karan Nindra](https://www.linkedin.com/in/karan-nindra-347bb8192/) {.fw-bold .text-center .mb-2 .fs-5}
+
+![Karan Nindra](/images/about/karan.jpeg){fig-alt="Karan" width="28%" fig-align="center"}
 
 ::: {.small .lh-sm}
-Karan is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team.
+I have my bachelor's in Industrial and Systems Engineering, with a minor in statistics, from Virginia Tech and I am currently pursuing a master's in Operations Research at George Mason University. I started out doing logistics engineering for the United States Postal Service and then transitioned into my current role as a systems engineer for the DoD, doing MBSE for both the system of systems and mission level.
 :::
 
-## [Irena Austin](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}
+:::
 
-![Irena](/images/about/irena.png){fig-alt="Irena" width="28%" fig-align="center"}
+::: {.g-col-6}
+
+## [Irena Austin](https://www.linkedin.com/in/irena-austin/) {.fw-bold .text-center .mb-2 .fs-5}
+
+![Irena Austin](/images/about/irena.png){fig-alt="Irena" width="28%" fig-align="center"}
 
 ::: {.small .lh-sm}
 I am a Human Resources professional in the federal sector currently pursuing a master's in Management and Responsible AI at George Mason University. My work focuses on bridging the gap between traditional HR operations and predictive analytics. In this repository, I apply machine learning models to analyze complex datasets like flight delays and organizational risk.
 :::
 
-## [Val Lastname](https://your-link-here.com) {.fw-bold .text-center .mb-2 .fs-2}
+:::
 
-![Val](/images/about/val.png){fig-alt="Val" width="28%" fig-align="center"}
+::: {.g-col-6}
+
+## [Valerie Sokolow](https://www.linkedin.com/in/valerie-sokolow-7278651a4/) {.fw-bold .text-center .mb-2 .fs-5}
+
+![Valerie Sokolow](/images/about/val.png){fig-alt="Val" width="28%" fig-align="center"}
 
 ::: {.small .lh-sm}
 Val is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths.
 :::
 
 :::
+
+::::

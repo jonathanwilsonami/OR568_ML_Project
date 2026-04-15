@@ -37,6 +37,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -104,10 +105,25 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link" href="./paper.html"> 
 <span class="menu-text">Paper</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./ml-pipeline.html"> 
-<span class="menu-text">ML Pipeline</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-ml-workflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">ML Workflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-ml-workflow">    
+        <li>
+    <a class="dropdown-item" href="./ml_workflow/workflow-intro.html">
+ <span class="dropdown-text">ML Worflow Overview</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./ml_workflow/bwi-ny.html">
+ <span class="dropdown-text">BWI–NY Market Pair</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ml_workflow/us-network.html">
+ <span class="dropdown-text">U.S. Domestic Network</span></a>
+  </li>  
+    </ul>
+  </li>
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -119,27 +135,32 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="about.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+    
 <!-- main -->
-<main class="content column-page-left" id="quarto-document-content">
+<main class="content column-page" id="quarto-document-content">
 
-
-
-
-<div class="quarto-about-trestles column-page-left">
-  <div class="about-entity">
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">About Us</h1>
 </div>
-<div class="quarto-title-meta column-page-left">
+
+
+
+<div class="quarto-title-meta column-page">
+
+    
+  
+    
   </div>
+  
+
+
 </header>
-  </div>
-  <div class="about-contents"><div id="hero-heading">
-<section id="jonathan-wilson" class="level2 fw-bold text-center mb-2 fs-2">
-<h2 class="fw-bold text-center mb-2 fs-2" data-anchor-id="jonathan-wilson"><a href="https://jonathanwil.com">Jonathan Wilson</a></h2>
+
+
+<div class="grid">
+<section id="jonathan-wilson" class="level2 fw-bold text-center mb-2 fs-5 g-col-6">
+<h2 class="fw-bold text-center mb-2 fs-5 anchored" data-anchor-id="jonathan-wilson"><a href="https://jonathanwil.com">Jonathan Wilson</a></h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/about/jon.png" class="img-fluid figure-img" style="width:28.0%" alt="Jonathan Wilson"></p>
@@ -150,52 +171,56 @@ ul.task-list li input[type="checkbox"] {
 <p>I’m an engineer at heart. I grew up working in construction, earned a degree in Applied Statistics and Computer Science from BYU, and have spent more than a decade building software across diverse domains—ranging from DoD satellites, image processing, optimization, and large-scale cybersecurity analytics to network engineering, monitoring, and data platforms. Today, my focus is on designing data architectures and pipelines for modeling, simulation, and analysis of large-scale systems. I am currently pursuing a master’s in Data Analytics Engineering at George Mason University.</p>
 </div>
 </section>
-<section id="karan-lastname" class="level2 fw-bold text-center mb-2 fs-2">
-<h2 class="fw-bold text-center mb-2 fs-2" data-anchor-id="karan-lastname"><a href="https://your-link-here.com">Karan Lastname</a></h2>
+<section id="karan-nindra" class="level2 fw-bold text-center mb-2 fs-5 g-col-6">
+<h2 class="fw-bold text-center mb-2 fs-5 anchored" data-anchor-id="karan-nindra"><a href="https://www.linkedin.com/in/karan-nindra-347bb8192/">Karan Nindra</a></h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="./images/about/karan.png" class="img-fluid figure-img" style="width:28.0%" alt="Karan"></p>
-<figcaption>Karan</figcaption>
+<p><img src="./images/about/karan.jpeg" class="img-fluid figure-img" style="width:28.0%" alt="Karan"></p>
+<figcaption>Karan Nindra</figcaption>
 </figure>
 </div>
 <div class="small lh-sm">
-<p>Karan is a member of the OR 568 Machine Learning Project team. Add a short professional biography here describing academic background, current role, technical interests, and contributions to the project. You can also include research interests, relevant industry experience, and what Karan is focusing on within the team.</p>
+<p>I have my bachelor’s in Industrial and Systems Engineering, with a minor in statistics, from Virginia Tech and I am currently pursuing a master’s in Operations Research at George Mason University. I started out doing logistics engineering for the United States Postal Service and then transitioned into my current role as a systems engineer for the DoD, doing MBSE for both the system of systems and mission level.</p>
 </div>
 </section>
-<section id="irena-austin" class="level2 fw-bold text-center mb-2 fs-2">
-<h2 class="fw-bold text-center mb-2 fs-2" data-anchor-id="irena-austin"><a href="https://your-link-here.com">Irena Austin</a></h2>
+<section id="irena-austin" class="level2 fw-bold text-center mb-2 fs-5 g-col-6">
+<h2 class="fw-bold text-center mb-2 fs-5 anchored" data-anchor-id="irena-austin"><a href="https://www.linkedin.com/in/irena-austin/">Irena Austin</a></h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/about/irena.png" class="img-fluid figure-img" style="width:28.0%" alt="Irena"></p>
-<figcaption>Irena</figcaption>
+<figcaption>Irena Austin</figcaption>
 </figure>
 </div>
 <div class="small lh-sm">
 <p>I am a Human Resources professional in the federal sector currently pursuing a master’s in Management and Responsible AI at George Mason University. My work focuses on bridging the gap between traditional HR operations and predictive analytics. In this repository, I apply machine learning models to analyze complex datasets like flight delays and organizational risk.</p>
 </div>
 </section>
-<section id="val-lastname" class="level2 fw-bold text-center mb-2 fs-2">
-<h2 class="fw-bold text-center mb-2 fs-2" data-anchor-id="val-lastname"><a href="https://your-link-here.com">Val Lastname</a></h2>
+<section id="valerie-sokolow" class="level2 fw-bold text-center mb-2 fs-5 g-col-6">
+<h2 class="fw-bold text-center mb-2 fs-5 anchored" data-anchor-id="valerie-sokolow"><a href="https://www.linkedin.com/in/valerie-sokolow-7278651a4/">Valerie Sokolow</a></h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/about/val.png" class="img-fluid figure-img" style="width:28.0%" alt="Val"></p>
-<figcaption>Val</figcaption>
+<figcaption>Valerie Sokolow</figcaption>
 </figure>
 </div>
 <div class="small lh-sm">
 <p>Val is a member of the OR 568 Machine Learning Project team. Add a short biography here describing technical background, work experience, academic interests, and role on the project team. This can include domain interests, tools, modeling focus, or collaboration strengths.</p>
 </div>
 </section>
-</div></div>
 </div>
-
-
 
 
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     
