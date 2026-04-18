@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "flight-delay-demo"
+version = "0.2.0"
+description = "Interactive production demo for flight delay prediction models"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python       = "^3.10"
+dash         = "^2.17"
+plotly       = "^5.22"
+pandas       = "^2.2"
+numpy        = "^1.26"
+pyarrow      = "^16.0"
+joblib       = "^1.4"
+xgboost      = "^2.0"
+dash-bootstrap-components = "^1.6"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.0"
+ruff  = "^0.4"
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
