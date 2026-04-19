@@ -32,6 +32,8 @@ website:
 
           - href: ml_workflow/us-network.qmd
             text: "U.S. Domestic Network"
+      - href: aero-flux.qmd
+        text: "Aero Flux"
 
 format:
   html:
