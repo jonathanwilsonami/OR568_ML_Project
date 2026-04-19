@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Home – Flight Delays: A Machine Learning Approach</title>
+<title>Aero Flux – Flight Delays: A Machine Learning Approach</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -94,7 +94,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -125,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="./aero-flux.html"> 
+    <a class="nav-link active" href="./aero-flux.html" aria-current="page"> 
 <span class="menu-text">Aero Flux</span></a>
   </li>  
 </ul>
@@ -136,29 +136,21 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#welcome" id="toc-welcome" class="nav-link active" data-scroll-target="#welcome">Welcome</a></li>
-  </ul>
-</nav>
-    </div>
+    
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content column-page" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Home</h1>
+<h1 class="title">Aero Flux</h1>
 </div>
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page">
 
     
   
@@ -170,9 +162,62 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="welcome" class="level1">
-<h1>Welcome</h1>
-<p>This site contains all our team’s work as well as shared notebooks organized by team member.</p>
+<section id="welcome-to-aero-flux" class="level2">
+<h2 class="anchored" data-anchor-id="welcome-to-aero-flux">Welcome to Aero Flux!</h2>
+<p>Feel free to browse the site below or scroll down to read more about what Aero Flux is. For a test run click on the flight number and enter in the following</p>
+<ul>
+<li>Flight: 2685</li>
+<li>Date: 2019-11-11</li>
+<li>Origin: RDM</li>
+<li>Dest: AZA</li>
+</ul>
+<iframe src="https://aeroflux.duckdns.org" width="100%" height="1100px" style="border: none; border-radius: 8px;">
+</iframe>
+</section>
+<section id="what-is-aeroflux" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-aeroflux">What is AeroFlux?</h2>
+<p>AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive delayed by 15 minutes or more, and estimates the delay in minutes. It does this by modeling the full operational context of the aircraft: where it came from, how the previous two legs performed, the turnaround time, cumulative delays accumulated during the day, and weather conditions at departure.</p>
+<p>The output is a full prediction report: a probability score, a delay estimate, a comparison against the actual recorded outcome, a geographic map of the aircraft’s rotation chain, and a breakdown of the key features that drove the prediction.</p>
+</section>
+<section id="a-precursor-to-a-digital-twin" class="level2">
+<h2 class="anchored" data-anchor-id="a-precursor-to-a-digital-twin">A precursor to a digital twin</h2>
+<p>AeroFlux is not yet a digital twin. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like <em>what happens to the next four flights on this tail if this departure slips 45 minutes?</em></p>
+<p>AeroFlux is the immediate precursor. The machine learning pipeline, feature engineering, model inference layer, and interactive interface are all in place. What it currently lacks is the live data feed connecting it to real-time flight state. That connection is the primary objective for the next phase of development. The progression looks like this:</p>
+<ul>
+<li><strong>Phase 1 (complete)</strong> — Historical proof of concept: models trained, pipeline built, interactive app deployed</li>
+<li><strong>Phase 2 (next)</strong> — Live data integration: connect to FAA SWIM or a commercial flight data API, replace historical lookups with real-time inference, add live weather</li>
+<li><strong>Phase 3</strong> — Introduce more sophisticated modeling: adding more spatiotemporal and network-aware complexity through ST-GCN and attention-based Transformer models, physics-informed neural networks using telemetry data, richer datasets regarding passenger delays aided by LLM-parsed natural language feeds and much more.</li>
+<li><strong>Phase 4</strong> — Digital twin: a continuously updated bidirectional model of the domestic flight network with full scenario simulation</li>
+</ul>
+</section>
+<section id="how-it-was-built" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-was-built">How it was built</h2>
+<p>The data engineering layer uses <strong>Polars</strong>, a Rust-based DataFrame library that leverages Apache Arrow columnar memory — substantially more efficient than pandas for this scale of data. The pipeline engineers lag features (previous one and two flights on the same tail), turnaround times, cumulative aircraft-day delays, route traffic volumes, and holiday proximity from raw BTS parquet files.</p>
+<p>A slim cached parquet is written on first run and loaded directly on subsequent starts to reduce resource demand.</p>
+<p>The application is a <strong>Plotly Dash</strong> app served by Gunicorn on AWS Lightsail.</p>
+</section>
+<section id="the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-data">The data</h2>
+<p>Due to reasource limitations (4 GB of RAM) and cost ($12/month and much more for more resources) the prototype focuses on November 2019 data to However, the models were trained on over 30 million flight records. See our paper for more details.</p>
+</section>
+<section id="the-models" class="level2">
+<h2 class="anchored" data-anchor-id="the-models">The models</h2>
+<p>Each model consists of a paired classifier (predicts the probability that arrival delay will be 15 minutes or more) and a regressor (predicts the delay in minutes). Two models are currently deployed:</p>
+<p><strong>XGB Full</strong> uses 43 engineered features across five categories: propagation features (previous leg delays, turnaround time, rotation continuity), aircraft-day features (leg number, cumulative delays, relative leg position), schedule features (departure hour, weekday, month, time bucket, distance), weather features (temperature, wind speed, ceiling height at origin and destination), and network features (route frequency, airport volume, holiday proximity).</p>
+<p><strong>XGB Full Aircraft</strong> extends this with four additional aircraft characteristics: year of manufacture, number of engines, number of seats, and aircraft age. This allows the model to account for fleet-specific delay patterns.</p>
+<p>These models were trained with the ML Pipeline (see the docs the ML Pipeline) before the app was deployed.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>AeroFlux is a research prototype and has several important limitations to keep in mind.</p>
+<p>All predictions are run against historical 2019 data. There is no live feed — you are seeing what the model would have predicted for a flight that has already happened, compared to what actually occurred. This is intentional for validation but is the primary gap for operational use.</p>
+<p>The system covers domestic U.S. carrier operations only. International routes, cargo, and regional carriers not reporting to BTS are excluded. There is no modeling of international disruptions cascading into domestic operations.</p>
+<p>AeroFlux predicts a single flight. It does not yet propagate a predicted delay forward to downstream flights on the same tail or to connecting passengers. That simulation layer is the core of the digital twin roadmap.</p>
+</section>
+<section id="infrastructure" class="level2">
+<h2 class="anchored" data-anchor-id="infrastructure">Infrastructure</h2>
+<p>The app runs on AWS Lightsail (4GB RAM, 2 vCPU). Flight data and model artifacts are stored in Amazon S3 and downloaded to the instance on startup. The domain <code>aeroflux.duckdns.org</code>.</p>
+<p>Source code is at <a href="https://github.com/jonathanwilsonami/aero-flux">github.com/jonathanwilsonami/aero-flux</a>.</p>
 
 
 </section>
