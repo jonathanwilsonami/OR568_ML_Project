@@ -22,7 +22,7 @@ from data import (
     TARGET_CLASS, TARGET_REG, XGB_FULL_FEATURES,
     FlightIndex, load_and_engineer,
 )
-from models.loader import discover_models, load_model_pair, predict_row
+from models.loader import discover_models, get_feature_names, load_model_pair, predict_row
 
 # ---------------------------------------------------------------------------
 # Paths & constants
@@ -48,7 +48,7 @@ def _startup() -> None:
         print(f"[WARN] {_LOAD_ERROR}")
         return
     try:
-        _DF    = load_and_engineer(DATA_FILE)          # cache-aware
+        _DF    = load_and_engineer(DATA_FILE, models_dir=MODELS_DIR)  # cache-aware
         _INDEX = FlightIndex(_DF)                      # O(1) lookup index
     except Exception as exc:
         _LOAD_ERROR = str(exc)
@@ -331,13 +331,15 @@ def run_prediction(
 
     # ── Predict ───────────────────────────────────────────────────────
     try:
-        result = predict_row(row, clf, reg, threshold=threshold)
+        result = predict_row(row, clf, reg, threshold=threshold, model_info=models_found[model_name])
     except Exception:
         return _err("Prediction failed.", traceback.format_exc())
 
-    pred_prob    = result["prob"]
-    pred_delay   = result["delay_est"]
-    pred_verdict = result["verdict"]
+    pred_prob      = result["prob"]
+    pred_delay     = result["delay_est"]
+    pred_verdict   = result["verdict"]
+    features_used  = result.get("features_used", [])
+    missing_cols   = result.get("missing_cols", [])
 
     # ── Actuals ───────────────────────────────────────────────────────
     actual_delay   = float(row.get(TARGET_REG,    0) or 0)
@@ -380,6 +382,17 @@ def run_prediction(
     tight_flag = row.get("tight_turnaround_flag", 0)
     leg_pos    = row.get("relative_leg_position")
     cum_dep    = row.get("cum_dep_delay_aircraft_day", 0)
+
+    # ── Missing column warning ───────────────────────────────────────────
+    missing_note = None
+    if missing_cols:
+        missing_note = dbc.Alert(
+            [html.B(f"Note: {len(missing_cols)} feature(s) not in data — filled with 0.  "),
+             html.Span(", ".join(missing_cols[:8])
+                       + ("…" if len(missing_cols) > 8 else ""),
+                       className="small font-monospace")],
+            color="warning", className="mb-3",
+        )
 
     # ── Risk tier ─────────────────────────────────────────────────────
     if pred_prob < 0.3:
@@ -455,7 +468,8 @@ def run_prediction(
             dbc.Col([
                 html.P("Settings", className="fw-semibold small text-muted mb-2"),
                 html.P(f"Threshold: {threshold:.2f}", className="small mb-1"),
-                html.P(f"Model: {model_name}", className="small mb-0 text-muted"),
+                html.P(f"Model: {model_name}", className="small mb-1 text-muted"),
+                html.P(f"{len(features_used)} features used", className="small mb-0 text-muted"),
             ], md=3),
         ])),
     ], className="mb-3 shadow-sm")
@@ -515,11 +529,12 @@ def run_prediction(
         prev1_arr_delay=prev1_arr, prev1_dep_delay=prev1_dep,
         actual_arr_delay=actual_delay, actual_dep_delay=actual_dep_del,
     )
-    feat_fig = feature_contributions(row, XGB_FULL_FEATURES)
+    feat_fig = feature_contributions(row, features_used or XGB_FULL_FEATURES)
 
     return (
         [
-            *([multi_note] if multi_note else []),
+            *([multi_note]   if multi_note   else []),
+            *([missing_note] if missing_note else []),
             header, metrics, pred_card, context_card,
             _chart(map_fig),
             dbc.Row([

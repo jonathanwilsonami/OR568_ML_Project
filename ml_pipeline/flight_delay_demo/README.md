@@ -81,4 +81,8 @@ The parquet file should contain at minimum:
 | `arr_del15` | Binary delay flag ≥15 min (classification target) |
 
 All other features (weather, propagation, traffic volume) are derived automatically.
-Missing columns are filled with 0 — the model will still run but accuracy may be lower.
+Missing columns are filled with 0 — the model will still run but accuracy may be lower. 
+
+
+# Light Sail Access 
+ssh -i SshKey.pem ubuntu@IP 
