@@ -6,10 +6,12 @@ repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
 format:
   html:
     number-sections: true
+    # number-offset: 1
     math:
       eq-prefix: "Model"
   pdf:
     number-sections: true
+    # number-offset: 1
     keep-tex: true
 authors:
   - "Jonathan Wilson"
@@ -18,29 +20,31 @@ authors:
   - "Val Sokolow"
 ---
 
-## Abstract
+::: {.callout-note appearance="minimal"}
+Abstract 
 
 Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the United States using machine learning, exploratory data analysis, and engineered operational features.
 
 Using Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised and unsupervised learning approaches and even some neural networks using LSTMs.
 
 Our findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based (with extreme gradient boosting) approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation.
+:::
 
 ---
 
-## Introduction & Background
+# Introduction & Background
 
-### Motivation
+## Motivation
 
 Flight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.
 
 Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.
 
-### Related Works 
+## Related Works 
 
 - Add at least 3 
 
-### Research Questions
+## Research Questions
 
 This study seeks to answer the following questions:
 
@@ -48,15 +52,15 @@ This study seeks to answer the following questions:
 2. How strongly do delays propagate from prior flights?
 3. Which machine learning models best classify delayed flights?
 
-### What This Research Contributes
+## What This Research Contributes
 
 This study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays.
 
-## Data and Methods
+# Data 
 
-### Data Sources & Pipeline 
+## Data Sources & Pipeline 
 
-#### Data Pipeline
+### Data Pipeline
 
 The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.
 
@@ -69,7 +73,7 @@ The pipeline integrates three independent data streams — Bureau of Transportat
 knitr::include_graphics("images/common_site/data-pipeline.png")
 ```
 
-#### Data sources
+### Data Sources & Methods 
 
 Flight performance data are sourced from the BTS Transtats PREZIP endpoint, which publishes monthly on-time reporting files for all US carriers. Weather observations are obtained from the NOAA National Centers for Environmental Information (NCEI) global-hourly dataset via a REST API, providing sub-hourly surface measurements at reporting stations worldwide. Airport and station reference data are drawn from the OurAirports CSV registry and the NOAA Integrated Surface Database (ISD) station history file, which together supply the geographic coordinates and ICAO codes required to link flight records to their corresponding weather stations.
 
@@ -85,7 +89,7 @@ The BTS data provided detailed flight-level operational records for 2019, includ
 
 Aircraft registry variables from the FAA were initially considered. However, because only a 2025 registry snapshot was available while the operational flight data represented 2019 activity, these variables were excluded from the final predictive analysis to avoid temporal inconsistency and possible bias.
 
-##### Data Source Resource Links
+#### Data Source Resource Links
 
 The pipeline draws on four publicly available data sources, summarised in @tbl-sources. All sources are freely accessible and updated on a regular basis.
 
@@ -126,15 +130,15 @@ sources <- data.frame(
 kable(sources, col.names = c("Source", "Description", "URL"), align = c("l", "l", "l"))
 ```
 
-#### Ingestion
+### Ingestion
 
 Each data stream is ingested independently. BTS monthly ZIP archives are downloaded with exponential backoff, extracted, and parsed into Polars DataFrames with explicit schema inference and null handling before being serialised to Parquet. Weather records are retrieved in station-month chunks of 25 stations per request, returned as JSON, and similarly persisted to monthly Parquet cache files. Airport and station reference data are loaded from CSV and held in memory as dimension tables. Caching intermediate outputs at this stage is deliberate: it decouples the computationally expensive download and format-conversion steps from all downstream transformations, allowing the pipeline to be re-run from clean intermediates without re-fetching raw data.
 
-#### Cleaning and normalisation
+### Cleaning and normalization 
 
 Flight records are filtered to a defined route universe — a set of core airport pairs plus permissible two-hop connections — and deduplicated. Weather records undergo field-level parsing to extract temperature (`TMP`), wind speed and direction (`WND`), and ceiling height (`CIG`) from their packed NOAA format representations; observations with missing values across all primary meteorological fields are dropped. On the reference side, each airport in the BTS route universe is matched to its best-candidate ISD weather station using a nearest-neighbour procedure over geodetic distance, with timezone resolution falling back to a longitude-based estimate where the `timezonefinder` library cannot resolve a canonical IANA zone.
 
-#### Timestamp alignment and temporal join
+### Timestamp alignment and temporal join
 
 Correct temporal alignment between flight records and weather observations is the most consequential step in the pipeline, and the one most susceptible to subtle error. Flight departure and arrival times in BTS data are recorded in **local airport time** as four-digit integers (HHMM), with no timezone annotation and a known edge case at midnight where the integer representation rolls over incorrectly. These are first converted to timezone-aware datetimes using the IANA timezone resolved for each airport, then projected to **UTC** by applying `ZoneInfo`-based offsets. Weather observations from NOAA are similarly recorded in station-local time; these are converted to UTC using station-level timezone mappings derived from the reference dimension stage.
 
@@ -142,7 +146,7 @@ Once both datasets share a common UTC timeline, flight records are joined to wea
 
 Failure to handle timezones rigorously at this stage would propagate systematic errors through all downstream features. A one-hour offset error at a UTC−5 airport, for example, would cause the as-of join to select weather observations from the wrong side of a frontal passage, corrupting both the meteorological predictors and any propagation-chain features that depend on accurate sequencing of events.
 
-#### Feature engineering
+### Feature engineering
 
 Three families of derived features are constructed from the aligned dataset. **Flight-level features** include a unique flight identifier constructed from carrier, tail number, origin, destination, and scheduled departure time; aircraft rotation sequences linking successive legs flown by the same tail number; and the standard BTS delay component breakdown (carrier, weather, NAS, security, late aircraft). **Airport-level features** aggregate traffic volume and delay rates within configurable time windows around each departure, capturing congestion dynamics at both origin and destination. **Route-level features** encode delay propagation along rotation chains: a late-aircraft delay on an inbound leg is explicitly linked to the downstream departure it constrains, allowing the model to condition on upstream disruption state.
 
@@ -154,7 +158,7 @@ A **two-hop flight** represents a single aircraft operating two consecutive legs
 #| fig-alt: "Diagram showing two flight legs sharing a tail number, with delay columns, weather as-of joins, and a propagation arrow connecting the delay on the first leg to the second."
 #| echo: false
 #| out-width: "100%"
-knitr::include_graphics("images/paper/2-hop-prop.png")
+knitr::include_graphics("images/paper/2hop-clean.png")
 ```
 
 Turnaround time captures the buffer between flights:
@@ -165,7 +169,7 @@ $$
 
 See @tbl-predictors for more information on engineered features. 
 
-#### Postprocessing and output
+### Postprocessing and output
 
 A `PostProcessConfig` object specifies the column subset retained for modelling, allowing the full engineered dataset to be filtered to task-specific representations without rerunning upstream stages. Final outputs are written as monthly and annual Parquet files containing the joined flight-weather records, alongside separate Parquet tables for the canonical flight records, airport-time aggregates, route-time aggregates, aircraft rotation sequences, and delay propagation chains.
 
@@ -216,7 +220,7 @@ Table @tbl-predictors summarizes the major predictors and supporting data elemen
 
 : Major predictors and important data items used in the flight delay pipeline. {#tbl-predictors}
 
-### Limitations in Data
+## Limitations in Data
 
 Several limitations should be noted:
 
@@ -232,7 +236,7 @@ Despite these limitations, the dataset provides a strong foundation for studying
 
 **Note: create a section of the site that represents reproducable instructions of our project and data processing steps, including code snippets and explanations.**
 
-### Initially started with a BWI–EWR Market Pair 
+## Initially started with a BWI–EWR Market Pair 
 
 The BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.
 
@@ -244,69 +248,37 @@ Flights between these airports are vulnerable to multiple sources of disruption:
 - operational scheduling constraints
 
 
-## EDA  
+# EDA  
 
-- Show network map of airports and flight routes - some kind of data visualization that shows the network structure of the flights between BWI and EWR, as well as other connecting routes. This could be a graph or a map visualization that highlights the frequency of flights and the connections between different airports.
+## Distribution of Delays
 
-## Feature Engineering
+## Delays by Time of Day
 
-### Delay Indicator
+## Weather vs Delay
 
-### Prior Aircraft Delay
+## Delay Propagation 
+
+## Centrality Metrics 
+```{r}
+#| label: fig-centrality-metrics-airport-bubble
+#| fig-cap: "Centrality Metrics - Airport Bubble"
+#| fig-alt: "Centrality Metrics - Airport Bubble"
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/airport-centrality-bubble.png")
+```
 
 
-
-
-
-
-### Temporal Features
-
-Time-based indicators include:
-
-- departure hour
-- day of week
-- month
-- holiday flags
-
-These help capture cyclical delay patterns.
+....Otehrs....
 
 ---
 
-## Exploratory Data Analysis
+# Models 
 
-### Distribution of Delays
+We are interested in building an multi-output model that both classifies an arrival delay and determins how long that arrival delay will be using 
+features that are available during the present time. 
 
-```{r}
-# Histogram of departure delays
-# ggplot(df, aes(x = DepDelayMinutes)) +
-#   geom_histogram(bins = 50)
-```
-
-### Delays by Time of Day
-
-```{r}
-# Delay frequency by departure hour
-```
-
-### Weather vs Delay
-
-```{r}
-# Weather severity vs delay outcome
-```
-
-### Delay Propagation
-
-```{r}
-# Previous arrival delay vs next departure delay
-```
-
----
-
-
-
----
-
-## Building Classifiers
+## Phase 1: 2019 Baseline
 
 ### Logistic Regression
 
@@ -321,90 +293,436 @@ $$
 \eta_i = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p
 $$
 
-```{r}
-# logistic regression model
-```
-
----
-
 ### Ridge Logistic Regression
 
 To address multicollinearity and improve stability we apply ridge regularization.
 
-```{r}
-# ridge logistic regression
-```
-
----
-
-### Classification Tree
+### Basic Decision Trees
 
 Decision trees provide interpretable classification rules.
-
-```{r}
-# classification tree
-```
-
----
 
 ### Random Forest
 
 Random forests improve predictive accuracy through ensemble learning.
 
-```{r}
-# random forest model
-```
-
----
-
 ### K-Nearest Neighbors
 
 KNN classifies flights based on nearby observations in feature space.
 
-```{r}
-# knn model
-```
-
----
-
-## Unsupervised Analysis
-
-### Principal Component Analysis
+### Unsupervised Analysis: Principal Component Analysis
 
 PCA identifies dominant dimensions in the feature space.
 
-```{r}
-# PCA analysis
-```
+### Unsupervised Analysis: K-Means Clustering
 
-### K-Means Clustering
+## Phase 2: Multi Year 
 
-Clustering reveals natural groupings among flight observations.
+In the final modeling training phase we used all our data. The 10 year run used over 61 million final training records, tuned it with rolling time-aware 5 fold cross-validation across historical years, then evaluated it on a fully unseen 2025 holdout test year containing 6.86 million flights. In total we are working with around 70 million flight records! The following sections will cover the details and how well the models performed. 
 
-```{r}
-# kmeans clustering
-```
+### Hardware 
+
+When working with larger data sets models were trained on a local workstation running Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores and boost speeds up to 5.65 GHz, along with approximately 96 GB of system memory. The machine also includes both integrated AMD graphics and a discrete NVIDIA GPU, although model training was mostly conducted using CPU resources and GPU usage on 4 GB of VRAM didn't yield improved performance. The ML-Pipeline is still configured to run on GPU if desired. This hardware configuration provides substantial parallel processing capability and memory bandwidth, enabling efficient handling of large-scale data processing, feature engineering, and machine learning model training workflows. 
+
+### LSTM Spatio-Temporal Flight Delay Model
+
+#### Overview
+
+A Long Short-Term Memory (LSTM) neural network was developed to model flight delay 
+propagation using sequential aircraft rotation history. Unlike tree-based models that 
+treat each flight independently, the LSTM learns temporal dependencies across prior legs 
+operated by the same tail number — naturally representing how delays cascade through a 
+rotation chain.
+
+For a **2-hop propagation network**, the current flight is conditioned on the two most 
+recent upstream legs:
+
+$$
+JFK \rightarrow BOS \rightarrow ATL \rightarrow MIA
+$$
+
+If the current flight is $ATL \rightarrow MIA$, then $JFK \rightarrow BOS$ and 
+$BOS \rightarrow ATL$ form its sequential context.
 
 ---
 
-## Model Comparison
-
-We compare models using metrics such as:
-
-- accuracy
-- precision
-- recall
-- F1 score
+#### Model Architecture
 
 ```{r}
-# model comparison table
+#| label: fig-lstm
+#| fig-cap: "LSTM architecture for flight delay prediction. The network encodes a 3-timestep aircraft rotation sequence and produces two output heads: a binary delay classifier and a continuous delay regressor."
+#| fig-alt: "A diagram of the LSTM model architecture showing a sequential encoder feeding into a classification head and a regression head."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/lstm-model.png")
 ```
+
+#### Input Representation
+
+Each flight $i$ is encoded as a 3D sequence tensor:
+
+$$
+\mathbf{X}_i \in \mathbb{R}^{T \times F}
+$$
+
+where $T = 3$ timesteps represent the **previous-2 leg**, **previous-1 leg**, and 
+**current flight context**, and $F$ is the number of engineered features per timestep. 
+Across all training samples the full tensor is:
+
+$$
+\mathbf{X} \in \mathbb{R}^{N \times T \times F}
+\quad \text{e.g.,} \quad (5{,}000{,}000,\ 3,\ 29)
+$$
+
+Features at each timestep include prior arrival and departure delays, turnaround gap, 
+distance, time-of-day, weekday, month, weather variables, route frequency, and 
+congestion proxies.
+
+#### Preprocessing and Scaling
+
+Neural networks are sensitive to feature scale. The tensor is temporarily reshaped from 
+$(N, T, F)$ to $(N \cdot T,\ F)$, standardised via:
+
+$$
+z = \frac{x - \mu}{\sigma}
+$$
+
+then reshaped back, preserving sequence structure while ensuring stable gradient flow 
+during training.
+
+#### Sequence Encoder
+
+The LSTM processes each timestep $t$ and updates a hidden state:
+
+$$
+\mathbf{h}_t = \text{LSTM}(\mathbf{x}_t,\ \mathbf{h}_{t-1})
+$$
+
+The final hidden state $\mathbf{h}_T$ serves as a compact representation of the full 
+rotation history and is passed to both output heads. Each LSTM unit learns a temporal 
+pattern from the input sequence; more units increase model capacity at the cost of 
+overfitting risk.
+
+Limiting the network to 2 hops ($T = 3$) provides a practical guard against exploding 
+gradients, while the LSTM gating mechanism — maintaining separate long-term and 
+short-term memory paths — mitigates the vanishing gradient problem inherent in standard 
+RNNs.
+
+A **dropout rate of 20%** was applied to LSTM outputs during training, randomly 
+deactivating neurons to prevent the model from over-relying on any single feature or 
+pattern.
 
 ---
 
-## Results
+#### Multi-Task Output Heads
 
-### Key Findings
+The shared encoder feeds two independent output heads, enabling simultaneous binary 
+classification and continuous regression from a single forward pass.
+
+#### Classification Head
+
+$$
+\hat{p}_i = \sigma(W_c\, \mathbf{h}_T + b_c)
+$$
+
+Produces the probability that flight $i$ is delayed by 15 minutes or more.
+
+#### Regression Head
+
+$$
+\hat{y}_i = W_r\, \mathbf{h}_T + b_r
+$$
+
+Produces the predicted delay in minutes as a continuous value.
+
+---
+
+#### Loss Function
+
+Both tasks are trained simultaneously using a single combined loss, so the weight updates from backpropagation account for both the classification and regression errors in every pass.
+
+$$
+\mathcal{L} = \mathcal{L}_{cls} + \lambda\, \mathcal{L}_{reg}
+$$
+
+where $\lambda$ balances the contribution of each term. $\lambda$ scales the regression loss so that neither task dominates training, 
+since BCE and MSE naturally operate on different numerical scales.
+
+**Classification** uses binary cross-entropy (BCE):
+
+$$
+\mathcal{L}_{cls} = -\sum_i \left[ y_i \log(\hat{p}_i) + (1 - y_i)\log(1 - \hat{p}_i) \right]
+$$
+
+This penalizes confident wrong predictions logarithmically, making it well-suited to 
+binary delay outcomes.
+
+**Regression** uses mean squared error (MSE):
+
+$$
+\mathcal{L}_{reg} = \sum_i \left( Y_i^{(reg)} - \hat{Y}_i^{(reg)} \right)^2
+$$
+
+Squaring the residuals penalizes large errors disproportionately, pushing the model to 
+minimize severe mispredictions of delay magnitude.
+
+---
+
+#### Limitations and Model Status
+
+Despite its architectural strengths, the LSTM was **dropped from the 10-year training 
+run** due to:
+
+- Higher memory footprint than gradient-boosted alternatives
+- Slower training at scale ($N > 5\text{M}$ samples)
+- Reduced interpretability compared to tree-based models
+- Non-trivial tensor preparation and scaling pipeline
+
+The model is retained in this paper to document its design and to motivate future 
+sequence-based extensions, which may include:
+
+- Spatio-Temporal Graph Convolutional Networks
+- Transformer sequence models
+- Graph Attention Networks
+- Hybrid LSTM + airport graph embeddings
+
+### XGBoost 
+
+Using a tree allows tree ensembles to learn subtle operational patterns very effectively.
+
+### XGBoost Classification Model
+
+$$
+\hat{p}_i
+=
+P(Y_i^{(cls)} = 1 \mid \mathbf{x}_i)
+=
+\sigma\left(
+\sum_{m=1}^{M} f_m(\mathbf{x}_i)
+\right)
+$$
+
+where
+
+$$
+\sigma(z)=\frac{1}{1+e^{-z}}
+$$
+
+and $M = 300$ boosting trees.
+
+### Classification Decision Rule
+
+$$
+\hat{Y}_i^{(cls)} =
+\begin{cases}
+1 & \text{if } \hat{p}_i \ge 0.5 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+### XGBoost Regression Model
+
+$$
+\hat{Y}_i^{(reg)}
+=
+\sum_{m=1}^{M} g_m(\mathbf{x}_i)
+$$
+
+### Boosting Objective
+
+$$
+\mathcal{L}^{(t)}
+=
+\sum_{i=1}^{n}
+l\left(
+y_i,\hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)
+\right)
++
+\Omega(f_t)
+$$
+
+### Tree Complexity Penalty
+
+$$
+\Omega(f)
+=
+\gamma T
++
+\frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
+$$
+
+# Model Evaluation Metrics & Comparitive Perfromance  
+
+## ML Pipeline 
+
+- Add diagram of model training and evaluation process - move to modeling section 
+- Explain what the ML Pipeline is 
+
+## Cross Validation and Hyper Parameter Tuning 
+
+Train-Test Splits for CV used expanding window strategy....
+
+## Feature Importances 
+
+```{r}
+#| label: tbl-features
+#| tbl-cap: "Strong predictive features used in the flight delay model."
+#| echo: false
+library(knitr)
+
+features <- data.frame(
+  Feature = c(
+    "Prior Leg Delays",
+    "Aircraft Rotation Continuity",
+    "Turnaround Minutes",
+    "Cumulative Aircraft Delays",
+    "Weather at Origin/Destination",
+    "Route Congestion",
+    "Airport Traffic Volume",
+    "Schedule Timing",
+    "Aircraft Metadata"
+  ),
+  Description = c(
+    "Whether the incoming flight arrived late, directly propagating delay forward.",
+    "Tracks whether the same aircraft flew the previous leg without interruption.",
+    "Time between aircraft arrival and scheduled next departure at the gate.",
+    "Rolling sum of delays accumulated by the aircraft throughout the day.",
+    "Hourly surface conditions — wind, visibility, precipitation — at both airports.",
+    "How frequently flights on this route experience delays due to airspace demand.",
+    "Total departures and arrivals at the airport within a given time window.",
+    "Departure hour and day-of-week capturing peak travel and operational patterns.",
+    "Aircraft type and age affecting turnaround speed and mechanical reliability."
+  )
+)
+
+kable(features, col.names = c("Feature", "Description"), align = c("l", "l"))
+
+```
+
+## Hyperparameter Tuning 
+
+```{r}
+#| label: tbl-hyperparameters
+#| tbl-cap: "Winning XGBoost hyperparameter configuration selected from four candidate configurations."
+#| echo: false
+library(knitr)
+
+hyperparams <- data.frame(
+  Hyperparameter = c(
+    "n_estimators",
+    "max_depth",
+    "learning_rate",
+    "subsample",
+    "colsample_bytree",
+    "min_child_weight",
+    "reg_lambda",
+    "tree_method",
+    "device"
+  ),
+  Value = c(
+    "300",
+    "6",
+    "0.05",
+    "0.8",
+    "0.8",
+    "1",
+    "1.0",
+    "hist",
+    "cpu"
+  )
+)
+
+kable(hyperparams, col.names = c("Hyperparameter", "Value"), align = c("l", "r"))
+```
+
+### Selected Hyperparameters
+
+$$
+M = 300,\quad
+d = 6,\quad
+\eta = 0.05,\quad
+s = 0.8,\quad
+c = 0.8
+$$
+
+where:
+
+- $M$ = number of trees  
+- $d$ = maximum tree depth  
+- $\eta$ = learning rate  
+- $s$ = row subsample ratio  
+- $c$ = feature subsample ratio  
+
+
+where $\mathcal{L}_i$ represents all previous same-day legs for aircraft $i$.
+
+
+### Temporal Cross Validation
+
+$$
+\mathcal{D}_{train}^{(k)} = \{2015,\dots,t_k\},
+\qquad
+\mathcal{D}_{val}^{(k)} = \{t_k+1\}
+$$
+Example:
+
+### Final Holdout Evaluation Design
+
+$$
+\mathcal{D}_{final\ train} = \{2015,\dots,2024\}
+\qquad
+\mathcal{D}_{test} = \{2025\}
+$$
+
+### Model Comparison 
+
+```{r}
+#| label: fig-auc-lstm-xgboost
+#| fig-cap: "AUC for LSTM and XGBoost Models"
+#| fig-alt: "AUC for LSTM and XGBoost Models"
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/model-ROC.png")
+```
+
+
+```{r}
+#| label: fig-actual-v-pred-lstm-xgboost
+#| fig-cap: "Actual vs Predicted for LSTM and XGBoost"
+#| fig-alt: "Actual vs Predicted for LSTM and XGBoost"
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/actual-v-predicted.png")
+```
+
+## Results 
+
+$$
+AUC = 0.9903,\quad
+F_1 = 0.9018,\quad
+MAE = 6.55,\quad
+RMSE = 20.36
+$$
+
+### Limitations 
+
+The 2-hop propagation framework was designed to capture delay carryover from the two most recent upstream aircraft legs. This was a practical and computationally efficient approximation of delay dynamics:
+While highly useful, this design imposes important structural limitations for both the :contentReference[oaicite:0]{index=0} and :contentReference[oaicite:1]{index=1} LSTM approaches.
+
+
+ - Core Limitation: Finite Memory Window. The 2-hop model only observes two upstream legs.
+ - Hidden Accumulated Operational Stress. Aircraft systems often degrade gradually throughout the day.
+ - Same-Aircraft Only Perspective.
+ - The propagation design centered on aircraft tail-number continuity:
+ - No Explicit Airport Network Topology. The 2-hop model does not explicitly represent the airport graph:
+ - XGBoost can model nonlinear interactions, but it does not maintain hidden recurrent state.
+ - Feature Explosion Risk. As hops increase the feature space grows rapidly.
+ - Temporal Leakage Risk. Both approaches must ensure upstream features are truly available before prediction time.
+
+---
+
+# Results
+
+## Key Findings
 
 The analysis suggests that delay outcomes are influenced by several interacting factors:
 
@@ -413,120 +731,69 @@ The analysis suggests that delay outcomes are influenced by several interacting 
 - weather conditions
 - temporal scheduling effects
 
-### Operational Interpretation
+## Operational Interpretation
 
 Predictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions.
 
 ---
 
-## Discussion & Limitations
+# Discussion & Limitations
 
 Several limitations should be considered:
 
 - missing operational factors such as crew and maintenance constraints
+- passenger delays 
 - imperfect weather measurements
 - route-specific findings that may not generalize
+- Etc...
 
 Despite these challenges, the framework provides a replicable approach for studying delay behavior.
 
 ---
 
-## Conclusion
+# Conclusion
 
-This study demonstrates how machine learning methods can be applied to understand delay dynamics in the BWI–EWR market pair.
+This study demonstrates how machine learning methods can be applied to understand delay dynamics...
 
-Tree-based methods and penalized regression provide the best balance of predictive performance and interpretability. The analysis highlights the importance of upstream delay propagation and temporal operational patterns.
-
-Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches.
+Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches.....etc.
 
 ---
 
-## References
+# Appendex 
 
+## Introduction To Areo Flux and Future Works
 
-## Appendix  
+AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive delayed by 15 minutes or more, and estimates the delay in minutes. It does this by modeling the full operational context of the aircraft: where it came from, how the previous two legs performed, the turnaround time, cumulative delays accumulated during the day, and weather conditions at departure.
 
-### Data Catalog 
+The output is a full prediction report: a probability score, a delay estimate, a comparison against the actual recorded outcome, a geographic map of the aircraft's rotation chain, and a breakdown of the key features that drove the prediction.
 
+```{r}
+#| label: fig-aeroflux1
+#| fig-cap: "AeroFlux predictive intelligence system user interface"
+#| fig-alt: "AeroFlux predictive intelligence system user interface"
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/aero-flux/app_v2.png")
+```
 
-## Hardware 
+```{r}
+#| label: fig-aeroflux2
+#| fig-cap: "AeroFlux Flight Map"
+#| fig-alt: "AeroFlux Flight Map"
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/aero-flux/flight-map-app_v2.png")
+```
 
-The models were trained on a high-performance local workstation running Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores and boost speeds up to 5.65 GHz, along with approximately 96 GB of system memory. The machine also includes both integrated AMD graphics and a discrete NVIDIA GPU, although model training was conducted using CPU resources. This hardware configuration provides substantial parallel processing capability and memory bandwidth, enabling efficient handling of large-scale data processing, feature engineering, and machine learning model training workflows.
+### A precursor to a digital twin
 
-## Models 
+AeroFlux is not yet a digital twin. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like *what happens to the next four flights on this tail if this departure slips 45 minutes?*
 
-We are interested in building an multi-output model that both classifies an arrival delay and determins how long that arrival delay will be using 
-features that are available during the present time. 
+AeroFlux is the immediate precursor. The machine learning pipeline, feature engineering, model inference layer, and interactive interface are all in place. What it currently lacks is the live data feed connecting it to real-time flight state. That connection is the primary objective for the next phase of development. The progression looks like this:
 
-Models: 
-LSTM -
+- **Phase 1 (complete)** — Historical proof of concept: models trained, pipeline built, interactive app deployed
+- **Phase 2 (next)** — Live data integration: connect to FAA or a commercial flight data API, replace historical lookups with real-time inference, add live weather
+- **Phase 3** — Network simulation: propagate predicted delays forward through the rotation chain, model downstream passenger connections
+- **Phase 4** — Digital twin: a continuously updated bidirectional model of the domestic flight network with full scenario simulation
 
-Model Arch 
-units1 is the number of hidden units (neurons) in that LSTM layer
-Each unit produces one value in the hidden state vector at each time step. each neuron learns a pattern or signal from your inputs over time.
-More units → more capacity → can learn more complex patterns
-Fewer units → simpler model → less risk of overfitting
-
-Break data into a step matrix - each example is broken into ordered steps in time or sequence, rather than treated as one flat row. The 
-LSTM model needs this 3D matrix to work on. 
-We apply some scaling to the data to standardize each feature this allows our neural network to train more effectively thus improving stability 
-and convergence. 
-
-Flights contexts in 2 hop would be 3 different time steps. t-2, t-1, t0. One sample would be 3 rows. 
-
-Varients - Use same training function but different inputs and model sizes. 
-
-Making the model bigger adds more context: Answers Does adding richer operational context improve sequence-based delay prediction? 
-
-By keeping the layers to only 2 hops we prevent the exploding gradient problem 
-To prevent the vanishing gradient problem we....else we would never reach our optimal value 
-LSTMs help us avoid the vanishing and exploding gradient problems by using two seperate paths 
-that are for long and short term memories. The gates helps us make relavant predictions 
-only remmebering what is needed and forgetting what is not. (explain) 
-
-Regularlization - We applied a dropout regularization to the LSTM outputs, randomly turning off a fraction (dropout, e.g., 20%) of the neurons during training. This helps prevent the model from overfitting by forcing it to not rely too heavily on any single pattern or feature.
-
-Loss Functions 
-Binary Cross-Entroy 
-
-$$
-\mathcal{L}_{BCE} = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \right]
-$$
-
-MSE 
-$$
-\mathcal{L}_{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
-$$
-
-Evaluation Metrics 
-
-Cross Validation and Hyper Parameter Tuning 
-
-Train-Test Splits for CV. Expanding window folds inside Jan-Oct training period.
-
-    Fold 1: train Jan-Jun, validate Jul
-    Fold 2: train Jan-Jul, validate Aug
-    Fold 3: train Jan-Aug, validate Sep
-    Fold 4: train Jan-Sep, validate Oct
-    
-FINAL TEST SPLIT
-#    Keep Nov-Dec untouched
-
-
-Tree - 
-
-Metrics:
-Classification - AUC, F1, precision, recall, accuracy  
-Regression - MAE, RMSE 
-
-- Explain why used and are there better ones to use 
-
-Rows in final modeling table: 6594553
-Train rows: 5490189 (Jan 1-Oct 31)
-Test rows : 1104364 (Nov 1-Dec 31)
-
-The code performs a time-based train/test split on the flights dataset using November 1, 2019 as the cutoff. A temporal split like this is the correct approach for LSTM modeling on time-series data, as it mirrors real-world prediction conditions and prevents data leakage from future records into training.it is important to split your training and test sets by a fixed date rather than randomly. Random splitting allows future data to leak into the training set, meaning the model inadvertently learns from information it would not have had access to in a real-world scenario. By splitting on a specific date like November 1, 2019, we ensure the model is only trained on the past and evaluated on truly unseen future data, which gives a more honest and reliable measure of model performance.
-
-- Add diagram of model training and evaluation process - move to modeling section 
-
-
+[See AeroFlux here](aero-flux.qmd)
