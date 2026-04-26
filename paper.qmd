@@ -323,7 +323,7 @@ In the final modeling training phase we used all our data. The 10 year run used 
 
 When working with larger data sets models were trained on a local workstation running Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores and boost speeds up to 5.65 GHz, along with approximately 96 GB of system memory. The machine also includes both integrated AMD graphics and a discrete NVIDIA GPU, although model training was mostly conducted using CPU resources and GPU usage on 4 GB of VRAM didn't yield improved performance. The ML-Pipeline is still configured to run on GPU if desired. This hardware configuration provides substantial parallel processing capability and memory bandwidth, enabling efficient handling of large-scale data processing, feature engineering, and machine learning model training workflows. 
 
-### LSTM Spatio-Temporal Flight Delay Model
+### LSTM Spatio-Temporal Model
 
 #### Overview
 
@@ -487,9 +487,105 @@ sequence-based extensions, which may include:
 
 ### XGBoost 
 
-Using a tree allows tree ensembles to learn subtle operational patterns very effectively.
+A tuned Extreme Gradient Boosting (XGBoost) model was developed as the primary predictive model for flight delay forecasting.
+
+XGBoost was selected for this task because gradient-boosted tree ensembles consistently achieve strong performance on large-scale structured tabular data. The method captures nonlinear operational interactions, tolerates heterogeneous feature scales without normalization, and remains computationally tractable at the scale of tens of millions of flight records. Unlike linear models, XGBoost can implicitly model feature interactions such as the combined effect of a tight turnaround window on an already-stressed aircraft — without requiring manual interaction terms.
+
+The full modeling pipeline, from data splitting through final holdout evaluation, is described in the sections that follow.
+
+#### Data Partitioning Strategy
+
+To preserve temporal realism and eliminate any possibility of look-ahead bias, the dataset was partitioned **strictly chronologically**. Future observations were never permitted to influence model training or validation at any stage.
+
+| Dataset | Years | Rows |
+|---|---|---|
+| Training | 2015–2023 | 54,620,695 |
+| Validation | 2024 | 6,947,566 |
+| Test (Holdout) | 2025 | 6,857,845 |
+| **Final Refit Train** | **2015–2024** | **61,568,261** |
+
+: Chronological data splits used across the full XGBoost pipeline. {#tbl-splits}
+
+The 2025 holdout set represents completely unseen flight operations and serves as the primary benchmark for reported final performance. No information from 2025 was available at any point during model development, hyperparameter search, or feature selection.
+
+---
+
+#### Feature Engineering
+
+The final feature set for the production model (`xgb_full_aircraft`) contained **37 predictors** spanning five conceptually distinct categories. Feature selection was guided by domain knowledge of delay propagation mechanisms and validated empirically through cross-validation performance comparisons across feature subsets.
+
+##### Schedule and Calendar Features
+
+These features encode when a flight is scheduled, capturing peak-hour congestion effects, weekend travel patterns, holiday demand surges, and seasonal variation.
+
+- `distance` — great-circle route distance in miles
+- `crs_elapsed_time` — scheduled block time in minutes
+- `dep_hour_local` — local departure hour (0–23)
+- `dep_weekday_local` — day of week (Monday = 0)
+- `dep_month_local` — calendar month
+- `dep_time_bucket` — discretized departure time window (e.g., early morning, morning bank, afternoon, evening)
+- `is_weekend` — binary flag for Saturday/Sunday operations
+- `is_holiday` — binary flag for federal holiday proximity
+- `days_to_nearest_holiday` — continuous proximity measure to the nearest holiday
+
+##### Weather Features
+
+Surface weather conditions at both the departure and arrival airports were joined from hourly ASOS/METAR records. Each flight received a pre-departure snapshot at the closest available observation prior to scheduled pushback.
+
+Weather variables included:
+
+- Temperature (°C)
+- Wind speed (knots) and direction (degrees)
+- Visibility (statute miles)
+- Ceiling height (meters)
+- Precipitation indicator
+
+Example features: `dep_temp_c`, `dep_wind_speed_kt`, `arr_ceiling_height_m`, `arr_visibility_sm`.
+
+##### Network Congestion Features
+
+These features quantify operational load at both airports and on the specific route at departure time, capturing system-level congestion independent of any individual aircraft's history.
+
+- `origin_flight_volume` — total scheduled departures at origin airport within a rolling time window
+- `dest_flight_volume` — total scheduled arrivals at destination airport within a rolling time window
+- `route_frequency` — historical frequency of delays on this origin–destination pair
+
+##### Aircraft Rotation State Features
+
+These features capture the operational history and physical characteristics of the specific aircraft assigned to the flight. Aircraft continuity — whether the same tail number operated the prior leg — is especially important for modeling mechanical and scheduling carryover.
+
+- `aircraft_age` — years since aircraft manufacture
+- `aircraft_no_eng` — number of engines
+- `aircraft_no_seats` — certified seat capacity
+- `aircraft_year_mfr` — year of manufacture
+- `aircraft_leg_number_day` — how many legs the aircraft has already flown today
+- `rotation_continuity_flag` — whether the inbound leg was operated by the same aircraft
+- `relative_leg_position` — normalized position of this flight within the aircraft's daily rotation
+
+##### Two-Hop Upstream Propagation Features
+
+The most predictively powerful feature category encodes the delay state of the **same aircraft on its two most recent prior legs**. This two-hop window operationalizes the empirical reality that delays propagate forward through aircraft rotations: a late inbound flight becomes a late outbound flight.
+
+| Feature | Description |
+|---|---|
+| `prev1_arr_delay` | Arrival delay (minutes) of the immediately preceding leg |
+| `prev1_dep_delay` | Departure delay (minutes) of the preceding leg |
+| `prev1_arr_del15` | Binary: was the preceding leg $\geq 15$ min late on arrival? |
+| `prev1_dep_del15` | Binary: was the preceding leg $\geq 15$ min late on departure? |
+| `prev2_arr_delay` | Arrival delay of the leg two hops prior |
+| `prev2_dep_delay` | Departure delay of the leg two hops prior |
+| `prev2_arr_del15` | Binary classification of two-hop-prior arrival delay |
+| `prev2_dep_del15` | Binary classification of two-hop-prior departure delay |
+| `prev1_turnaround_minutes` | Gate time between the inbound aircraft arrival and scheduled next departure |
+| `time_since_prev2_arrival_minutes` | Elapsed time since the aircraft's second-prior arrival |
+
+: Two-hop upstream propagation features. {#tbl-propagation}
+
+Together, these features give the model visibility into the trajectory of delay accumulation along each aircraft's day, not merely its current scheduled state.
 
 ### XGBoost Classification Model
+
+The XGBoost classification model estimates the probability that a flight will experience a significant arrival delay:
 
 $$
 \hat{p}_i
@@ -500,16 +596,14 @@ P(Y_i^{(cls)} = 1 \mid \mathbf{x}_i)
 \sum_{m=1}^{M} f_m(\mathbf{x}_i)
 \right)
 $$
-
+where $\sigma(z) = (1 + e^{-z})^{-1}$  and $M = 300$ gradient-boosted trees. 
 where
 
 $$
 \sigma(z)=\frac{1}{1+e^{-z}}
 $$
 
-and $M = 300$ boosting trees.
-
-### Classification Decision Rule
+is the logistic sigmoid function and $M = 300$ gradient-boosted trees. The binary decision rule applies a threshold of 0.5 i.e. the Classification Decision Rule:
 
 $$
 \hat{Y}_i^{(cls)} =
@@ -521,34 +615,27 @@ $$
 
 ### XGBoost Regression Model
 
+The XGBoost regression model directly predicts arrival delay in minutes as an additive ensemble of regression trees:
+
 $$
 \hat{Y}_i^{(reg)}
 =
 \sum_{m=1}^{M} g_m(\mathbf{x}_i)
 $$
 
-### Boosting Objective
+At each boosting iteration $t$, the model minimizes the regularized objective:
 
 $$
-\mathcal{L}^{(t)}
-=
-\sum_{i=1}^{n}
-l\left(
-y_i,\hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)
-\right)
-+
-\Omega(f_t)
+\mathcal{L}^{(t)} = \sum_{i=1}^{n} l\!\left(y_i,\, \hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)\right) + \Omega(f_t)
 $$
 
-### Tree Complexity Penalty
+where $l(\cdot)$ is the task-specific loss (log-loss for classification, squared error for regression) and the complexity penalty is:
 
 $$
-\Omega(f)
-=
-\gamma T
-+
-\frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
+\Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
 $$
+
+with $T$ denoting the number of leaves and $w_j$ the leaf weights. This penalty discourages overly complex trees and provides implicit regularization against overfitting on the large but temporally structured dataset.
 
 # Model Evaluation Metrics & Comparitive Perfromance  
 
@@ -557,48 +644,58 @@ $$
 - Add diagram of model training and evaluation process - move to modeling section 
 - Explain what the ML Pipeline is 
 
-## Cross Validation and Hyper Parameter Tuning 
+## Time-Aware Cross Validation
 
-Train-Test Splits for CV used expanding window strategy....
+Standard random $k$-fold cross-validation is inappropriate for time-series data because it permits future observations to leak into training folds, producing optimistically biased estimates. Instead, a **rolling-origin expanding-window** cross-validation strategy was employed, where each fold trains on all years up to a cutoff and validates on the immediately following year.
 
-## Feature Importances 
+$$
+\mathcal{D}_{\text{train}}^{(k)} = \{2015, \ldots, t_k\}, \qquad \mathcal{D}_{\text{val}}^{(k)} = \{t_k + 1\}
+$$
 
-```{r}
-#| label: tbl-features
-#| tbl-cap: "Strong predictive features used in the flight delay model."
-#| echo: false
-library(knitr)
+The five folds used were:
 
-features <- data.frame(
-  Feature = c(
-    "Prior Leg Delays",
-    "Aircraft Rotation Continuity",
-    "Turnaround Minutes",
-    "Cumulative Aircraft Delays",
-    "Weather at Origin/Destination",
-    "Route Congestion",
-    "Airport Traffic Volume",
-    "Schedule Timing",
-    "Aircraft Metadata"
-  ),
-  Description = c(
-    "Whether the incoming flight arrived late, directly propagating delay forward.",
-    "Tracks whether the same aircraft flew the previous leg without interruption.",
-    "Time between aircraft arrival and scheduled next departure at the gate.",
-    "Rolling sum of delays accumulated by the aircraft throughout the day.",
-    "Hourly surface conditions — wind, visibility, precipitation — at both airports.",
-    "How frequently flights on this route experience delays due to airspace demand.",
-    "Total departures and arrivals at the airport within a given time window.",
-    "Departure hour and day-of-week capturing peak travel and operational patterns.",
-    "Aircraft type and age affecting turnaround speed and mechanical reliability."
-  )
-)
+| Fold | Training Years | Validation Year |
+|---|---|---|
+| 1 | 2015–2018 | 2019 |
+| 2 | 2015–2019 | 2020 |
+| 3 | 2015–2020 | 2021 |
+| 4 | 2015–2021 | 2022 |
+| 5 | 2015–2022 | 2023 |
 
-kable(features, col.names = c("Feature", "Description"), align = c("l", "l"))
+: Rolling-origin cross-validation folds. {#tbl-cv-folds}
 
-```
+This design directly simulates production deployment conditions: the model is trained on all available history, then evaluated on the next operational year it has never seen. The expanding window ensures that later folds benefit from more training data, reflecting how a deployed model accumulates history over time.
 
-## Hyperparameter Tuning 
+## Hyperparameter Search
+
+A grid search was conducted over four candidate XGBoost configurations, each evaluated using the five-fold rolling cross-validation procedure. The search space covered the primary levers controlling model capacity and regularization:
+
+- Number of trees ($M$)
+- Maximum tree depth ($d$)
+- Learning rate ($\eta$)
+- Row subsampling ratio ($s$)
+- Column subsampling ratio ($c$)
+- Minimum child node weight
+- L2 leaf weight regularization ($\lambda$)
+
+### Candidate Configurations
+
+| Config | Trees ($M$) | Depth ($d$) | LR ($\eta$) | Subsample ($s$) | Colsample ($c$) |
+|---|---|---|---|---|---|
+| `xgb_00` | 250 | 4 | 0.05 | 0.8 | 0.8 |
+| `xgb_01` | 250 | 4 | 0.05 | 0.8 | 1.0 |
+| `xgb_02` | 300 | 6 | 0.05 | 0.8 | 0.8 |
+| `xgb_03` | 400 | 6 | 0.03 | 0.8 | 0.8 |
+
+: Candidate hyperparameter configurations evaluated during grid search. {#tbl-configs}
+
+### Selected Configuration
+
+The best-performing configuration was **`xgb_02`** (referred to as `xgb_03` in the production pipeline artifact). Its full parameter set is:
+
+$$
+M = 300,\quad d = 6,\quad \eta = 0.05,\quad s = 0.8,\quad c = 0.8
+$$
 
 ```{r}
 #| label: tbl-hyperparameters
@@ -634,80 +731,338 @@ hyperparams <- data.frame(
 kable(hyperparams, col.names = c("Hyperparameter", "Value"), align = c("l", "r"))
 ```
 
-### Selected Hyperparameters
+The `hist` tree method was selected for computational efficiency on the large training dataset. The moderate depth of 6 and conservative learning rate of 0.05 balance model expressiveness with generalization, while subsampling at 80% for both rows and columns introduces stochasticity that reduces variance.
 
-$$
-M = 300,\quad
-d = 6,\quad
-\eta = 0.05,\quad
-s = 0.8,\quad
-c = 0.8
-$$
+---
 
-where:
+## Cross-Validation Performance
 
-- $M$ = number of trees  
-- $d$ = maximum tree depth  
-- $\eta$ = learning rate  
-- $s$ = row subsample ratio  
-- $c$ = feature subsample ratio  
-
-
-where $\mathcal{L}_i$ represents all previous same-day legs for aircraft $i$.
-
-
-### Temporal Cross Validation
-
-$$
-\mathcal{D}_{train}^{(k)} = \{2015,\dots,t_k\},
-\qquad
-\mathcal{D}_{val}^{(k)} = \{t_k+1\}
-$$
-Example:
-
-### Final Holdout Evaluation Design
-
-$$
-\mathcal{D}_{final\ train} = \{2015,\dots,2024\}
-\qquad
-\mathcal{D}_{test} = \{2025\}
-$$
-
-### Model Comparison 
+### Classification Performance (Mean Across 5 Folds)
 
 ```{r}
-#| label: fig-auc-lstm-xgboost
-#| fig-cap: "AUC for LSTM and XGBoost Models"
-#| fig-alt: "AUC for LSTM and XGBoost Models"
+#| label: tbl-cv-classification
+#| tbl-cap: "Cross-validation classification performance for the selected XGBoost model (xgb_03), mean and approximate standard deviation across 5 rolling folds."
 #| echo: false
-#| out-width: "100%"
-knitr::include_graphics("images/paper/model-ROC.png")
+library(knitr)
+
+cv_cls <- data.frame(
+  Metric    = c("AUC", "F1", "Precision", "Recall", "Accuracy"),
+  Mean      = c("0.8357", "0.5025", "0.7484", "0.3822", "0.8714"),
+  Min       = c("0.8048", "0.4122", "0.5696", "0.2977", "0.8532"),
+  Max       = c("0.8525", "0.5702", "0.8356", "0.4548", "0.9093"),
+  Approx_SD = c("0.0119", "0.0395", "0.0665", "0.0393", "0.0140")
+)
+
+kable(cv_cls,
+      col.names = c("Metric", "Mean", "Min", "Max", "Approx. SD"),
+      align = c("l", "r", "r", "r", "r"))
 ```
 
+### Regression Performance (Mean Across 5 Folds)
 
 ```{r}
-#| label: fig-actual-v-pred-lstm-xgboost
-#| fig-cap: "Actual vs Predicted for LSTM and XGBoost"
-#| fig-alt: "Actual vs Predicted for LSTM and XGBoost"
+#| label: tbl-cv-regression
+#| tbl-cap: "Cross-validation regression performance for the selected XGBoost model (xgb_03), mean and approximate standard deviation across 5 rolling folds."
 #| echo: false
-#| out-width: "100%"
-knitr::include_graphics("images/paper/actual-v-predicted.png")
+library(knitr)
+
+cv_reg <- data.frame(
+  Metric    = c("MAE (minutes)", "RMSE (minutes)"),
+  Mean      = c("18.09", "40.86"),
+  Min       = c("17.12", "35.07"),
+  Max       = c("18.89", "45.49"),
+  Approx_SD = c("0.44", "2.61")
+)
+
+kable(cv_reg,
+      col.names = c("Metric", "Mean", "Min", "Max", "Approx. SD"),
+      align = c("l", "r", "r", "r", "r"))
 ```
 
-## Results 
+::: {.callout-note}
+Standard deviations are approximated as $\text{SD} \approx (\text{max} - \text{min}) / 4$, a standard range-based estimate applicable when per-fold values are not stored. These values are conservative lower bounds on true variability.
+:::
+
+### Interpretation of Cross-Validation Stability
+
+The cross-validation results reveal a model with **strong temporal robustness**. The most discriminative metric — AUC — exhibited the lowest variability (SD = 0.012), indicating that the model's ability to rank delayed flights above non-delayed flights remained stable across years that spanned a full decade of US aviation operations, including the COVID-19 disruption period (2020–2021) and the subsequent recovery years.
+
+Stability was similarly high for overall accuracy (SD = 0.014) and mean absolute error (SD = 0.44 minutes), confirming that point predictions for delay magnitude did not drift substantially across validation years.
+
+Larger variability in F1 (SD = 0.040), recall (SD = 0.039), and especially precision (SD = 0.067) reflects genuine annual heterogeneity in the delay-event distribution. Pandemic-era years exhibited structurally different delay patterns — reduced traffic volumes but elevated per-flight delay rates in some months — which affected the class-level precision-recall balance without substantially degrading rank-order discrimination. The RMSE variability (SD = 2.61 minutes) similarly reflects the influence of rare, operationally extreme years on tail-error statistics.
+
+---
+
+## Final Refit and Holdout Evaluation
+
+### Refit Procedure
+
+Following hyperparameter selection, the model was retrained on all pre-test data to maximize the information available for the final deployed model:
 
 $$
-AUC = 0.9903,\quad
-F_1 = 0.9018,\quad
-MAE = 6.55,\quad
-RMSE = 20.36
+\mathcal{D}_{\text{final train}} = \{2015, \ldots, 2024\}
 $$
 
-### Limitations 
+The full refit dataset contained **61,568,261 rows**. For memory efficiency during the refit phase, a stratified **35% sample** (21,548,891 rows) was drawn, preserving the class distribution while reducing peak memory requirements. The final model was then evaluated on the completely held-out 2025 dataset.
+
+### Final Holdout Test Results (2025) - Post Tuning
+
+#### Classification Performance
+
+```{r}
+#| label: tbl-final-classification
+#| tbl-cap: "Final holdout classification performance on unseen 2025 flight operations."
+#| echo: false
+library(knitr)
+
+final_cls <- data.frame(
+  Metric    = c("AUC", "F1", "Precision", "Recall", "Accuracy"),
+  Value     = c("0.8452", "0.5562", "0.8029", "0.4254", "0.8486")
+)
+
+kable(final_cls, col.names = c("Metric", "Value"), align = c("l", "r"))
+```
+
+#### Regression Performance
+
+```{r}
+#| label: tbl-final-regression
+#| tbl-cap: "Final holdout regression performance on unseen 2025 flight operations."
+#| echo: false
+library(knitr)
+
+final_reg <- data.frame(
+  Metric = c("MAE (minutes)", "RMSE (minutes)"),
+  Value  = c("20.14", "46.17")
+)
+
+kable(final_reg, col.names = c("Metric", "Value"), align = c("l", "r"))
+```
+
+In summary:
+
+$$
+\text{AUC} = 0.8452, \quad F_1 = 0.5562, \quad \text{MAE} = 20.14\ \text{min}, \quad \text{RMSE} = 46.17\ \text{min}
+$$
+
+### Interpretation of Final Results
+
+**Discrimination (AUC = 0.845).** The model correctly ranks a randomly selected delayed flight above a randomly selected on-time flight 84.5% of the time on 2025 data. This represents a meaningful improvement over the cross-validation mean AUC of 0.836, suggesting that the model benefited from the expanded 2015–2024 refit training set. An AUC exceeding 0.84 is operationally strong for a binary event as dependent on real-time conditions as flight delay.
+
+**Precision (80.3%).** When the model predicts a delay, it is correct more than four times out of five. This high precision makes the model practically useful for triggering downstream operational actions — passenger notifications, gate reassignments, crew advisory alerts — where false alarms carry real cost.
+
+**Recall (42.5%).** The model recovers approximately 42.5% of all true delay events at the default 0.5 classification threshold. This relatively conservative recall reflects the class imbalance inherent in flight delay data: on-time flights substantially outnumber delayed flights in the dataset, and the default threshold does not optimize for recall. For use cases requiring higher sensitivity — such as proactive wide-net disruption planning — the decision threshold can be lowered to improve recall at the cost of some precision.
+
+**Regression error (MAE = 20.1 min, RMSE = 46.2 min).** The mean absolute prediction error of approximately 20 minutes is reasonable given the inherent unpredictability of delay magnitude, which is influenced by late-breaking weather, ATC decisions, and mechanical events not fully captured in the pre-departure feature window. The substantially higher RMSE reflects the model's tendency to underestimate severe delays ($>$ 2 hours), consistent with the general difficulty of predicting tail events in heavy-tailed delay distributions.
+
+---
+
+## Feature Importance Analysis
+
+```{r}
+#| label: tbl-features1
+#| tbl-cap: "Top predictive features by XGBoost gain-based importance score."
+#| echo: false
+library(knitr)
+
+fi <- data.frame(
+  Rank        = 1:6,
+  Feature     = c(
+    "prev1_arr_del15",
+    "prev1_dep_del15",
+    "prev1_arr_delay",
+    "dep_hour_local",
+    "dep_time_bucket",
+    "prev1_turnaround_minutes"
+  ),
+  Importance  = c(0.5106, 0.1247, 0.1135, 0.0277, 0.0267, 0.0262),
+  Description = c(
+    "Binary: inbound aircraft arrived ≥ 15 min late (immediate prior leg)",
+    "Binary: inbound aircraft departed ≥ 15 min late (immediate prior leg)",
+    "Continuous arrival delay in minutes of the immediately prior leg",
+    "Local departure hour of day",
+    "Discretized departure time window",
+    "Gate turnaround time between inbound arrival and scheduled next departure"
+  )
+)
+
+kable(fi, col.names = c("Rank", "Feature", "Importance", "Description"),
+      align = c("c", "l", "r", "l"))
+```
+
+The feature importance profile is unambiguous: **delay propagation through aircraft rotations is the dominant predictive signal**, accounting for over 75% of total model gain across the top three features alone. The binary flag `prev1_arr_del15` — whether the inbound leg arrived at least 15 minutes late — contributes over half of all model importance (0.511), confirming that the single most informative question about any outbound flight is: *was the same aircraft delayed on its way in?*
+
+This finding has important operational implications. It validates the two-hop propagation feature engineering strategy and suggests that real-time monitoring of upstream aircraft state is far more valuable for delay prediction than any static schedule or network congestion feature. Schedule timing features (`dep_hour_local`, `dep_time_bucket`) appear in the top six but at an order of magnitude less importance than propagation features.
+
+Aircraft metadata variables (`aircraft_no_seats`, `aircraft_year_mfr`, `aircraft_age`, `aircraft_no_eng`), while individually modest in importance, collectively provided measurable incremental lift in controlled ablation experiments comparing the `xgb_full_aircraft` feature set to the `xgb_2hop_propagation` subset alone. This suggests that fleet composition and aircraft utilization patterns carry weak but real signal about delay susceptibility — potentially through maintenance scheduling effects or route assignment patterns associated with specific aircraft types.
+
+---
+
+## Feature Set Comparison
+
+To isolate the contribution of each feature category, four nested feature configurations were evaluated under identical cross-validation conditions:
+
+| Feature Set | Description |
+|---|---|
+| `xgb_schedule` | Schedule and calendar features only |
+| `xgb_context` | Schedule + weather + network congestion |
+| `xgb_2hop_propagation` | All features except aircraft metadata |
+| `xgb_full_aircraft` | Complete 37-feature set including aircraft metadata |
+
+The fully enriched `xgb_full_aircraft` model was the best overall performer across both classification and regression metrics, confirming that each feature category contributes incrementally. The largest single performance gain was observed when two-hop propagation features were added to the context feature set, consistent with their dominant importance scores. Aircraft metadata provided a smaller but consistent additional improvement.
+
+---
+
+## Computational Performance
+
+The complete XGBoost pipeline — encompassing data loading, FAA registry enrichment, rolling cross-validation across five folds, hyperparameter evaluation across four configurations, final refit, and artifact generation — completed in approximately **1,035 seconds (~17.3 minutes)** on CPU hardware using 8 parallel worker cores.
+
+This compares favorably against deep learning alternatives (e.g., LSTM-based models requiring GPU hardware and substantially longer training times) and demonstrates that XGBoost remains a practical choice for production-scale aviation delay forecasting without specialized compute infrastructure.
+
+---
+
+## Model Comparison
+
+```{r}
+#| label: fig-auc-model-compare
+#| fig-cap: "ROC curves for model varients on the 2025 holdout evaluation set - Before Tuning."
+#| fig-alt: "ROC curves for model varients on the 2025 holdout evaluation set - Before Tuning."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/roc-final.png")
+```
+
+```{r}
+#| label: fig-regression-metrics-compare
+#| fig-cap: "Regression metrics for model varients on the 2025 holdout evaluation set - Before Tuning."
+#| fig-alt: "Regression metrics for model varients on the 2025 holdout evaluation set - Before Tuning."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/regression-metrics-overlay.png")
+```
+
+```{r}
+#| label: fig-actual-v-pred-model-compare
+#| fig-cap: "Actual versus predicted delay for the xgb_full_aircraft model on the 2025 holdout evaluation set - Before Tuning."
+#| fig-alt: "Actual versus predicted delay for the xgb_full_aircraft model on the 2025 holdout evaluation set - Before Tuning."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/actuals-v-projects-final.png")
+```
+
+## Summary
+
+The tuned XGBoost model achieved strong predictive performance on completely unseen 2025 US domestic flight operations after hyper parameter tuning:
+
+$$
+\text{AUC} = 0.845, \quad F_1 = 0.556, \quad \text{Precision} = 0.803, \quad \text{MAE} = 20.1\ \text{min}
+$$
+
+The results confirm that **aircraft rotation propagation is the primary mechanism underlying flight delay formation** at the national scale: the single most predictive feature — whether the same aircraft arrived late on its immediately prior leg — contributed over 50% of total model gain. Schedule, weather, and network congestion features provided meaningful secondary signal, while aircraft metadata added modest but consistent incremental improvement.
+
+The rolling-origin cross-validation strategy yielded stable performance estimates across five temporal folds spanning a decade of operational history, with low AUC variance (SD = 0.012) confirming that the model learned transferable patterns rather than overfitting to any particular year's conditions.
+
+Overall, XGBoost proved to be a computationally efficient, highly interpretable, and production-ready modeling approach for large-scale national flight delay prediction, providing a strong baseline against which more complex sequential architectures may be compared.
+
+---
+
+## Operational Impact
+
+Translating model performance metrics into operational terms requires applying the holdout
+classification results to the scale of actual flight operations. The 2025 holdout set
+contained **6,857,845 flight records**, of which approximately **23.4%** were labeled as
+delayed ($\texttt{ArrDel15} = 1$), yielding roughly **1,604,736 true delay events** in
+the evaluation period.
+
+At the default threshold of 0.50, the model's precision of 0.803 and recall of 0.425
+imply the following approximate operational outcomes across the holdout year:
+
+```{r}
+#| label: tbl-operational-impact
+#| tbl-cap: "Approximate annual operational outcomes at the default threshold (0.50), derived from 2025 holdout classification results."
+#| echo: false
+library(knitr)
+
+ops <- data.frame(
+  Outcome = c(
+    "Total flights evaluated",
+    "True delay events (actual)",
+    "Delay alerts issued (predicted positive)",
+    "Correct alerts — True Positives",
+    "False alerts — False Positives",
+    "Missed delays — False Negatives",
+    "Correct non-alerts — True Negatives"
+  ),
+  Count = c(
+    "6,857,845",
+    "~1,604,736",
+    "~851,468",
+    "~681,613",
+    "~166,951",
+    "~923,123",
+    "~5,086,158"
+  ),
+  Note = c(
+    "",
+    "23.4% base delay rate",
+    "Precision × TP + FP",
+    "Recall × true delay events",
+    "Correctly flagged but flight was on time",
+    "Delayed flights the model did not flag",
+    "On-time flights correctly left unflagged"
+  )
+)
+
+kable(ops,
+      col.names = c("Outcome", "Approximate Count", "Note"),
+      align     = c("l", "r", "l"))
+```
+
+::: {.callout-note}
+Counts are derived from reported precision (0.803) and recall (0.425) applied to the
+approximate true delay count. Verify against your confusion matrix outputs for exact figures.
+:::
+
+(REVIEW THIS SECTION - What is here is just an example)
+
+Several operational implications follow directly from these numbers.
+
+**Scale of actionable intelligence.**
+The model issues approximately **851,000 delay alerts annually** — roughly 2,330 per day
+across the national network — of which over **680,000 are correct**. At this scale, even
+a modest per-alert value (e.g., $50 in avoided passenger reaccommodation costs or crew
+repositioning savings) implies substantial aggregate operational value.
+
+**Cost of false alarms.**
+Approximately **167,000 false alerts** are issued annually. The operational cost of each
+false alarm depends on what action it triggers. For low-cost interventions such as
+informational passenger notifications, false alarm costs are minimal. For high-cost actions
+such as preemptive aircraft swaps, the false alarm rate justifies threshold adjustment
+upward toward 0.70 (see @tbl-threshold-sweep).
+
+**Scale of missed delays.**
+The model misses approximately **923,000 true delay events** annually — delays that occur
+without a prior model alert. The majority of these are likely short delays (15–30 minutes)
+driven by factors not well represented in pre-departure features, such as late ATC
+clearances or gate conflicts. A recall-optimized threshold would reduce this number at the
+cost of additional false alarms.
+
+**Regression precision in context.**
+A mean absolute prediction error of 20.1 minutes, applied across the approximately 681,000
+correctly identified delay events, means the model's delay magnitude estimates are typically
+within one connection window of the true delay. For airports with 30-minute minimum
+connection times, a 20-minute MAE is operationally meaningful for rebooking triage.
+
+These figures underscore that the model is not a laboratory artifact — at national scale,
+even imperfect predictions at this precision level represent a substantial operational
+information advantage over uninformed scheduling assumptions.
+
+## Model Limitations 
 
 The 2-hop propagation framework was designed to capture delay carryover from the two most recent upstream aircraft legs. This was a practical and computationally efficient approximation of delay dynamics:
-While highly useful, this design imposes important structural limitations for both the :contentReference[oaicite:0]{index=0} and :contentReference[oaicite:1]{index=1} LSTM approaches.
+While highly useful, this design imposes important structural limitations for both LSTM and XGBoost model approaches.
 
+(REVIEW)
 
  - Core Limitation: Finite Memory Window. The 2-hop model only observes two upstream legs.
  - Hidden Accumulated Operational Stress. Aircraft systems often degrade gradually throughout the day.
@@ -720,38 +1075,15 @@ While highly useful, this design imposes important structural limitations for bo
 
 ---
 
-# Results
+# Discussion
 
-## Key Findings
-
-The analysis suggests that delay outcomes are influenced by several interacting factors:
-
-- upstream aircraft delays
-- airport congestion patterns
-- weather conditions
-- temporal scheduling effects
-
-## Operational Interpretation
-
-Predictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions.
-
----
-
-# Discussion & Limitations
-
-Several limitations should be considered:
-
-- missing operational factors such as crew and maintenance constraints
-- passenger delays 
-- imperfect weather measurements
-- route-specific findings that may not generalize
-- Etc...
-
-Despite these challenges, the framework provides a replicable approach for studying delay behavior.
+(REVIEW & ADD MORE)
 
 ---
 
 # Conclusion
+
+(REVIEW & ADD MORE)
 
 This study demonstrates how machine learning methods can be applied to understand delay dynamics...
 
@@ -761,11 +1093,11 @@ Future work could extend this framework to larger airline networks and incorpora
 
 # Appendex 
 
-## Introduction To Areo Flux and Future Works
+## Introduction to AeroFlux: Real-Time Inference for Flight Delay Prediction
 
-AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive delayed by 15 minutes or more, and estimates the delay in minutes. It does this by modeling the full operational context of the aircraft: where it came from, how the previous two legs performed, the turnaround time, cumulative delays accumulated during the day, and weather conditions at departure.
+AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive more than 15 minutes late and estimates the total delay in minutes.
 
-The output is a full prediction report: a probability score, a delay estimate, a comparison against the actual recorded outcome, a geographic map of the aircraft's rotation chain, and a breakdown of the key features that drove the prediction.
+Rather than treating each flight in isolation, AeroFlux models the full operational history of the aircraft: the two preceding legs, their on-time performance, turnaround time, cumulative delay buildup over the course of the day, and weather conditions at departure. This context-aware approach captures the cascading nature of flight delays in ways that single-flight models cannot.
 
 ```{r}
 #| label: fig-aeroflux1
@@ -785,15 +1117,29 @@ knitr::include_graphics("images/aero-flux/app_v2.png")
 knitr::include_graphics("images/aero-flux/flight-map-app_v2.png")
 ```
 
-### A precursor to a digital twin
+### AeroFlux is the precursor to a digital twin
 
-AeroFlux is not yet a digital twin. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like *what happens to the next four flights on this tail if this departure slips 45 minutes?*
+AeroFlux is not yet a digital twin but will soon be one. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like *what happens to the next four flights on this tail if this departure slips 45 minutes?*
 
 AeroFlux is the immediate precursor. The machine learning pipeline, feature engineering, model inference layer, and interactive interface are all in place. What it currently lacks is the live data feed connecting it to real-time flight state. That connection is the primary objective for the next phase of development. The progression looks like this:
 
-- **Phase 1 (complete)** — Historical proof of concept: models trained, pipeline built, interactive app deployed
-- **Phase 2 (next)** — Live data integration: connect to FAA or a commercial flight data API, replace historical lookups with real-time inference, add live weather
-- **Phase 3** — Network simulation: propagate predicted delays forward through the rotation chain, model downstream passenger connections
-- **Phase 4** — Digital twin: a continuously updated bidirectional model of the domestic flight network with full scenario simulation
+- **Phase 1 — Historical Proof of Concept** *(complete)*
+Baseline models trained, data and ML pipelines built, and an interactive prototype deployed. The foundation is in place: a working system that can ingest flight records, engineer operational context features, and produce interpretable delay predictions.
+
+- **Phase 2 — Live Data & Comprehensive Modeling** *(next)*
+Connect to FAA or a commercial flight data API to replace historical lookups with real-time inference. Layer in live weather and social media feeds, and research more robust modeling architectures that better capture spatial-temporal dependencies across a flight day. Enhancing the UI with beautiful data visualizations. 
+
+- **Phase 3 — Network Simulation**
+Using Rust as a high-performance simulation engine, propagate predicted delays forward through the full rotation chain. Model downstream passenger connections, gate conflicts, and crew constraints — shifting AeroFlux from a single-flight predictor into a network-aware reasoning system.
+
+- **Phase 4 — Digital Twin**
+A continuously updated, bidirectional model of the entire U.S. domestic flight network. Full scenario simulation: what happens to 400 downstream flights if a hub goes offline? What's the optimal recovery sequence after a ground stop? AeroFlux becomes a live mirror of the national airspace.
+
+- **Beyond Phase 4 — The Intelligent Orchestration Layer**
+This is where AeroFlux transcends flight delays entirely and becomes a framework for reasoning about any system of moving objects in physical space. The ability to model intent, predict state, and propagate consequences through a network of interdependent agents is one of the most valuable capabilities in safety-critical systems — and nowhere is this more consequential than in avionics. Air Traffic Control operates at the edge of human cognitive limits, managing hundreds of aircraft simultaneously with razor-thin margins for error. A system that can anticipate conflicts before they materialize, surface the highest-risk situations in real time, and suggest resolution paths doesn't just improve efficiency — it fundamentally changes the error surface, shifting ATC from reactive management to proactive orchestration.
+
+The architecture — real-time telemetry ingestion, predictive state modeling, network propagation, and scenario simulation — maps directly onto adjacent domains: urban air mobility fleets of autonomous air taxis, drone delivery networks optimizing thousands of concurrent last-mile routes, autonomous vehicle coordination across highway and urban grids, maritime vessel scheduling through congested port corridors, and satellite constellation management.
 
 [See AeroFlux here](aero-flux.qmd)
+
+[Official AeroFlux App](https://aeroflux.duckdns.org/) - Note: this domain might change in the future. If this happens notify the authors for more information. 

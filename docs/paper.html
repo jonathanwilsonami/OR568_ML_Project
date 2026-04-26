@@ -243,44 +243,48 @@ window.Quarto = {
   <li><a href="#phase-2-multi-year" id="toc-phase-2-multi-year" class="nav-link" data-scroll-target="#phase-2-multi-year"><span class="header-section-number">4.2</span> Phase 2: Multi Year</a>
   <ul class="collapse">
   <li><a href="#hardware" id="toc-hardware" class="nav-link" data-scroll-target="#hardware"><span class="header-section-number">4.2.1</span> Hardware</a></li>
-  <li><a href="#lstm-spatio-temporal-flight-delay-model" id="toc-lstm-spatio-temporal-flight-delay-model" class="nav-link" data-scroll-target="#lstm-spatio-temporal-flight-delay-model"><span class="header-section-number">4.2.2</span> LSTM Spatio-Temporal Flight Delay Model</a></li>
+  <li><a href="#lstm-spatio-temporal-model" id="toc-lstm-spatio-temporal-model" class="nav-link" data-scroll-target="#lstm-spatio-temporal-model"><span class="header-section-number">4.2.2</span> LSTM Spatio-Temporal Model</a></li>
   <li><a href="#xgboost" id="toc-xgboost" class="nav-link" data-scroll-target="#xgboost"><span class="header-section-number">4.2.3</span> XGBoost</a></li>
   <li><a href="#xgboost-classification-model" id="toc-xgboost-classification-model" class="nav-link" data-scroll-target="#xgboost-classification-model"><span class="header-section-number">4.2.4</span> XGBoost Classification Model</a></li>
-  <li><a href="#classification-decision-rule" id="toc-classification-decision-rule" class="nav-link" data-scroll-target="#classification-decision-rule"><span class="header-section-number">4.2.5</span> Classification Decision Rule</a></li>
-  <li><a href="#xgboost-regression-model" id="toc-xgboost-regression-model" class="nav-link" data-scroll-target="#xgboost-regression-model"><span class="header-section-number">4.2.6</span> XGBoost Regression Model</a></li>
-  <li><a href="#boosting-objective" id="toc-boosting-objective" class="nav-link" data-scroll-target="#boosting-objective"><span class="header-section-number">4.2.7</span> Boosting Objective</a></li>
-  <li><a href="#tree-complexity-penalty" id="toc-tree-complexity-penalty" class="nav-link" data-scroll-target="#tree-complexity-penalty"><span class="header-section-number">4.2.8</span> Tree Complexity Penalty</a></li>
+  <li><a href="#xgboost-regression-model" id="toc-xgboost-regression-model" class="nav-link" data-scroll-target="#xgboost-regression-model"><span class="header-section-number">4.2.5</span> XGBoost Regression Model</a></li>
   </ul></li>
   </ul></li>
   <li><a href="#model-evaluation-metrics-comparitive-perfromance" id="toc-model-evaluation-metrics-comparitive-perfromance" class="nav-link" data-scroll-target="#model-evaluation-metrics-comparitive-perfromance"><span class="header-section-number">5</span> Model Evaluation Metrics &amp; Comparitive Perfromance</a>
   <ul class="collapse">
   <li><a href="#ml-pipeline" id="toc-ml-pipeline" class="nav-link" data-scroll-target="#ml-pipeline"><span class="header-section-number">5.1</span> ML Pipeline</a></li>
-  <li><a href="#cross-validation-and-hyper-parameter-tuning" id="toc-cross-validation-and-hyper-parameter-tuning" class="nav-link" data-scroll-target="#cross-validation-and-hyper-parameter-tuning"><span class="header-section-number">5.2</span> Cross Validation and Hyper Parameter Tuning</a></li>
-  <li><a href="#feature-importances" id="toc-feature-importances" class="nav-link" data-scroll-target="#feature-importances"><span class="header-section-number">5.3</span> Feature Importances</a></li>
-  <li><a href="#hyperparameter-tuning" id="toc-hyperparameter-tuning" class="nav-link" data-scroll-target="#hyperparameter-tuning"><span class="header-section-number">5.4</span> Hyperparameter Tuning</a>
+  <li><a href="#time-aware-cross-validation" id="toc-time-aware-cross-validation" class="nav-link" data-scroll-target="#time-aware-cross-validation"><span class="header-section-number">5.2</span> Time-Aware Cross Validation</a></li>
+  <li><a href="#hyperparameter-search" id="toc-hyperparameter-search" class="nav-link" data-scroll-target="#hyperparameter-search"><span class="header-section-number">5.3</span> Hyperparameter Search</a>
   <ul class="collapse">
-  <li><a href="#selected-hyperparameters" id="toc-selected-hyperparameters" class="nav-link" data-scroll-target="#selected-hyperparameters"><span class="header-section-number">5.4.1</span> Selected Hyperparameters</a></li>
-  <li><a href="#temporal-cross-validation" id="toc-temporal-cross-validation" class="nav-link" data-scroll-target="#temporal-cross-validation"><span class="header-section-number">5.4.2</span> Temporal Cross Validation</a></li>
-  <li><a href="#final-holdout-evaluation-design" id="toc-final-holdout-evaluation-design" class="nav-link" data-scroll-target="#final-holdout-evaluation-design"><span class="header-section-number">5.4.3</span> Final Holdout Evaluation Design</a></li>
-  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison"><span class="header-section-number">5.4.4</span> Model Comparison</a></li>
+  <li><a href="#candidate-configurations" id="toc-candidate-configurations" class="nav-link" data-scroll-target="#candidate-configurations"><span class="header-section-number">5.3.1</span> Candidate Configurations</a></li>
+  <li><a href="#selected-configuration" id="toc-selected-configuration" class="nav-link" data-scroll-target="#selected-configuration"><span class="header-section-number">5.3.2</span> Selected Configuration</a></li>
   </ul></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">5.5</span> Results</a>
+  <li><a href="#cross-validation-performance" id="toc-cross-validation-performance" class="nav-link" data-scroll-target="#cross-validation-performance"><span class="header-section-number">5.4</span> Cross-Validation Performance</a>
   <ul class="collapse">
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations"><span class="header-section-number">5.5.1</span> Limitations</a></li>
+  <li><a href="#classification-performance-mean-across-5-folds" id="toc-classification-performance-mean-across-5-folds" class="nav-link" data-scroll-target="#classification-performance-mean-across-5-folds"><span class="header-section-number">5.4.1</span> Classification Performance (Mean Across 5 Folds)</a></li>
+  <li><a href="#regression-performance-mean-across-5-folds" id="toc-regression-performance-mean-across-5-folds" class="nav-link" data-scroll-target="#regression-performance-mean-across-5-folds"><span class="header-section-number">5.4.2</span> Regression Performance (Mean Across 5 Folds)</a></li>
+  <li><a href="#interpretation-of-cross-validation-stability" id="toc-interpretation-of-cross-validation-stability" class="nav-link" data-scroll-target="#interpretation-of-cross-validation-stability"><span class="header-section-number">5.4.3</span> Interpretation of Cross-Validation Stability</a></li>
   </ul></li>
+  <li><a href="#final-refit-and-holdout-evaluation" id="toc-final-refit-and-holdout-evaluation" class="nav-link" data-scroll-target="#final-refit-and-holdout-evaluation"><span class="header-section-number">5.5</span> Final Refit and Holdout Evaluation</a>
+  <ul class="collapse">
+  <li><a href="#refit-procedure" id="toc-refit-procedure" class="nav-link" data-scroll-target="#refit-procedure"><span class="header-section-number">5.5.1</span> Refit Procedure</a></li>
+  <li><a href="#final-holdout-test-results-2025---post-tuning" id="toc-final-holdout-test-results-2025---post-tuning" class="nav-link" data-scroll-target="#final-holdout-test-results-2025---post-tuning"><span class="header-section-number">5.5.2</span> Final Holdout Test Results (2025) - Post Tuning</a></li>
+  <li><a href="#interpretation-of-final-results" id="toc-interpretation-of-final-results" class="nav-link" data-scroll-target="#interpretation-of-final-results"><span class="header-section-number">5.5.3</span> Interpretation of Final Results</a></li>
   </ul></li>
-  <li><a href="#results-1" id="toc-results-1" class="nav-link" data-scroll-target="#results-1"><span class="header-section-number">6</span> Results</a>
-  <ul class="collapse">
-  <li><a href="#key-findings" id="toc-key-findings" class="nav-link" data-scroll-target="#key-findings"><span class="header-section-number">6.1</span> Key Findings</a></li>
-  <li><a href="#operational-interpretation" id="toc-operational-interpretation" class="nav-link" data-scroll-target="#operational-interpretation"><span class="header-section-number">6.2</span> Operational Interpretation</a></li>
+  <li><a href="#feature-importance-analysis" id="toc-feature-importance-analysis" class="nav-link" data-scroll-target="#feature-importance-analysis"><span class="header-section-number">5.6</span> Feature Importance Analysis</a></li>
+  <li><a href="#feature-set-comparison" id="toc-feature-set-comparison" class="nav-link" data-scroll-target="#feature-set-comparison"><span class="header-section-number">5.7</span> Feature Set Comparison</a></li>
+  <li><a href="#computational-performance" id="toc-computational-performance" class="nav-link" data-scroll-target="#computational-performance"><span class="header-section-number">5.8</span> Computational Performance</a></li>
+  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison"><span class="header-section-number">5.9</span> Model Comparison</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">5.10</span> Summary</a></li>
+  <li><a href="#operational-impact" id="toc-operational-impact" class="nav-link" data-scroll-target="#operational-impact"><span class="header-section-number">5.11</span> Operational Impact</a></li>
+  <li><a href="#model-limitations" id="toc-model-limitations" class="nav-link" data-scroll-target="#model-limitations"><span class="header-section-number">5.12</span> Model Limitations</a></li>
   </ul></li>
-  <li><a href="#discussion-limitations" id="toc-discussion-limitations" class="nav-link" data-scroll-target="#discussion-limitations"><span class="header-section-number">7</span> Discussion &amp; Limitations</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">8</span> Conclusion</a></li>
-  <li><a href="#appendex" id="toc-appendex" class="nav-link" data-scroll-target="#appendex"><span class="header-section-number">9</span> Appendex</a>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">6</span> Discussion</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">7</span> Conclusion</a></li>
+  <li><a href="#appendex" id="toc-appendex" class="nav-link" data-scroll-target="#appendex"><span class="header-section-number">8</span> Appendex</a>
   <ul class="collapse">
-  <li><a href="#introduction-to-areo-flux-and-future-works" id="toc-introduction-to-areo-flux-and-future-works" class="nav-link" data-scroll-target="#introduction-to-areo-flux-and-future-works"><span class="header-section-number">9.1</span> Introduction To Areo Flux and Future Works</a>
+  <li><a href="#introduction-to-aeroflux-real-time-inference-for-flight-delay-prediction" id="toc-introduction-to-aeroflux-real-time-inference-for-flight-delay-prediction" class="nav-link" data-scroll-target="#introduction-to-aeroflux-real-time-inference-for-flight-delay-prediction"><span class="header-section-number">8.1</span> Introduction to AeroFlux: Real-Time Inference for Flight Delay Prediction</a>
   <ul class="collapse">
-  <li><a href="#a-precursor-to-a-digital-twin" id="toc-a-precursor-to-a-digital-twin" class="nav-link" data-scroll-target="#a-precursor-to-a-digital-twin"><span class="header-section-number">9.1.1</span> A precursor to a digital twin</a></li>
+  <li><a href="#aeroflux-is-the-precursor-to-a-digital-twin" id="toc-aeroflux-is-the-precursor-to-a-digital-twin" class="nav-link" data-scroll-target="#aeroflux-is-the-precursor-to-a-digital-twin"><span class="header-section-number">8.1.1</span> AeroFlux is the precursor to a digital twin</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -727,8 +731,8 @@ P(Y_i = 1|X_i) =
 <h3 data-number="4.2.1" class="anchored" data-anchor-id="hardware"><span class="header-section-number">4.2.1</span> Hardware</h3>
 <p>When working with larger data sets models were trained on a local workstation running Ubuntu 22.04.5 LTS (64-bit) with kernel version 6.8. The system is equipped with an AMD Ryzen 9 7900X processor featuring 24 logical cores and boost speeds up to 5.65 GHz, along with approximately 96 GB of system memory. The machine also includes both integrated AMD graphics and a discrete NVIDIA GPU, although model training was mostly conducted using CPU resources and GPU usage on 4 GB of VRAM didn’t yield improved performance. The ML-Pipeline is still configured to run on GPU if desired. This hardware configuration provides substantial parallel processing capability and memory bandwidth, enabling efficient handling of large-scale data processing, feature engineering, and machine learning model training workflows.</p>
 </section>
-<section id="lstm-spatio-temporal-flight-delay-model" class="level3" data-number="4.2.2">
-<h3 data-number="4.2.2" class="anchored" data-anchor-id="lstm-spatio-temporal-flight-delay-model"><span class="header-section-number">4.2.2</span> LSTM Spatio-Temporal Flight Delay Model</h3>
+<section id="lstm-spatio-temporal-model" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="lstm-spatio-temporal-model"><span class="header-section-number">4.2.2</span> LSTM Spatio-Temporal Model</h3>
 <section id="overview" class="level4" data-number="4.2.2.1">
 <h4 data-number="4.2.2.1" class="anchored" data-anchor-id="overview"><span class="header-section-number">4.2.2.1</span> Overview</h4>
 <p>A Long Short-Term Memory (LSTM) neural network was developed to model flight delay propagation using sequential aircraft rotation history. Unlike tree-based models that treat each flight independently, the LSTM learns temporal dependencies across prior legs operated by the same tail number — naturally representing how delays cascade through a rotation chain.</p>
@@ -846,10 +850,181 @@ z = \frac{x - \mu}{\sigma}
 </section>
 <section id="xgboost" class="level3" data-number="4.2.3">
 <h3 data-number="4.2.3" class="anchored" data-anchor-id="xgboost"><span class="header-section-number">4.2.3</span> XGBoost</h3>
-<p>Using a tree allows tree ensembles to learn subtle operational patterns very effectively.</p>
+<p>A tuned Extreme Gradient Boosting (XGBoost) model was developed as the primary predictive model for flight delay forecasting.</p>
+<p>XGBoost was selected for this task because gradient-boosted tree ensembles consistently achieve strong performance on large-scale structured tabular data. The method captures nonlinear operational interactions, tolerates heterogeneous feature scales without normalization, and remains computationally tractable at the scale of tens of millions of flight records. Unlike linear models, XGBoost can implicitly model feature interactions such as the combined effect of a tight turnaround window on an already-stressed aircraft — without requiring manual interaction terms.</p>
+<p>The full modeling pipeline, from data splitting through final holdout evaluation, is described in the sections that follow.</p>
+<section id="data-partitioning-strategy" class="level4" data-number="4.2.3.1">
+<h4 data-number="4.2.3.1" class="anchored" data-anchor-id="data-partitioning-strategy"><span class="header-section-number">4.2.3.1</span> Data Partitioning Strategy</h4>
+<p>To preserve temporal realism and eliminate any possibility of look-ahead bias, the dataset was partitioned <strong>strictly chronologically</strong>. Future observations were never permitted to influence model training or validation at any stage.</p>
+<div id="tbl-splits" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-splits-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Chronological data splits used across the full XGBoost pipeline.
+</figcaption>
+<div aria-describedby="tbl-splits-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Dataset</th>
+<th>Years</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Training</td>
+<td>2015–2023</td>
+<td>54,620,695</td>
+</tr>
+<tr class="even">
+<td>Validation</td>
+<td>2024</td>
+<td>6,947,566</td>
+</tr>
+<tr class="odd">
+<td>Test (Holdout)</td>
+<td>2025</td>
+<td>6,857,845</td>
+</tr>
+<tr class="even">
+<td><strong>Final Refit Train</strong></td>
+<td><strong>2015–2024</strong></td>
+<td><strong>61,568,261</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>The 2025 holdout set represents completely unseen flight operations and serves as the primary benchmark for reported final performance. No information from 2025 was available at any point during model development, hyperparameter search, or feature selection.</p>
+<hr>
+</section>
+<section id="feature-engineering-1" class="level4" data-number="4.2.3.2">
+<h4 data-number="4.2.3.2" class="anchored" data-anchor-id="feature-engineering-1"><span class="header-section-number">4.2.3.2</span> Feature Engineering</h4>
+<p>The final feature set for the production model (<code>xgb_full_aircraft</code>) contained <strong>37 predictors</strong> spanning five conceptually distinct categories. Feature selection was guided by domain knowledge of delay propagation mechanisms and validated empirically through cross-validation performance comparisons across feature subsets.</p>
+<section id="schedule-and-calendar-features" class="level5" data-number="4.2.3.2.1">
+<h5 data-number="4.2.3.2.1" class="anchored" data-anchor-id="schedule-and-calendar-features"><span class="header-section-number">4.2.3.2.1</span> Schedule and Calendar Features</h5>
+<p>These features encode when a flight is scheduled, capturing peak-hour congestion effects, weekend travel patterns, holiday demand surges, and seasonal variation.</p>
+<ul>
+<li><code>distance</code> — great-circle route distance in miles</li>
+<li><code>crs_elapsed_time</code> — scheduled block time in minutes</li>
+<li><code>dep_hour_local</code> — local departure hour (0–23)</li>
+<li><code>dep_weekday_local</code> — day of week (Monday = 0)</li>
+<li><code>dep_month_local</code> — calendar month</li>
+<li><code>dep_time_bucket</code> — discretized departure time window (e.g., early morning, morning bank, afternoon, evening)</li>
+<li><code>is_weekend</code> — binary flag for Saturday/Sunday operations</li>
+<li><code>is_holiday</code> — binary flag for federal holiday proximity</li>
+<li><code>days_to_nearest_holiday</code> — continuous proximity measure to the nearest holiday</li>
+</ul>
+</section>
+<section id="weather-features" class="level5" data-number="4.2.3.2.2">
+<h5 data-number="4.2.3.2.2" class="anchored" data-anchor-id="weather-features"><span class="header-section-number">4.2.3.2.2</span> Weather Features</h5>
+<p>Surface weather conditions at both the departure and arrival airports were joined from hourly ASOS/METAR records. Each flight received a pre-departure snapshot at the closest available observation prior to scheduled pushback.</p>
+<p>Weather variables included:</p>
+<ul>
+<li>Temperature (°C)</li>
+<li>Wind speed (knots) and direction (degrees)</li>
+<li>Visibility (statute miles)</li>
+<li>Ceiling height (meters)</li>
+<li>Precipitation indicator</li>
+</ul>
+<p>Example features: <code>dep_temp_c</code>, <code>dep_wind_speed_kt</code>, <code>arr_ceiling_height_m</code>, <code>arr_visibility_sm</code>.</p>
+</section>
+<section id="network-congestion-features" class="level5" data-number="4.2.3.2.3">
+<h5 data-number="4.2.3.2.3" class="anchored" data-anchor-id="network-congestion-features"><span class="header-section-number">4.2.3.2.3</span> Network Congestion Features</h5>
+<p>These features quantify operational load at both airports and on the specific route at departure time, capturing system-level congestion independent of any individual aircraft’s history.</p>
+<ul>
+<li><code>origin_flight_volume</code> — total scheduled departures at origin airport within a rolling time window</li>
+<li><code>dest_flight_volume</code> — total scheduled arrivals at destination airport within a rolling time window</li>
+<li><code>route_frequency</code> — historical frequency of delays on this origin–destination pair</li>
+</ul>
+</section>
+<section id="aircraft-rotation-state-features" class="level5" data-number="4.2.3.2.4">
+<h5 data-number="4.2.3.2.4" class="anchored" data-anchor-id="aircraft-rotation-state-features"><span class="header-section-number">4.2.3.2.4</span> Aircraft Rotation State Features</h5>
+<p>These features capture the operational history and physical characteristics of the specific aircraft assigned to the flight. Aircraft continuity — whether the same tail number operated the prior leg — is especially important for modeling mechanical and scheduling carryover.</p>
+<ul>
+<li><code>aircraft_age</code> — years since aircraft manufacture</li>
+<li><code>aircraft_no_eng</code> — number of engines</li>
+<li><code>aircraft_no_seats</code> — certified seat capacity</li>
+<li><code>aircraft_year_mfr</code> — year of manufacture</li>
+<li><code>aircraft_leg_number_day</code> — how many legs the aircraft has already flown today</li>
+<li><code>rotation_continuity_flag</code> — whether the inbound leg was operated by the same aircraft</li>
+<li><code>relative_leg_position</code> — normalized position of this flight within the aircraft’s daily rotation</li>
+</ul>
+</section>
+<section id="two-hop-upstream-propagation-features" class="level5" data-number="4.2.3.2.5">
+<h5 data-number="4.2.3.2.5" class="anchored" data-anchor-id="two-hop-upstream-propagation-features"><span class="header-section-number">4.2.3.2.5</span> Two-Hop Upstream Propagation Features</h5>
+<p>The most predictively powerful feature category encodes the delay state of the <strong>same aircraft on its two most recent prior legs</strong>. This two-hop window operationalizes the empirical reality that delays propagate forward through aircraft rotations: a late inbound flight becomes a late outbound flight.</p>
+<div id="tbl-propagation" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-propagation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Two-hop upstream propagation features.
+</figcaption>
+<div aria-describedby="tbl-propagation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>prev1_arr_delay</code></td>
+<td>Arrival delay (minutes) of the immediately preceding leg</td>
+</tr>
+<tr class="even">
+<td><code>prev1_dep_delay</code></td>
+<td>Departure delay (minutes) of the preceding leg</td>
+</tr>
+<tr class="odd">
+<td><code>prev1_arr_del15</code></td>
+<td>Binary: was the preceding leg <span class="math inline">\(\geq 15\)</span> min late on arrival?</td>
+</tr>
+<tr class="even">
+<td><code>prev1_dep_del15</code></td>
+<td>Binary: was the preceding leg <span class="math inline">\(\geq 15\)</span> min late on departure?</td>
+</tr>
+<tr class="odd">
+<td><code>prev2_arr_delay</code></td>
+<td>Arrival delay of the leg two hops prior</td>
+</tr>
+<tr class="even">
+<td><code>prev2_dep_delay</code></td>
+<td>Departure delay of the leg two hops prior</td>
+</tr>
+<tr class="odd">
+<td><code>prev2_arr_del15</code></td>
+<td>Binary classification of two-hop-prior arrival delay</td>
+</tr>
+<tr class="even">
+<td><code>prev2_dep_del15</code></td>
+<td>Binary classification of two-hop-prior departure delay</td>
+</tr>
+<tr class="odd">
+<td><code>prev1_turnaround_minutes</code></td>
+<td>Gate time between the inbound aircraft arrival and scheduled next departure</td>
+</tr>
+<tr class="even">
+<td><code>time_since_prev2_arrival_minutes</code></td>
+<td>Elapsed time since the aircraft’s second-prior arrival</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Together, these features give the model visibility into the trajectory of delay accumulation along each aircraft’s day, not merely its current scheduled state.</p>
+</section>
+</section>
 </section>
 <section id="xgboost-classification-model" class="level3" data-number="4.2.4">
 <h3 data-number="4.2.4" class="anchored" data-anchor-id="xgboost-classification-model"><span class="header-section-number">4.2.4</span> XGBoost Classification Model</h3>
+<p>The XGBoost classification model estimates the probability that a flight will experience a significant arrival delay:</p>
 <p><span class="math display">\[
 \hat{p}_i
 =
@@ -858,15 +1033,11 @@ P(Y_i^{(cls)} = 1 \mid \mathbf{x}_i)
 \sigma\left(
 \sum_{m=1}^{M} f_m(\mathbf{x}_i)
 \right)
-\]</span></p>
-<p>where</p>
+\]</span> where <span class="math inline">\(\sigma(z) = (1 + e^{-z})^{-1}\)</span> and <span class="math inline">\(M = 300\)</span> gradient-boosted trees. where</p>
 <p><span class="math display">\[
 \sigma(z)=\frac{1}{1+e^{-z}}
 \]</span></p>
-<p>and <span class="math inline">\(M = 300\)</span> boosting trees.</p>
-</section>
-<section id="classification-decision-rule" class="level3" data-number="4.2.5">
-<h3 data-number="4.2.5" class="anchored" data-anchor-id="classification-decision-rule"><span class="header-section-number">4.2.5</span> Classification Decision Rule</h3>
+<p>is the logistic sigmoid function and <span class="math inline">\(M = 300\)</span> gradient-boosted trees. The binary decision rule applies a threshold of 0.5 i.e.&nbsp;the Classification Decision Rule:</p>
 <p><span class="math display">\[
 \hat{Y}_i^{(cls)} =
 \begin{cases}
@@ -875,36 +1046,23 @@ P(Y_i^{(cls)} = 1 \mid \mathbf{x}_i)
 \end{cases}
 \]</span></p>
 </section>
-<section id="xgboost-regression-model" class="level3" data-number="4.2.6">
-<h3 data-number="4.2.6" class="anchored" data-anchor-id="xgboost-regression-model"><span class="header-section-number">4.2.6</span> XGBoost Regression Model</h3>
+<section id="xgboost-regression-model" class="level3" data-number="4.2.5">
+<h3 data-number="4.2.5" class="anchored" data-anchor-id="xgboost-regression-model"><span class="header-section-number">4.2.5</span> XGBoost Regression Model</h3>
+<p>The XGBoost regression model directly predicts arrival delay in minutes as an additive ensemble of regression trees:</p>
 <p><span class="math display">\[
 \hat{Y}_i^{(reg)}
 =
 \sum_{m=1}^{M} g_m(\mathbf{x}_i)
 \]</span></p>
-</section>
-<section id="boosting-objective" class="level3" data-number="4.2.7">
-<h3 data-number="4.2.7" class="anchored" data-anchor-id="boosting-objective"><span class="header-section-number">4.2.7</span> Boosting Objective</h3>
+<p>At each boosting iteration <span class="math inline">\(t\)</span>, the model minimizes the regularized objective:</p>
 <p><span class="math display">\[
-\mathcal{L}^{(t)}
-=
-\sum_{i=1}^{n}
-l\left(
-y_i,\hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)
-\right)
-+
-\Omega(f_t)
+\mathcal{L}^{(t)} = \sum_{i=1}^{n} l\!\left(y_i,\, \hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)\right) + \Omega(f_t)
 \]</span></p>
-</section>
-<section id="tree-complexity-penalty" class="level3" data-number="4.2.8">
-<h3 data-number="4.2.8" class="anchored" data-anchor-id="tree-complexity-penalty"><span class="header-section-number">4.2.8</span> Tree Complexity Penalty</h3>
+<p>where <span class="math inline">\(l(\cdot)\)</span> is the task-specific loss (log-loss for classification, squared error for regression) and the complexity penalty is:</p>
 <p><span class="math display">\[
-\Omega(f)
-=
-\gamma T
-+
-\frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
+\Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2
 \]</span></p>
+<p>with <span class="math inline">\(T\)</span> denoting the number of leaves and <span class="math inline">\(w_j\)</span> the leaf weights. This penalty discourages overly complex trees and provides implicit regularization against overfitting on the large but temporally structured dataset.</p>
 </section>
 </section>
 </section>
@@ -917,83 +1075,149 @@ y_i,\hat{y}_i^{(t-1)} + f_t(\mathbf{x}_i)
 <li>Explain what the ML Pipeline is</li>
 </ul>
 </section>
-<section id="cross-validation-and-hyper-parameter-tuning" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="cross-validation-and-hyper-parameter-tuning"><span class="header-section-number">5.2</span> Cross Validation and Hyper Parameter Tuning</h2>
-<p>Train-Test Splits for CV used expanding window strategy….</p>
-</section>
-<section id="feature-importances" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="feature-importances"><span class="header-section-number">5.3</span> Feature Importances</h2>
-<div class="cell">
-<div id="tbl-features" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<section id="time-aware-cross-validation" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="time-aware-cross-validation"><span class="header-section-number">5.2</span> Time-Aware Cross Validation</h2>
+<p>Standard random <span class="math inline">\(k\)</span>-fold cross-validation is inappropriate for time-series data because it permits future observations to leak into training folds, producing optimistically biased estimates. Instead, a <strong>rolling-origin expanding-window</strong> cross-validation strategy was employed, where each fold trains on all years up to a cutoff and validates on the immediately following year.</p>
+<p><span class="math display">\[
+\mathcal{D}_{\text{train}}^{(k)} = \{2015, \ldots, t_k\}, \qquad \mathcal{D}_{\text{val}}^{(k)} = \{t_k + 1\}
+\]</span></p>
+<p>The five folds used were:</p>
+<div id="tbl-cv-folds" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-features-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Strong predictive features used in the flight delay model.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-folds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: Rolling-origin cross-validation folds.
 </figcaption>
-<div aria-describedby="tbl-features-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 72%">
-</colgroup>
+<div aria-describedby="tbl-cv-folds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
 <thead>
 <tr class="header">
-<th style="text-align: left;">Feature</th>
-<th style="text-align: left;">Description</th>
+<th>Fold</th>
+<th>Training Years</th>
+<th>Validation Year</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Prior Leg Delays</td>
-<td style="text-align: left;">Whether the incoming flight arrived late, directly propagating delay forward.</td>
+<td>1</td>
+<td>2015–2018</td>
+<td>2019</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Aircraft Rotation Continuity</td>
-<td style="text-align: left;">Tracks whether the same aircraft flew the previous leg without interruption.</td>
+<td>2</td>
+<td>2015–2019</td>
+<td>2020</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Turnaround Minutes</td>
-<td style="text-align: left;">Time between aircraft arrival and scheduled next departure at the gate.</td>
+<td>3</td>
+<td>2015–2020</td>
+<td>2021</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Cumulative Aircraft Delays</td>
-<td style="text-align: left;">Rolling sum of delays accumulated by the aircraft throughout the day.</td>
+<td>4</td>
+<td>2015–2021</td>
+<td>2022</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Weather at Origin/Destination</td>
-<td style="text-align: left;">Hourly surface conditions — wind, visibility, precipitation — at both airports.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Route Congestion</td>
-<td style="text-align: left;">How frequently flights on this route experience delays due to airspace demand.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Airport Traffic Volume</td>
-<td style="text-align: left;">Total departures and arrivals at the airport within a given time window.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Schedule Timing</td>
-<td style="text-align: left;">Departure hour and day-of-week capturing peak travel and operational patterns.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Aircraft Metadata</td>
-<td style="text-align: left;">Aircraft type and age affecting turnaround speed and mechanical reliability.</td>
+<td>5</td>
+<td>2015–2022</td>
+<td>2023</td>
 </tr>
 </tbody>
 </table>
 </div>
+</figure>
+</div>
+<p>This design directly simulates production deployment conditions: the model is trained on all available history, then evaluated on the next operational year it has never seen. The expanding window ensures that later folds benefit from more training data, reflecting how a deployed model accumulates history over time.</p>
+</section>
+<section id="hyperparameter-search" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="hyperparameter-search"><span class="header-section-number">5.3</span> Hyperparameter Search</h2>
+<p>A grid search was conducted over four candidate XGBoost configurations, each evaluated using the five-fold rolling cross-validation procedure. The search space covered the primary levers controlling model capacity and regularization:</p>
+<ul>
+<li>Number of trees (<span class="math inline">\(M\)</span>)</li>
+<li>Maximum tree depth (<span class="math inline">\(d\)</span>)</li>
+<li>Learning rate (<span class="math inline">\(\eta\)</span>)</li>
+<li>Row subsampling ratio (<span class="math inline">\(s\)</span>)</li>
+<li>Column subsampling ratio (<span class="math inline">\(c\)</span>)</li>
+<li>Minimum child node weight</li>
+<li>L2 leaf weight regularization (<span class="math inline">\(\lambda\)</span>)</li>
+</ul>
+<section id="candidate-configurations" class="level3" data-number="5.3.1">
+<h3 data-number="5.3.1" class="anchored" data-anchor-id="candidate-configurations"><span class="header-section-number">5.3.1</span> Candidate Configurations</h3>
+<div id="tbl-configs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-configs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: Candidate hyperparameter configurations evaluated during grid search.
+</figcaption>
+<div aria-describedby="tbl-configs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Config</th>
+<th>Trees (<span class="math inline">\(M\)</span>)</th>
+<th>Depth (<span class="math inline">\(d\)</span>)</th>
+<th>LR (<span class="math inline">\(\eta\)</span>)</th>
+<th>Subsample (<span class="math inline">\(s\)</span>)</th>
+<th>Colsample (<span class="math inline">\(c\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xgb_00</code></td>
+<td>250</td>
+<td>4</td>
+<td>0.05</td>
+<td>0.8</td>
+<td>0.8</td>
+</tr>
+<tr class="even">
+<td><code>xgb_01</code></td>
+<td>250</td>
+<td>4</td>
+<td>0.05</td>
+<td>0.8</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td><code>xgb_02</code></td>
+<td>300</td>
+<td>6</td>
+<td>0.05</td>
+<td>0.8</td>
+<td>0.8</td>
+</tr>
+<tr class="even">
+<td><code>xgb_03</code></td>
+<td>400</td>
+<td>6</td>
+<td>0.03</td>
+<td>0.8</td>
+<td>0.8</td>
+</tr>
+</tbody>
+</table>
 </div>
 </figure>
 </div>
-</div>
 </section>
-<section id="hyperparameter-tuning" class="level2" data-number="5.4">
-<h2 data-number="5.4" class="anchored" data-anchor-id="hyperparameter-tuning"><span class="header-section-number">5.4</span> Hyperparameter Tuning</h2>
+<section id="selected-configuration" class="level3" data-number="5.3.2">
+<h3 data-number="5.3.2" class="anchored" data-anchor-id="selected-configuration"><span class="header-section-number">5.3.2</span> Selected Configuration</h3>
+<p>The best-performing configuration was <strong><code>xgb_02</code></strong> (referred to as <code>xgb_03</code> in the production pipeline artifact). Its full parameter set is:</p>
+<p><span class="math display">\[
+M = 300,\quad d = 6,\quad \eta = 0.05,\quad s = 0.8,\quad c = 0.8
+\]</span></p>
 <div class="cell">
 <div id="tbl-hyperparameters" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hyperparameters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: Winning XGBoost hyperparameter configuration selected from four candidate configurations.
+Table&nbsp;7: Winning XGBoost hyperparameter configuration selected from four candidate configurations.
 </figcaption>
 <div aria-describedby="tbl-hyperparameters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -1048,56 +1272,373 @@ Table&nbsp;4: Winning XGBoost hyperparameter configuration selected from four ca
 </figure>
 </div>
 </div>
-<section id="selected-hyperparameters" class="level3" data-number="5.4.1">
-<h3 data-number="5.4.1" class="anchored" data-anchor-id="selected-hyperparameters"><span class="header-section-number">5.4.1</span> Selected Hyperparameters</h3>
+<p>The <code>hist</code> tree method was selected for computational efficiency on the large training dataset. The moderate depth of 6 and conservative learning rate of 0.05 balance model expressiveness with generalization, while subsampling at 80% for both rows and columns introduces stochasticity that reduces variance.</p>
+<hr>
+</section>
+</section>
+<section id="cross-validation-performance" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="cross-validation-performance"><span class="header-section-number">5.4</span> Cross-Validation Performance</h2>
+<section id="classification-performance-mean-across-5-folds" class="level3" data-number="5.4.1">
+<h3 data-number="5.4.1" class="anchored" data-anchor-id="classification-performance-mean-across-5-folds"><span class="header-section-number">5.4.1</span> Classification Performance (Mean Across 5 Folds)</h3>
+<div class="cell">
+<div id="tbl-cv-classification" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: Cross-validation classification performance for the selected XGBoost model (xgb_03), mean and approximate standard deviation across 5 rolling folds.
+</figcaption>
+<div aria-describedby="tbl-cv-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Max</th>
+<th style="text-align: right;">Approx. SD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">AUC</td>
+<td style="text-align: right;">0.8357</td>
+<td style="text-align: right;">0.8048</td>
+<td style="text-align: right;">0.8525</td>
+<td style="text-align: right;">0.0119</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">F1</td>
+<td style="text-align: right;">0.5025</td>
+<td style="text-align: right;">0.4122</td>
+<td style="text-align: right;">0.5702</td>
+<td style="text-align: right;">0.0395</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Precision</td>
+<td style="text-align: right;">0.7484</td>
+<td style="text-align: right;">0.5696</td>
+<td style="text-align: right;">0.8356</td>
+<td style="text-align: right;">0.0665</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Recall</td>
+<td style="text-align: right;">0.3822</td>
+<td style="text-align: right;">0.2977</td>
+<td style="text-align: right;">0.4548</td>
+<td style="text-align: right;">0.0393</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Accuracy</td>
+<td style="text-align: right;">0.8714</td>
+<td style="text-align: right;">0.8532</td>
+<td style="text-align: right;">0.9093</td>
+<td style="text-align: right;">0.0140</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="regression-performance-mean-across-5-folds" class="level3" data-number="5.4.2">
+<h3 data-number="5.4.2" class="anchored" data-anchor-id="regression-performance-mean-across-5-folds"><span class="header-section-number">5.4.2</span> Regression Performance (Mean Across 5 Folds)</h3>
+<div class="cell">
+<div id="tbl-cv-regression" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: Cross-validation regression performance for the selected XGBoost model (xgb_03), mean and approximate standard deviation across 5 rolling folds.
+</figcaption>
+<div aria-describedby="tbl-cv-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Max</th>
+<th style="text-align: right;">Approx. SD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">MAE (minutes)</td>
+<td style="text-align: right;">18.09</td>
+<td style="text-align: right;">17.12</td>
+<td style="text-align: right;">18.89</td>
+<td style="text-align: right;">0.44</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RMSE (minutes)</td>
+<td style="text-align: right;">40.86</td>
+<td style="text-align: right;">35.07</td>
+<td style="text-align: right;">45.49</td>
+<td style="text-align: right;">2.61</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Standard deviations are approximated as <span class="math inline">\(\text{SD} \approx (\text{max} - \text{min}) / 4\)</span>, a standard range-based estimate applicable when per-fold values are not stored. These values are conservative lower bounds on true variability.</p>
+</div>
+</div>
+</section>
+<section id="interpretation-of-cross-validation-stability" class="level3" data-number="5.4.3">
+<h3 data-number="5.4.3" class="anchored" data-anchor-id="interpretation-of-cross-validation-stability"><span class="header-section-number">5.4.3</span> Interpretation of Cross-Validation Stability</h3>
+<p>The cross-validation results reveal a model with <strong>strong temporal robustness</strong>. The most discriminative metric — AUC — exhibited the lowest variability (SD = 0.012), indicating that the model’s ability to rank delayed flights above non-delayed flights remained stable across years that spanned a full decade of US aviation operations, including the COVID-19 disruption period (2020–2021) and the subsequent recovery years.</p>
+<p>Stability was similarly high for overall accuracy (SD = 0.014) and mean absolute error (SD = 0.44 minutes), confirming that point predictions for delay magnitude did not drift substantially across validation years.</p>
+<p>Larger variability in F1 (SD = 0.040), recall (SD = 0.039), and especially precision (SD = 0.067) reflects genuine annual heterogeneity in the delay-event distribution. Pandemic-era years exhibited structurally different delay patterns — reduced traffic volumes but elevated per-flight delay rates in some months — which affected the class-level precision-recall balance without substantially degrading rank-order discrimination. The RMSE variability (SD = 2.61 minutes) similarly reflects the influence of rare, operationally extreme years on tail-error statistics.</p>
+<hr>
+</section>
+</section>
+<section id="final-refit-and-holdout-evaluation" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="final-refit-and-holdout-evaluation"><span class="header-section-number">5.5</span> Final Refit and Holdout Evaluation</h2>
+<section id="refit-procedure" class="level3" data-number="5.5.1">
+<h3 data-number="5.5.1" class="anchored" data-anchor-id="refit-procedure"><span class="header-section-number">5.5.1</span> Refit Procedure</h3>
+<p>Following hyperparameter selection, the model was retrained on all pre-test data to maximize the information available for the final deployed model:</p>
 <p><span class="math display">\[
-M = 300,\quad
-d = 6,\quad
-\eta = 0.05,\quad
-s = 0.8,\quad
-c = 0.8
+\mathcal{D}_{\text{final train}} = \{2015, \ldots, 2024\}
 \]</span></p>
-<p>where:</p>
-<ul>
-<li><span class="math inline">\(M\)</span> = number of trees<br>
-</li>
-<li><span class="math inline">\(d\)</span> = maximum tree depth<br>
-</li>
-<li><span class="math inline">\(\eta\)</span> = learning rate<br>
-</li>
-<li><span class="math inline">\(s\)</span> = row subsample ratio<br>
-</li>
-<li><span class="math inline">\(c\)</span> = feature subsample ratio</li>
-</ul>
-<p>where <span class="math inline">\(\mathcal{L}_i\)</span> represents all previous same-day legs for aircraft <span class="math inline">\(i\)</span>.</p>
+<p>The full refit dataset contained <strong>61,568,261 rows</strong>. For memory efficiency during the refit phase, a stratified <strong>35% sample</strong> (21,548,891 rows) was drawn, preserving the class distribution while reducing peak memory requirements. The final model was then evaluated on the completely held-out 2025 dataset.</p>
 </section>
-<section id="temporal-cross-validation" class="level3" data-number="5.4.2">
-<h3 data-number="5.4.2" class="anchored" data-anchor-id="temporal-cross-validation"><span class="header-section-number">5.4.2</span> Temporal Cross Validation</h3>
-<p><span class="math display">\[
-\mathcal{D}_{train}^{(k)} = \{2015,\dots,t_k\},
-\qquad
-\mathcal{D}_{val}^{(k)} = \{t_k+1\}
-\]</span> Example:</p>
+<section id="final-holdout-test-results-2025---post-tuning" class="level3" data-number="5.5.2">
+<h3 data-number="5.5.2" class="anchored" data-anchor-id="final-holdout-test-results-2025---post-tuning"><span class="header-section-number">5.5.2</span> Final Holdout Test Results (2025) - Post Tuning</h3>
+<section id="classification-performance" class="level4" data-number="5.5.2.1">
+<h4 data-number="5.5.2.1" class="anchored" data-anchor-id="classification-performance"><span class="header-section-number">5.5.2.1</span> Classification Performance</h4>
+<div class="cell">
+<div id="tbl-final-classification" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: Final holdout classification performance on unseen 2025 flight operations.
+</figcaption>
+<div aria-describedby="tbl-final-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">AUC</td>
+<td style="text-align: right;">0.8452</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">F1</td>
+<td style="text-align: right;">0.5562</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Precision</td>
+<td style="text-align: right;">0.8029</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Recall</td>
+<td style="text-align: right;">0.4254</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Accuracy</td>
+<td style="text-align: right;">0.8486</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
 </section>
-<section id="final-holdout-evaluation-design" class="level3" data-number="5.4.3">
-<h3 data-number="5.4.3" class="anchored" data-anchor-id="final-holdout-evaluation-design"><span class="header-section-number">5.4.3</span> Final Holdout Evaluation Design</h3>
+<section id="regression-performance" class="level4" data-number="5.5.2.2">
+<h4 data-number="5.5.2.2" class="anchored" data-anchor-id="regression-performance"><span class="header-section-number">5.5.2.2</span> Regression Performance</h4>
+<div class="cell">
+<div id="tbl-final-regression" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11: Final holdout regression performance on unseen 2025 flight operations.
+</figcaption>
+<div aria-describedby="tbl-final-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">MAE (minutes)</td>
+<td style="text-align: right;">20.14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RMSE (minutes)</td>
+<td style="text-align: right;">46.17</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>In summary:</p>
 <p><span class="math display">\[
-\mathcal{D}_{final\ train} = \{2015,\dots,2024\}
-\qquad
-\mathcal{D}_{test} = \{2025\}
+\text{AUC} = 0.8452, \quad F_1 = 0.5562, \quad \text{MAE} = 20.14\ \text{min}, \quad \text{RMSE} = 46.17\ \text{min}
 \]</span></p>
 </section>
-<section id="model-comparison" class="level3" data-number="5.4.4">
-<h3 data-number="5.4.4" class="anchored" data-anchor-id="model-comparison"><span class="header-section-number">5.4.4</span> Model Comparison</h3>
+</section>
+<section id="interpretation-of-final-results" class="level3" data-number="5.5.3">
+<h3 data-number="5.5.3" class="anchored" data-anchor-id="interpretation-of-final-results"><span class="header-section-number">5.5.3</span> Interpretation of Final Results</h3>
+<p><strong>Discrimination (AUC = 0.845).</strong> The model correctly ranks a randomly selected delayed flight above a randomly selected on-time flight 84.5% of the time on 2025 data. This represents a meaningful improvement over the cross-validation mean AUC of 0.836, suggesting that the model benefited from the expanded 2015–2024 refit training set. An AUC exceeding 0.84 is operationally strong for a binary event as dependent on real-time conditions as flight delay.</p>
+<p><strong>Precision (80.3%).</strong> When the model predicts a delay, it is correct more than four times out of five. This high precision makes the model practically useful for triggering downstream operational actions — passenger notifications, gate reassignments, crew advisory alerts — where false alarms carry real cost.</p>
+<p><strong>Recall (42.5%).</strong> The model recovers approximately 42.5% of all true delay events at the default 0.5 classification threshold. This relatively conservative recall reflects the class imbalance inherent in flight delay data: on-time flights substantially outnumber delayed flights in the dataset, and the default threshold does not optimize for recall. For use cases requiring higher sensitivity — such as proactive wide-net disruption planning — the decision threshold can be lowered to improve recall at the cost of some precision.</p>
+<p><strong>Regression error (MAE = 20.1 min, RMSE = 46.2 min).</strong> The mean absolute prediction error of approximately 20 minutes is reasonable given the inherent unpredictability of delay magnitude, which is influenced by late-breaking weather, ATC decisions, and mechanical events not fully captured in the pre-departure feature window. The substantially higher RMSE reflects the model’s tendency to underestimate severe delays (<span class="math inline">\(&gt;\)</span> 2 hours), consistent with the general difficulty of predicting tail events in heavy-tailed delay distributions.</p>
+<hr>
+</section>
+</section>
+<section id="feature-importance-analysis" class="level2" data-number="5.6">
+<h2 data-number="5.6" class="anchored" data-anchor-id="feature-importance-analysis"><span class="header-section-number">5.6</span> Feature Importance Analysis</h2>
+<div class="cell">
+<div id="tbl-features1" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-features1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;12: Top predictive features by XGBoost gain-based importance score.
+</figcaption>
+<div aria-describedby="tbl-features1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 21%">
+<col style="width: 9%">
+<col style="width: 63%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Rank</th>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: right;">Importance</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">prev1_arr_del15</td>
+<td style="text-align: right;">0.5106</td>
+<td style="text-align: left;">Binary: inbound aircraft arrived ≥ 15 min late (immediate prior leg)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: left;">prev1_dep_del15</td>
+<td style="text-align: right;">0.1247</td>
+<td style="text-align: left;">Binary: inbound aircraft departed ≥ 15 min late (immediate prior leg)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">prev1_arr_delay</td>
+<td style="text-align: right;">0.1135</td>
+<td style="text-align: left;">Continuous arrival delay in minutes of the immediately prior leg</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">dep_hour_local</td>
+<td style="text-align: right;">0.0277</td>
+<td style="text-align: left;">Local departure hour of day</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: left;">dep_time_bucket</td>
+<td style="text-align: right;">0.0267</td>
+<td style="text-align: left;">Discretized departure time window</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">6</td>
+<td style="text-align: left;">prev1_turnaround_minutes</td>
+<td style="text-align: right;">0.0262</td>
+<td style="text-align: left;">Gate turnaround time between inbound arrival and scheduled next departure</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The feature importance profile is unambiguous: <strong>delay propagation through aircraft rotations is the dominant predictive signal</strong>, accounting for over 75% of total model gain across the top three features alone. The binary flag <code>prev1_arr_del15</code> — whether the inbound leg arrived at least 15 minutes late — contributes over half of all model importance (0.511), confirming that the single most informative question about any outbound flight is: <em>was the same aircraft delayed on its way in?</em></p>
+<p>This finding has important operational implications. It validates the two-hop propagation feature engineering strategy and suggests that real-time monitoring of upstream aircraft state is far more valuable for delay prediction than any static schedule or network congestion feature. Schedule timing features (<code>dep_hour_local</code>, <code>dep_time_bucket</code>) appear in the top six but at an order of magnitude less importance than propagation features.</p>
+<p>Aircraft metadata variables (<code>aircraft_no_seats</code>, <code>aircraft_year_mfr</code>, <code>aircraft_age</code>, <code>aircraft_no_eng</code>), while individually modest in importance, collectively provided measurable incremental lift in controlled ablation experiments comparing the <code>xgb_full_aircraft</code> feature set to the <code>xgb_2hop_propagation</code> subset alone. This suggests that fleet composition and aircraft utilization patterns carry weak but real signal about delay susceptibility — potentially through maintenance scheduling effects or route assignment patterns associated with specific aircraft types.</p>
+<hr>
+</section>
+<section id="feature-set-comparison" class="level2" data-number="5.7">
+<h2 data-number="5.7" class="anchored" data-anchor-id="feature-set-comparison"><span class="header-section-number">5.7</span> Feature Set Comparison</h2>
+<p>To isolate the contribution of each feature category, four nested feature configurations were evaluated under identical cross-validation conditions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Set</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xgb_schedule</code></td>
+<td>Schedule and calendar features only</td>
+</tr>
+<tr class="even">
+<td><code>xgb_context</code></td>
+<td>Schedule + weather + network congestion</td>
+</tr>
+<tr class="odd">
+<td><code>xgb_2hop_propagation</code></td>
+<td>All features except aircraft metadata</td>
+</tr>
+<tr class="even">
+<td><code>xgb_full_aircraft</code></td>
+<td>Complete 37-feature set including aircraft metadata</td>
+</tr>
+</tbody>
+</table>
+<p>The fully enriched <code>xgb_full_aircraft</code> model was the best overall performer across both classification and regression metrics, confirming that each feature category contributes incrementally. The largest single performance gain was observed when two-hop propagation features were added to the context feature set, consistent with their dominant importance scores. Aircraft metadata provided a smaller but consistent additional improvement.</p>
+<hr>
+</section>
+<section id="computational-performance" class="level2" data-number="5.8">
+<h2 data-number="5.8" class="anchored" data-anchor-id="computational-performance"><span class="header-section-number">5.8</span> Computational Performance</h2>
+<p>The complete XGBoost pipeline — encompassing data loading, FAA registry enrichment, rolling cross-validation across five folds, hyperparameter evaluation across four configurations, final refit, and artifact generation — completed in approximately <strong>1,035 seconds (~17.3 minutes)</strong> on CPU hardware using 8 parallel worker cores.</p>
+<p>This compares favorably against deep learning alternatives (e.g., LSTM-based models requiring GPU hardware and substantially longer training times) and demonstrates that XGBoost remains a practical choice for production-scale aviation delay forecasting without specialized compute infrastructure.</p>
+<hr>
+</section>
+<section id="model-comparison" class="level2" data-number="5.9">
+<h2 data-number="5.9" class="anchored" data-anchor-id="model-comparison"><span class="header-section-number">5.9</span> Model Comparison</h2>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-auc-lstm-xgboost" class="quarto-float quarto-figure quarto-figure-center anchored" alt="AUC for LSTM and XGBoost Models">
+<div id="fig-auc-model-compare" class="quarto-float quarto-figure quarto-figure-center anchored" alt="ROC curves for model varients on the 2025 holdout evaluation set - Before Tuning.">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-auc-lstm-xgboost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/paper/model-ROC.png" class="img-fluid figure-img" style="width:100.0%" alt="AUC for LSTM and XGBoost Models">
+<div aria-describedby="fig-auc-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/paper/roc-final.png" class="img-fluid figure-img" style="width:100.0%" alt="ROC curves for model varients on the 2025 holdout evaluation set - Before Tuning.">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-auc-lstm-xgboost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: AUC for LSTM and XGBoost Models
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-auc-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: ROC curves for model varients on the 2025 holdout evaluation set - Before Tuning.
 </figcaption>
 </figure>
 </div>
@@ -1105,31 +1646,137 @@ Figure&nbsp;5: AUC for LSTM and XGBoost Models
 </div>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-actual-v-pred-lstm-xgboost" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Actual vs Predicted for LSTM and XGBoost">
+<div id="fig-regression-metrics-compare" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Regression metrics for model varients on the 2025 holdout evaluation set - Before Tuning.">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-actual-v-pred-lstm-xgboost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/paper/actual-v-predicted.png" class="img-fluid figure-img" style="width:100.0%" alt="Actual vs Predicted for LSTM and XGBoost">
+<div aria-describedby="fig-regression-metrics-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/paper/regression-metrics-overlay.png" class="img-fluid figure-img" style="width:100.0%" alt="Regression metrics for model varients on the 2025 holdout evaluation set - Before Tuning.">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-actual-v-pred-lstm-xgboost-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Actual vs Predicted for LSTM and XGBoost
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-regression-metrics-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Regression metrics for model varients on the 2025 holdout evaluation set - Before Tuning.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-actual-v-pred-model-compare" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Actual versus predicted delay for the xgb_full_aircraft model on the 2025 holdout evaluation set - Before Tuning.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-actual-v-pred-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/paper/actuals-v-projects-final.png" class="img-fluid figure-img" style="width:100.0%" alt="Actual versus predicted delay for the xgb_full_aircraft model on the 2025 holdout evaluation set - Before Tuning.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-actual-v-pred-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Actual versus predicted delay for the xgb_full_aircraft model on the 2025 holdout evaluation set - Before Tuning.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-</section>
-<section id="results" class="level2" data-number="5.5">
-<h2 data-number="5.5" class="anchored" data-anchor-id="results"><span class="header-section-number">5.5</span> Results</h2>
+<section id="summary" class="level2" data-number="5.10">
+<h2 data-number="5.10" class="anchored" data-anchor-id="summary"><span class="header-section-number">5.10</span> Summary</h2>
+<p>The tuned XGBoost model achieved strong predictive performance on completely unseen 2025 US domestic flight operations after hyper parameter tuning:</p>
 <p><span class="math display">\[
-AUC = 0.9903,\quad
-F_1 = 0.9018,\quad
-MAE = 6.55,\quad
-RMSE = 20.36
+\text{AUC} = 0.845, \quad F_1 = 0.556, \quad \text{Precision} = 0.803, \quad \text{MAE} = 20.1\ \text{min}
 \]</span></p>
-<section id="limitations" class="level3" data-number="5.5.1">
-<h3 data-number="5.5.1" class="anchored" data-anchor-id="limitations"><span class="header-section-number">5.5.1</span> Limitations</h3>
-<p>The 2-hop propagation framework was designed to capture delay carryover from the two most recent upstream aircraft legs. This was a practical and computationally efficient approximation of delay dynamics: While highly useful, this design imposes important structural limitations for both the :contentReference<span data-index="0">oaicite:0</span> and :contentReference<span data-index="1">oaicite:1</span> LSTM approaches.</p>
+<p>The results confirm that <strong>aircraft rotation propagation is the primary mechanism underlying flight delay formation</strong> at the national scale: the single most predictive feature — whether the same aircraft arrived late on its immediately prior leg — contributed over 50% of total model gain. Schedule, weather, and network congestion features provided meaningful secondary signal, while aircraft metadata added modest but consistent incremental improvement.</p>
+<p>The rolling-origin cross-validation strategy yielded stable performance estimates across five temporal folds spanning a decade of operational history, with low AUC variance (SD = 0.012) confirming that the model learned transferable patterns rather than overfitting to any particular year’s conditions.</p>
+<p>Overall, XGBoost proved to be a computationally efficient, highly interpretable, and production-ready modeling approach for large-scale national flight delay prediction, providing a strong baseline against which more complex sequential architectures may be compared.</p>
+<hr>
+</section>
+<section id="operational-impact" class="level2" data-number="5.11">
+<h2 data-number="5.11" class="anchored" data-anchor-id="operational-impact"><span class="header-section-number">5.11</span> Operational Impact</h2>
+<p>Translating model performance metrics into operational terms requires applying the holdout classification results to the scale of actual flight operations. The 2025 holdout set contained <strong>6,857,845 flight records</strong>, of which approximately <strong>23.4%</strong> were labeled as delayed (<span class="math inline">\(\texttt{ArrDel15} = 1\)</span>), yielding roughly <strong>1,604,736 true delay events</strong> in the evaluation period.</p>
+<p>At the default threshold of 0.50, the model’s precision of 0.803 and recall of 0.425 imply the following approximate operational outcomes across the holdout year:</p>
+<div class="cell">
+<div id="tbl-operational-impact" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-operational-impact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;13: Approximate annual operational outcomes at the default threshold (0.50), derived from 2025 holdout classification results.
+</figcaption>
+<div aria-describedby="tbl-operational-impact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 18%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Outcome</th>
+<th style="text-align: right;">Approximate Count</th>
+<th style="text-align: left;">Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Total flights evaluated</td>
+<td style="text-align: right;">6,857,845</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">True delay events (actual)</td>
+<td style="text-align: right;">~1,604,736</td>
+<td style="text-align: left;">23.4% base delay rate</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Delay alerts issued (predicted positive)</td>
+<td style="text-align: right;">~851,468</td>
+<td style="text-align: left;">Precision × TP + FP</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Correct alerts — True Positives</td>
+<td style="text-align: right;">~681,613</td>
+<td style="text-align: left;">Recall × true delay events</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">False alerts — False Positives</td>
+<td style="text-align: right;">~166,951</td>
+<td style="text-align: left;">Correctly flagged but flight was on time</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Missed delays — False Negatives</td>
+<td style="text-align: right;">~923,123</td>
+<td style="text-align: left;">Delayed flights the model did not flag</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Correct non-alerts — True Negatives</td>
+<td style="text-align: right;">~5,086,158</td>
+<td style="text-align: left;">On-time flights correctly left unflagged</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Counts are derived from reported precision (0.803) and recall (0.425) applied to the approximate true delay count. Verify against your confusion matrix outputs for exact figures.</p>
+</div>
+</div>
+<p>(REVIEW THIS SECTION - What is here is just an example)</p>
+<p>Several operational implications follow directly from these numbers.</p>
+<p><strong>Scale of actionable intelligence.</strong> The model issues approximately <strong>851,000 delay alerts annually</strong> — roughly 2,330 per day across the national network — of which over <strong>680,000 are correct</strong>. At this scale, even a modest per-alert value (e.g., $50 in avoided passenger reaccommodation costs or crew repositioning savings) implies substantial aggregate operational value.</p>
+<p><strong>Cost of false alarms.</strong> Approximately <strong>167,000 false alerts</strong> are issued annually. The operational cost of each false alarm depends on what action it triggers. For low-cost interventions such as informational passenger notifications, false alarm costs are minimal. For high-cost actions such as preemptive aircraft swaps, the false alarm rate justifies threshold adjustment upward toward 0.70 (see <strong>?@tbl-threshold-sweep</strong>).</p>
+<p><strong>Scale of missed delays.</strong> The model misses approximately <strong>923,000 true delay events</strong> annually — delays that occur without a prior model alert. The majority of these are likely short delays (15–30 minutes) driven by factors not well represented in pre-departure features, such as late ATC clearances or gate conflicts. A recall-optimized threshold would reduce this number at the cost of additional false alarms.</p>
+<p><strong>Regression precision in context.</strong> A mean absolute prediction error of 20.1 minutes, applied across the approximately 681,000 correctly identified delay events, means the model’s delay magnitude estimates are typically within one connection window of the true delay. For airports with 30-minute minimum connection times, a 20-minute MAE is operationally meaningful for rebooking triage.</p>
+<p>These figures underscore that the model is not a laboratory artifact — at national scale, even imperfect predictions at this precision level represent a substantial operational information advantage over uninformed scheduling assumptions.</p>
+</section>
+<section id="model-limitations" class="level2" data-number="5.12">
+<h2 data-number="5.12" class="anchored" data-anchor-id="model-limitations"><span class="header-section-number">5.12</span> Model Limitations</h2>
+<p>The 2-hop propagation framework was designed to capture delay carryover from the two most recent upstream aircraft legs. This was a practical and computationally efficient approximation of delay dynamics: While highly useful, this design imposes important structural limitations for both LSTM and XGBoost model approaches.</p>
+<p>(REVIEW)</p>
 <ul>
 <li>Core Limitation: Finite Memory Window. The 2-hop model only observes two upstream legs.</li>
 <li>Hidden Accumulated Operational Stress. Aircraft systems often degrade gradually throughout the day.</li>
@@ -1143,50 +1790,24 @@ RMSE = 20.36
 <hr>
 </section>
 </section>
-</section>
-<section id="results-1" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Results</h1>
-<section id="key-findings" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="key-findings"><span class="header-section-number">6.1</span> Key Findings</h2>
-<p>The analysis suggests that delay outcomes are influenced by several interacting factors:</p>
-<ul>
-<li>upstream aircraft delays</li>
-<li>airport congestion patterns</li>
-<li>weather conditions</li>
-<li>temporal scheduling effects</li>
-</ul>
-</section>
-<section id="operational-interpretation" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="operational-interpretation"><span class="header-section-number">6.2</span> Operational Interpretation</h2>
-<p>Predictive models can help identify flights at elevated risk of delay before departure, enabling airlines and planners to anticipate disruptions.</p>
+<section id="discussion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Discussion</h1>
+<p>(REVIEW &amp; ADD MORE)</p>
 <hr>
 </section>
-</section>
-<section id="discussion-limitations" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> Discussion &amp; Limitations</h1>
-<p>Several limitations should be considered:</p>
-<ul>
-<li>missing operational factors such as crew and maintenance constraints</li>
-<li>passenger delays</li>
-<li>imperfect weather measurements</li>
-<li>route-specific findings that may not generalize</li>
-<li>Etc…</li>
-</ul>
-<p>Despite these challenges, the framework provides a replicable approach for studying delay behavior.</p>
-<hr>
-</section>
-<section id="conclusion" class="level1" data-number="8">
-<h1 data-number="8"><span class="header-section-number">8</span> Conclusion</h1>
+<section id="conclusion" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Conclusion</h1>
+<p>(REVIEW &amp; ADD MORE)</p>
 <p>This study demonstrates how machine learning methods can be applied to understand delay dynamics…</p>
 <p>Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches…..etc.</p>
 <hr>
 </section>
-<section id="appendex" class="level1" data-number="9">
-<h1 data-number="9"><span class="header-section-number">9</span> Appendex</h1>
-<section id="introduction-to-areo-flux-and-future-works" class="level2" data-number="9.1">
-<h2 data-number="9.1" class="anchored" data-anchor-id="introduction-to-areo-flux-and-future-works"><span class="header-section-number">9.1</span> Introduction To Areo Flux and Future Works</h2>
-<p>AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive delayed by 15 minutes or more, and estimates the delay in minutes. It does this by modeling the full operational context of the aircraft: where it came from, how the previous two legs performed, the turnaround time, cumulative delays accumulated during the day, and weather conditions at departure.</p>
-<p>The output is a full prediction report: a probability score, a delay estimate, a comparison against the actual recorded outcome, a geographic map of the aircraft’s rotation chain, and a breakdown of the key features that drove the prediction.</p>
+<section id="appendex" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Appendex</h1>
+<section id="introduction-to-aeroflux-real-time-inference-for-flight-delay-prediction" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="introduction-to-aeroflux-real-time-inference-for-flight-delay-prediction"><span class="header-section-number">8.1</span> Introduction to AeroFlux: Real-Time Inference for Flight Delay Prediction</h2>
+<p>AeroFlux is a predictive intelligence system for U.S. domestic flight delays. Given a specific flight — identified by tail number, date, origin, and destination — it predicts whether that flight will arrive more than 15 minutes late and estimates the total delay in minutes.</p>
+<p>Rather than treating each flight in isolation, AeroFlux models the full operational history of the aircraft: the two preceding legs, their on-time performance, turnaround time, cumulative delay buildup over the course of the day, and weather conditions at departure. This context-aware approach captures the cascading nature of flight delays in ways that single-flight models cannot.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-aeroflux1" class="quarto-float quarto-figure quarto-figure-center anchored" alt="AeroFlux predictive intelligence system user interface">
@@ -1195,7 +1816,7 @@ RMSE = 20.36
 <img src="images/aero-flux/app_v2.png" class="img-fluid figure-img" style="width:100.0%" alt="AeroFlux predictive intelligence system user interface">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aeroflux1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: AeroFlux predictive intelligence system user interface
+Figure&nbsp;8: AeroFlux predictive intelligence system user interface
 </figcaption>
 </figure>
 </div>
@@ -1209,23 +1830,26 @@ Figure&nbsp;7: AeroFlux predictive intelligence system user interface
 <img src="images/aero-flux/flight-map-app_v2.png" class="img-fluid figure-img" style="width:100.0%" alt="AeroFlux Flight Map">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aeroflux2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: AeroFlux Flight Map
+Figure&nbsp;9: AeroFlux Flight Map
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<section id="a-precursor-to-a-digital-twin" class="level3" data-number="9.1.1">
-<h3 data-number="9.1.1" class="anchored" data-anchor-id="a-precursor-to-a-digital-twin"><span class="header-section-number">9.1.1</span> A precursor to a digital twin</h3>
-<p>AeroFlux is not yet a digital twin. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like <em>what happens to the next four flights on this tail if this departure slips 45 minutes?</em></p>
+<section id="aeroflux-is-the-precursor-to-a-digital-twin" class="level3" data-number="8.1.1">
+<h3 data-number="8.1.1" class="anchored" data-anchor-id="aeroflux-is-the-precursor-to-a-digital-twin"><span class="header-section-number">8.1.1</span> AeroFlux is the precursor to a digital twin</h3>
+<p>AeroFlux is not yet a digital twin but will soon be one. A true digital twin would ingest live operational data in real time, continuously update its state, and support simulation — answering questions like <em>what happens to the next four flights on this tail if this departure slips 45 minutes?</em></p>
 <p>AeroFlux is the immediate precursor. The machine learning pipeline, feature engineering, model inference layer, and interactive interface are all in place. What it currently lacks is the live data feed connecting it to real-time flight state. That connection is the primary objective for the next phase of development. The progression looks like this:</p>
 <ul>
-<li><strong>Phase 1 (complete)</strong> — Historical proof of concept: models trained, pipeline built, interactive app deployed</li>
-<li><strong>Phase 2 (next)</strong> — Live data integration: connect to FAA or a commercial flight data API, replace historical lookups with real-time inference, add live weather</li>
-<li><strong>Phase 3</strong> — Network simulation: propagate predicted delays forward through the rotation chain, model downstream passenger connections</li>
-<li><strong>Phase 4</strong> — Digital twin: a continuously updated bidirectional model of the domestic flight network with full scenario simulation</li>
+<li><p><strong>Phase 1 — Historical Proof of Concept</strong> <em>(complete)</em> Baseline models trained, data and ML pipelines built, and an interactive prototype deployed. The foundation is in place: a working system that can ingest flight records, engineer operational context features, and produce interpretable delay predictions.</p></li>
+<li><p><strong>Phase 2 — Live Data &amp; Comprehensive Modeling</strong> <em>(next)</em> Connect to FAA or a commercial flight data API to replace historical lookups with real-time inference. Layer in live weather and social media feeds, and research more robust modeling architectures that better capture spatial-temporal dependencies across a flight day. Enhancing the UI with beautiful data visualizations.</p></li>
+<li><p><strong>Phase 3 — Network Simulation</strong> Using Rust as a high-performance simulation engine, propagate predicted delays forward through the full rotation chain. Model downstream passenger connections, gate conflicts, and crew constraints — shifting AeroFlux from a single-flight predictor into a network-aware reasoning system.</p></li>
+<li><p><strong>Phase 4 — Digital Twin</strong> A continuously updated, bidirectional model of the entire U.S. domestic flight network. Full scenario simulation: what happens to 400 downstream flights if a hub goes offline? What’s the optimal recovery sequence after a ground stop? AeroFlux becomes a live mirror of the national airspace.</p></li>
+<li><p><strong>Beyond Phase 4 — The Intelligent Orchestration Layer</strong> This is where AeroFlux transcends flight delays entirely and becomes a framework for reasoning about any system of moving objects in physical space. The ability to model intent, predict state, and propagate consequences through a network of interdependent agents is one of the most valuable capabilities in safety-critical systems — and nowhere is this more consequential than in avionics. Air Traffic Control operates at the edge of human cognitive limits, managing hundreds of aircraft simultaneously with razor-thin margins for error. A system that can anticipate conflicts before they materialize, surface the highest-risk situations in real time, and suggest resolution paths doesn’t just improve efficiency — it fundamentally changes the error surface, shifting ATC from reactive management to proactive orchestration.</p></li>
 </ul>
+<p>The architecture — real-time telemetry ingestion, predictive state modeling, network propagation, and scenario simulation — maps directly onto adjacent domains: urban air mobility fleets of autonomous air taxis, drone delivery networks optimizing thousands of concurrent last-mile routes, autonomous vehicle coordination across highway and urban grids, maritime vessel scheduling through congested port corridors, and satellite constellation management.</p>
 <p><a href="./aero-flux.html">See AeroFlux here</a></p>
+<p><a href="https://aeroflux.duckdns.org/">Official AeroFlux App</a> - Note: this domain might change in the future. If this happens notify the authors for more information.</p>
 
 
 
