@@ -1,4 +1,8 @@
-# OR 568 ML Project & Shared Notebooks (Python + R + Quarto)
+# Predicting Flight Delays 
+
+![Flight Map](images/aero-flux/flight-map-app_v2.png)
+
+## Introduction of the OR 568 ML Project 
 
 The OR 568 Machine Learning Project site serves as a centralized platform for exploring, analyzing, and modeling flight delay dynamics using real-world aviation, weather, and operational data. Its primary purpose is to document the end-to-end data science workflow—from data ingestion and feature engineering to exploratory analysis and advanced modeling—while enabling a deeper understanding of delay propagation across the air transportation network. The site not only communicates key findings and insights but also provides a reproducible, well-structured environment for collaboration, experimentation, and continuous refinement of machine learning and statistical approaches to complex, spatio-temporal problems.
 
@@ -46,9 +50,9 @@ This project uses **Conda** to manage a unified environment for both **Python** 
 
 ### 1. Install Conda
 
-If you do not already have Conda installed, install one of the following:
+If you do not already have Conda installed, install the following:
 
-- Miniconda (): https://docs.conda.io/en/latest/miniconda.html  
+- Miniconda: https://docs.conda.io/en/latest/miniconda.html  
 
 ---
 
@@ -67,7 +71,7 @@ If you are using Jupyter, register the R kernel (only once per machine):
 R -q -e "IRkernel::installspec(user = TRUE)"
 ```
 
-## 3. Installing New Packages
+## Installing New Packages
 
 If you need to install new packages, update the environment in a way that keeps it reproducible for the team.
 
@@ -106,7 +110,7 @@ Only if not available in Conda:
 install.packages("package_name")
 ```
 
-## 4. Updating the Environment File (IMPORTANT)
+## Updating the Environment File (IMPORTANT)
 
 After installing new packages, update the shared `environment.yml` file:
 
@@ -121,45 +125,55 @@ Summary notes:
 - Use pip only when a package is not available via Conda
 - Keep environment.yml updated for team reproducibility
 
-#### Installing and running Quarto 
-See [Quarto installation guide](https://quarto.org/docs/get-started/) 
+## Installing and running Quarto 
+
+Quarto is used to build our project site mentioned above. If you are not managing the site or do not need to render other's notebooks you do not need to install or use Quarto. 
+
+To install Qaurto see [Quarto installation guide](https://quarto.org/docs/get-started/) 
+
+The following are useful Quarto commands:
 ```bash
-# To render - Note: Need to do this anytime you want your changes to be reflected on the site.
+# To render entire site - Note: Need to do this anytime you want your changes to be reflected on the site.
 quarto render 
 # To see the site in your local browser. Make sure you do this to check for any issues. 
 quarto preview
+
+# To render and view a single notebook 
+quarto preview <notebook>.qmd
 ```
+Jupyter Notebooks will work without Quarto if you just want to run ipynb notebooks using your Python kernal. Jupyter Notebooks can be rendered as part of the Quarto just like a Quarto's .qmd. 
 
 ## Project Overview
 
-### Site Structure and Key Pages (Quarto Overview)
+### Website Structure and Key Pages (Quarto Overview)
 
-This site is built using **Quarto**, which converts `.qmd` (and `.ipynb`) files into a static website. The overall structure and navigation are defined in the `_quarto.yml` file at the root of the project. This file controls the **navbar (top menu)**, **sidebar (left navigation for notebooks)**, theme, and where the rendered site is output (`docs/` folder for GitHub Pages). 
-
-### Key Pages You May Want to Edit
+The main site is built using **Quarto**, which converts `.qmd` (and `.ipynb`) files into a static website. The overall structure and navigation are defined in the `_quarto.yml` file at the root of the project. This file controls the **navbar (top menu)**, **sidebar (left navigation for notebooks)**, theme, and where the rendered site is output (`docs/` folder for GitHub Pages). 
 
 - **Home Page** → `index.qmd`  
   Main landing page of the site
 
 - **About Page** → `about.qmd`  
-  Update your personal info, team bios, and project context
+  Team bios and project context
 
 - **Paper Page** → `paper.qmd`  
-  Used for writing and presenting your final report
+  Used for writing and presenting our final report
 
-- **Slides Page** → `slides.qmd`  
-  Used for presentation slides (Quarto supports reveal.js slides)
+- **ML Workflow** → `ml_workflow/*`  
+  Step by step ML process broken out by theme/phase. It's highly curated and excludes running the full ML Pipeline but does use compoents from the ML Pipeline. Think of it as a light-weight example of ML workflow. Actual MLl Pipeline runs on the 10 year data require more compute resources than most people have on a laptop.  
 
-- **Shared Notebooks** → `shared-notebooks/`  
-  Automatically populated based on directory structure (see previous section)
+- **AeroFlux Page** → `paper.qmd`  
+  Interactive prototype showcasing real-time flight delay intelligence, model predictions, propagation chains, maps, and the future digital twin vision.
+
+- **Shared Notebooks** → `shared-notebooks/` (deprecated) 
+  Automatically populated based on directory structure (this section has been dropped for now but can easily be broght back)
+
+#### Other Useful Quarto Docs
 
 - **Images** → `images/`  
   Where the site grabs images. 
 
 - **docs** → `docs/`  
   When the site is built or rendered (quarto render) it will place all the html, css, js etc. code into this folder. This folder is basically the site. It's what the git workflow will pick up (part of the CI/CD) and what github pages will deploy on github. The GitHub Action (Workflow) is responsible for **publishing the rendered Quarto site to GitHub Pages**. It does **not build the site**—it simply takes the already-rendered files in the `docs/` folder and pushes them to the `gh-pages` branch, which GitHub uses to host the website. 
-
----
 
 ### How Quarto Works (High-Level)
 
@@ -169,6 +183,78 @@ This site is built using **Quarto**, which converts `.qmd` (and `.ipynb`) files 
   - Navigation (navbar + sidebar)
   - Site layout and structure
   - Rendering behavior
+
+### Data Pipeline 
+The `data_pipeline` is responsible for ingesting raw aviation and weather data, transforming it into model-ready features, and exporting clean Parquet datasets for downstream ML use. 
+
+![Data Pipeline](images/common_site/data-pipeline.png)
+
+#### Core Responsibilities
+
+- Download and process raw BTS On-Time Performance flight records
+- Ingest NOAA Global Hourly Weather observations
+- Join airports to nearby weather stations
+- Normalize timestamps across time zones
+- Construct valid scheduled and actual UTC event times
+- Perform backward-looking weather joins (no look-ahead bias)
+- Build aircraft rotation / propagation features
+- Generate airport congestion and route activity aggregates
+- Export final curated datasets to Parquet
+
+#### Typical Outputs
+
+```
+data_pipeline/features/flights_canonical_2019.parquet
+data_pipeline/features/flights_canonical_2024.parquet
+data_pipeline/features/flights_canonical_2025.parquet
+```
+
+#### Running the Data Pipeline
+
+```{bash}
+python3 run_canonical_years.py --year <year>
+```
+
+### ML Pipeline
+The `ml_pipeline` consumes engineered Parquet datasets and performs model training, validation, testing, and artifact generation. What makes this ML Pipeline powerful is its configurable flexibility which allows for you to toggle various features of the pipeline on or off. I.e. select which models you want to train, toggle tuning on or off, choose your CV strategy, define your feature sets and hyper parameter search grids, run time settings such as number of cores and even a GPU usage parameter. It also version controls runs providing logs, model outputs, evaulation metrics, plots, models, etc. 
+
+![ML Pipeline](images/ml-pipeline/ml-pipeline-diagram.png)
+
+#### Core Responsibilities
+
+- Load yearly canonical Parquet files
+- Select configurable feature sets
+- Train models such as:
+  - XGBoost
+  - Logistic Regression
+  - Random Forest
+  - LSTM *(experimental)*
+- Perform time-aware rolling cross-validation
+- Tune hyperparameters
+- Evaluate holdout test years
+- Generate plots, metrics, feature importance, and predictions
+- Save trained model artifacts
+
+#### Typical Outputs
+
+```
+ml_pipeline/model_outputs/
+└── runs/
+    └── xgb_train_2015_2024_test_2025/
+        ├── models/
+        ├── plots/
+        ├── evaluations/
+        ├── logs/
+        └── results_summary.json
+```
+
+#### Running the ML Pipeline 
+
+```{bash}
+python run_flight_delay_pipeline.py
+```
+
+---
 
 ### Shared Notebooks (Python + R)
 
@@ -180,13 +266,13 @@ Please refer to the existing examples in the repository to understand formatting
 
 To add your own work, simply create and maintain your notebooks inside your **own named directory** under the appropriate language folder (e.g., `shared-notebooks/notebooks/<your-name>/python/` or `.../r/`). As long as you keep your files within your designated directory, they will be automatically picked up and rendered in the Quarto site—no additional configuration is needed. This keeps contributions organized, prevents conflicts, and ensures the site builds cleanly for everyone.
 
-Also, don't delete the index.qmd. That was added to overcome a Windows related bug. 
+Also, don't delete the index.qmd. That was added to overcome a Windows related bug. Got to love Windows! Or not.
 
 ### Shared Data File (S3-Based Workflow)
 
-To keep our work consistent, reproducible, and streamlined, we are using a **single shared dataset stored in S3** as the source of truth for this project. This dataset is **not checked into the Git repository** and is instead downloaded and cached locally using the provided `load_flight_data` functions (available in both R and Python). Everyone should use this function to load data rather than manually downloading or creating separate versions of the dataset. This ensures that all analyses, models, and visualizations are built on the same foundation and that the Quarto site renders correctly for everyone.
+To keep our data centralized, we are using a **single shared data store in S3** as the source of truth for this project. This dataset is **not checked into the Git repository** and is instead downloaded from S3 to your local machine and cached locally using the provided `load_flight_data` functions (available in both R and Python). Everyone should use this function to load data rather than manually downloading or creating separate versions of the dataset. This ensures that all analyses, models, and visualizations are built on the same foundation and that the Quarto site renders correctly for everyone.
 
-If you need to perform **feature engineering or create new datasets**, please do so within your own scripts or pipeline code—do not create standalone data files that others cannot access. Any data files that are not reproducible or not available to the team will break the site when others try to render it. The expectation is that all transformations are reproducible from the shared dataset using code. In the future, additional datasets will also be stored in S3 and accessed in the same way, continuing this pattern of centralized, reproducible data access.
+If you need to perform **feature engineering or create new datasets**, please do so within your own scripts or pipeline code—do not create standalone data files that others cannot access. Any data files that are not reproducible or not available to the team will break the site when others try to render it. The expectation is that all transformations are reproducible from the shared dataset using code. 
 
 I've provided some examples of how to set this up but the following is an example (might change over time): 
 
@@ -223,8 +309,7 @@ enriched_flights_2019 <- load_flight_data() %>%
 # Loading the larger data 
 # WARNING!!!! 
 # The function will download the full file locally ~1 GB compressed for 1 year
-# When you load data into a data frame DO NOT load the whole thing in memory. 
-# The function uses lazy loading. You should filter on the data you need not 
+# When you load data into a data frame understand what you are loading into memory. The function uses lazy loading. You should filter on the data you need not 
 # all the data. There are over 100 features in the dataset. We don't need 
 # them all. 
 big_data_flights_2019 <- load_flight_data(file_name="flights_canonical_2019.parquet")
