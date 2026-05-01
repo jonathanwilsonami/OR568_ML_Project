@@ -1,5 +1,5 @@
 ---
-title: "Predicting Flight Delays in the United States: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors"
+title: "From Prediction to Digital Twin: A Propagation-Aware Machine Learning Framework for Flight Delay Modeling"
 date: 2026-03-13
 categories: ["Machine Learning", "Aviation", "Flight Delays"]
 repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
@@ -23,11 +23,11 @@ authors:
 ::: {.callout-note appearance="minimal"}
 Abstract 
 
-Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the United States using machine learning, exploratory data analysis, and engineered operational features.
+Flight delays remain a persistent challenge in modern aviation, driven by complex interactions between weather, operations, and network dynamics. This study presents a propagation-aware machine learning framework that models delays as a function of upstream aircraft state rather than isolated flight events. Using large-scale U.S. flight data (~70 million records) enriched with weather and operational features, we construct a two-hop aircraft rotation representation that captures delay carryover across consecutive legs.
 
-Using Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised and unsupervised learning approaches and even some neural networks using LSTMs.
+We evaluate multiple modeling approaches, including gradient-boosted trees and sequence-based neural networks, under strict time-aware validation to ensure production realism. Results show that upstream delay propagation is the dominant predictive signal, with tree-based models achieving strong performance while remaining computationally efficient at scale.
 
-Our findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based (with extreme gradient boosting) approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation.
+Beyond prediction, this work establishes the foundation for AeroFlux, a real-time, network-aware system designed to evolve into a digital twin of the U.S. air transportation system, enabling forward simulation and proactive disruption management.
 :::
 
 ---
@@ -36,25 +36,111 @@ Our findings suggest that delay behavior is shaped by a combination of operation
 
 ## Motivation
 
-Flight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.
+Flight delays represent one of the most visible and persistent operational challenges in modern aviation. In 2025 alone, nearly 25% of U.S. domestic flights failed to arrive on time, marking one of the worst on-time performance levels in over a decade [@usafacts_ontime]. At scale, these disruptions impose significant societal and economic costs—U.S. travelers collectively lost over 1.5 million hours (171 years) waiting on delayed flights [@people_delayed_airline], while delays across global air travel totaled millions of hours annually [@skyrefund_ustravel].
 
-Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.
+A single disruption rarely remains isolated. Instead, delays propagate through tightly coupled airline operations, affecting aircraft rotations, crew assignments, passenger connections, and airport congestion. Empirical studies of the U.S. air transportation network show that primary delays—caused by weather, congestion, or operational issues—can cascade and amplify across the network, leading to systemic disruptions that impact a significant portion of flights [@Fleurquin_2013]. More recent research further demonstrates that accurately modeling delay propagation and absorption dynamics is essential for improving prediction performance and operational resilience [@zhou2025integratingdelayabsorptioncapabilityflight].
+
+Understanding the mechanisms of delay propagation is therefore critical for improving airline efficiency, reducing operational costs, and enhancing passenger reliability. As air traffic demand continues to grow and systems become increasingly interconnected, the ability to model and predict these cascading effects represents a key challenge—and opportunity—for modern aviation analytics.
 
 ## Related Works 
 
-- Add at least 3 
+This work introduces a propagation-aware machine learning framework that models flight 
+delays as a function of upstream aircraft state rather than isolated events. By 
+incorporating a two-hop aircraft rotation structure, enforcing strict pre-departure 
+feature availability, and training on multi-year, large-scale data (~70M flights), the 
+approach produces both operationally realistic and high-performing predictions. It 
+further serves as the foundation for AeroFlux, a system designed to evolve from static 
+prediction into a real-time, network-aware digital twin of the U.S. airspace.
+
+### Time of Day Impacts
+
+Flight delays exhibit strong temporal patterns, with peak congestion typically occurring 
+during morning and evening "banking" periods at major hubs. Studies using Bureau of 
+Transportation Statistics data consistently show that delays increase throughout the day 
+due to cumulative disruption effects and reduced recovery buffers [@bts_ontime]. Prior 
+work in transportation analytics confirms that departure time is one of the most 
+statistically significant predictors of delay due to its correlation with demand surges 
+and network congestion [@rebollo2014predictability].
+
+### Delay Propagation
+
+Delay propagation has been widely studied as a network phenomenon where disruptions 
+spread through aircraft rotations and airport interactions. Foundational work by 
+[@Fleurquin_2013] demonstrates that primary delays can cascade across the U.S. air 
+transportation network, amplifying system-wide disruption. Subsequent research modeled 
+these dynamics using complex network theory, showing how disruptions propagate through 
+tightly coupled flight schedules [@li2016delay]. More recent work highlights that 
+incorporating upstream flight state — including delay absorption capacity at intermediate 
+airports — significantly improves predictive performance, reinforcing the importance of 
+modeling propagation dynamics explicitly [@zhou2025integratingdelayabsorptioncapabilityflight].
+
+### Quick Survey of Common Flight Delay Models 
+
+Machine learning approaches to flight delay prediction commonly include tree-based 
+models such as XGBoost and deep learning models such as Long Short-Term Memory (LSTM) 
+networks. XGBoost, introduced by @chen2016xgboost, is widely favored for large-scale 
+tabular data due to its strong performance, interpretability, and computational 
+efficiency. LSTMs [@hochreiter1997lstm] are used to capture temporal dependencies across 
+sequential flight events, making them a natural fit for rotation-chain modeling. 
+Benchmark evaluations on structured tabular data consistently show that tree-based
+ensembles remain state-of-the-art over deep learning models, with deep learning
+offering advantages primarily when temporal or graph-based relationships are
+explicitly modeled [@grinsztajn2022tree].
+
+More recent work has explored advanced architectures including Graph Neural Networks (GNNs) for modeling airport connectivity and network effects [@zhao2020gnn_airtraffic], Spatio-Temporal Graph Convolutional Networks (ST-GCN) for capturing joint spatial and temporal dependencies [@yu2018stgcn], Transformer-based sequence models applied to air traffic trajectory and flow prediction [@vos2024transformer_airtraffic; @airtraffic_transformer_flow], and attention-based multi-agent models for capturing interactions in air traffic systems [@yoon2025maiformer].
+
+### Digital Twins and Real-Time Monitoring
+
+Digital twins in aviation aim to create continuously updated virtual representations of 
+physical systems for monitoring and simulation. Foundational frameworks in digital twin 
+design emphasize the integration of live telemetry, predictive modeling, and simulation 
+as the basis for proactive decision-making in complex physical systems 
+[@tao2019digitaltwin; @fuller2020digital]. In the aviation domain, the Federal Aviation 
+Administration's System Wide Information Management (SWIM) program represents a 
+significant step toward real-time data integration for air traffic management and 
+disruption response [@faa_swim]. Recent work in cyber-physical systems reinforces that 
+this combination of live data and predictive intelligence forms the foundation for 
+next-generation intelligent transportation systems --- a direction that directly 
+motivates the AeroFlux architecture described in this paper.
+
+Several operational systems now demonstrate this capability in practice. NASA Ames
+has developed a Digital Twin Simulator of the National Airspace System (NAS) that
+creates a virtual copy of the live NAS, ingesting real-time SWIM data to enable
+side-by-side simulation of proposed changes against actual operations [@nasa_nas_twin].
+At the industry level, Airspace Intelligence's Flyways AI platform applies a 4D
+airspace simulation built on live FAA SWIM feeds to predict demand-capacity imbalances
+and recommend optimized traffic management initiatives before disruptions materialize
+[@asi_flyways]. Similarly, Mosaic ATM's Alternate Route Availability Tool (ARAT),
+developed in collaboration with NASA, integrates real-time weather and TMI data with
+machine learning models to provide actionable alternate routing recommendations for
+air traffic controllers [@mosaicatm_arat]. In the research literature, Liu et al.
+demonstrate an L3-level airport digital twin for flight ground service delay diagnosis
+that connects real-time operational data to simulation, enabling timely identification
+and propagation analysis of delays that offline models cannot achieve [@liu2024digitaltwin].
+
+Recent work in cyber-physical systems reinforces that this combination of live data
+and predictive intelligence forms the foundation for next-generation intelligent
+transportation systems --- a direction that directly motivates the AeroFlux
+architecture described in this paper.
 
 ## Research Questions
 
 This study seeks to answer the following questions:
 
-1. Which operational and weather variables most strongly predict flight delays?
-2. How strongly do delays propagate from prior flights?
-3. Which machine learning models best classify delayed flights?
+1. To what extent does upstream aircraft delay propagation influence downstream flight delay outcomes?
+2. Which features — including operational, weather, and network-based variables — provide the strongest predictive signal under realistic pre-departure constraints?
+3. How do different machine learning approaches (tree-based vs. sequence-based) perform on large-scale, temporally structured aviation data?
+4. Can a propagation-aware modeling framework serve as a foundation for real-time, network-level prediction and simulation systems in aviation?
 
 ## What This Research Contributes
 
-This study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays.
+This research contributes a propagation-aware machine learning framework for flight delay prediction that explicitly models delay transmission across aircraft rotations. By introducing a two-hop representation of upstream flight state and enforcing strict pre-departure feature availability, the approach captures the operational dynamics underlying delay formation while remaining suitable for real-world deployment.
+
+The study demonstrates the effectiveness of this framework at scale, training and evaluating models on approximately 70 million U.S. flight records using time-aware validation. Results show that delay propagation is the dominant predictive signal, significantly outperforming models that treat flights independently.
+
+Beyond predictive performance, this work establishes the architectural foundation for AeroFlux — a real-time, network-aware system designed to evolve into a digital twin of the national airspace, enabling forward simulation, disruption propagation analysis, and proactive operational decision-making.
+
+The ultimate objective of this work is to move beyond static prediction and toward dynamic, system-level reasoning in aviation operations. By combining propagation-aware modeling with real-time data integration and simulation capabilities, this research aims to enable predictive intelligence systems that can anticipate, propagate, and mitigate disruptions across the air transportation network. This vision is realized through AeroFlux, which represents a step toward a fully operational digital twin of the U.S. airspace.
 
 # Data 
 
