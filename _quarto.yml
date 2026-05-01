@@ -10,7 +10,7 @@ project:
     # - shared-notebooks/data/**
 
 website:
-  title: "Flight Delays: A Machine Learning Approach"
+  title: "Flight Delay Prediction: Temporal & Network Perspectives"
   site-url: https://jonathanwilsonami.github.io/OR568_ML_Project/
   repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
 

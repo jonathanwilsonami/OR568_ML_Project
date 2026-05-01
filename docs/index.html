@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Home – Flight Delays: A Machine Learning Approach</title>
+<title>Home – Flight Delay Prediction: Temporal &amp; Network Perspectives</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -84,7 +84,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Flight Delays: A Machine Learning Approach</span>
+    <span class="navbar-title">Flight Delay Prediction: Temporal &amp; Network Perspectives</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -144,7 +144,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#welcome" id="toc-welcome" class="nav-link active" data-scroll-target="#welcome">Welcome</a></li>
+  <li><a href="#flight-delay-prediction" id="toc-flight-delay-prediction" class="nav-link active" data-scroll-target="#flight-delay-prediction">Flight Delay Prediction</a>
+  <ul class="collapse">
+  <li><a href="#a-propagation-aware-machine-learning-framework" id="toc-a-propagation-aware-machine-learning-framework" class="nav-link" data-scroll-target="#a-propagation-aware-machine-learning-framework">A Propagation-Aware Machine Learning Framework</a></li>
+  <li><a href="#what-youll-find-here" id="toc-what-youll-find-here" class="nav-link" data-scroll-target="#what-youll-find-here">What You’ll Find Here</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -170,11 +174,38 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="welcome" class="level1">
-<h1>Welcome</h1>
-<p>This site contains all our team’s work as well as shared notebooks organized by team member.</p>
+<section id="flight-delay-prediction" class="level1">
+<h1>Flight Delay Prediction</h1>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="images/aero-flux/flight-map-app_v2.png" class="img-fluid figure-img" style="width:100.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="a-propagation-aware-machine-learning-framework" class="level2">
+<h2 class="anchored" data-anchor-id="a-propagation-aware-machine-learning-framework">A Propagation-Aware Machine Learning Framework</h2>
+<p>This site presents our team’s work on modeling and predicting flight delays in the United States using large-scale data and machine learning. The project focuses on understanding how delays emerge from the interaction of operational constraints, weather, and network effects — particularly how disruptions propagate through aircraft rotations and airport systems.</p>
+<p>Using tens of millions of flight records enriched with weather and temporal data, we develop a structured feature engineering and modeling pipeline that reflects real-world conditions. Our approach emphasizes pre-departure prediction, time-aware evaluation, and scalable system design, ensuring that results are both analytically meaningful and operationally relevant.</p>
+<p>While this work is primarily focused on prediction and analysis, it also lays the groundwork for more advanced system-level capabilities — including real-time monitoring, network-level reasoning, and simulation-based decision support.</p>
+<hr>
+</section>
+<section id="what-youll-find-here" class="level2">
+<h2 class="anchored" data-anchor-id="what-youll-find-here">What You’ll Find Here</h2>
+<ul>
+<li><strong>About</strong> — Team background, motivation, and project context<br>
+</li>
+<li><strong>Paper</strong> — Full research write-up, methodology, and results<br>
+</li>
+<li><strong>ML Workflow</strong> — Step-by-step modeling and experimentation process (excluding full pipeline execution)<br>
+</li>
+<li><strong>AeroFlux</strong> — Conceptual extension toward real-time, network-aware prediction and simulation</li>
+</ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
