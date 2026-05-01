@@ -1,7 +1,7 @@
 ---
 title: "From Prediction to Digital Twin: A Propagation-Aware Machine Learning Framework for Flight Delay Modeling"
 date: 2026-03-13
-categories: ["Machine Learning", "Aviation", "Flight Delays"]
+categories: ["Machine Learning", "Aviation", "Flight Delays", "LSTM", "XGBoost", "Polars"]
 repo-url: https://github.com/jonathanwilsonami/OR568_ML_Project
 format:
   html:
@@ -148,7 +148,7 @@ The ultimate objective of this work is to move beyond static prediction and towa
 
 ### Data Pipeline
 
-The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.
+For each year of processing (2015-2025) the pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a unified analytical dataset suitable for delay prediction modeling. This process constitutes a data fusion framework, in which heterogeneous data sources are aligned and combined across temporal, spatial, and operational dimensions to enhance the representational richness of the dataset. @fig-pipeline provides a schematic overview of each stage, and the sections below describe each stage in turn. To run the pipeline or see how the code works see `data_pipeline` in the code base. Extensive use of Python Polars features were used to help with data processing efficiency. 
 
 ```{r}
 #| label: fig-pipeline
@@ -159,25 +159,31 @@ The pipeline integrates three independent data streams — Bureau of Transportat
 knitr::include_graphics("images/common_site/data-pipeline.png")
 ```
 
-### Data Sources & Methods 
+### Data Sources
 
-Flight performance data are sourced from the BTS Transtats PREZIP endpoint, which publishes monthly on-time reporting files for all US carriers. Weather observations are obtained from the NOAA National Centers for Environmental Information (NCEI) global-hourly dataset via a REST API, providing sub-hourly surface measurements at reporting stations worldwide. Airport and station reference data are drawn from the OurAirports CSV registry and the NOAA Integrated Surface Database (ISD) station history file, which together supply the geographic coordinates and ICAO codes required to link flight records to their corresponding weather stations.
+The pipeline integrates three independent data streams: Bureau of Transportation 
+Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather 
+observations, and airport reference dimensions. Flight performance data are sourced 
+from the BTS Transtats PREZIP endpoint, which publishes monthly on-time reporting 
+files for all U.S. carriers, providing flight-level records including scheduled and 
+actual departure and arrival times, delay durations, cancellation indicators, and 
+delay-cause variables [@bts_ontime]. Weather observations are obtained from the NOAA 
+NCEI global-hourly dataset via a REST API, providing sub-hourly surface measurements 
+— temperature, wind speed, wind direction, and ceiling height — joined to flights 
+using a backward-looking as-of temporal join [@noaa_ncei]. Airport and station 
+reference data are drawn from the OurAirports CSV registry and the NOAA Integrated 
+Surface Database (ISD) station history file, supplying the geographic coordinates and 
+ICAO codes required to link flight records to their corresponding weather stations 
+[@noaa_isd_history; @ourairports].
 
-The primary data sources for this project were:
+FAA aircraft registry variables — including number of seats, engine count, and 
+aircraft type — were initially excluded due to a temporal mismatch between the 
+available 2025 registry snapshot and the historical flight data. However, because 
+these physical characteristics are not meaningfully time-dependent, they were 
+reintroduced as an additional feature engineering step during the ML pipeline and 
+form part of the `xgb_full_aircraft` feature set.
 
-- The Bureau of Transportation Statistics (BTS) Airline On-Time Performance dataset and the National Oceanic and Atmospheric Administration (NOAA) National Centers for Environmental Information (NCEI) global hourly weather dataset [@bts_ontime; @noaa_ncei]. 
-
-- To support geospatial alignment between flights and environmental conditions, additional metadata sources were incorporated, including the NOAA Integrated Surface Database (ISD) station history dataset for weather station metadata and the OurAirports global airport dataset for airport identifiers and geographic coordinates [@noaa_isd_history; @ourairports]. 
-
-The data pipeline also relied on auxiliary airport and station reference data to connect flights to airport metadata, time zones, and weather stations. The overall pipeline included BTS ingestion, airport and station reference construction, weather ingestion, temporal and spatial joins, and downstream feature engineering. These stages were implemented as a modular, cached pipeline to support reproducibility and scalable re-runs.
-
-The BTS data provided detailed flight-level operational records for 2019, including scheduled and actual departure and arrival times, origin and destination airports, carrier information, delay durations, cancellation indicators, diversion indicators, taxi times, and delay-cause variables. The NOAA weather data provided airport-associated weather observations such as temperature, wind speed, wind direction, and ceiling height, which were joined to flights using a backward-looking as-of temporal join.
-
-Aircraft registry variables from the FAA were initially considered. However, because only a 2025 registry snapshot was available while the operational flight data represented 2019 activity, these variables were excluded from the final predictive analysis to avoid temporal inconsistency and possible bias.
-
-#### Data Source Resource Links
-
-The pipeline draws on four publicly available data sources, summarised in @tbl-sources. All sources are freely accessible and updated on a regular basis.
+@tbl-sources summarises all primary data sources used in the pipeline.
 
 ```{r}
 #| label: tbl-sources
@@ -189,27 +195,24 @@ library(knitr)
 sources <- data.frame(
   Source = c(
     "BTS Transtats — On-Time Performance",
-    "BTS Transtats — On-Time Overview",
     "NOAA NCEI — Integrated Surface Database (ISD)",
-    "NOAA NCEI — Global Hourly data search",
-    "OurAirports — Open data downloads",
-    "OurAirports — GitHub repository"
+    "NOAA NCEI — Global Hourly Data Search",
+    "OurAirports — Open Data Downloads",
+    "FAA Aircraft Registry"
   ),
   Description = c(
-    "Monthly carrier on-time performance records; the primary source of flight departure, arrival, and delay data.",
-    "Landing page for the BTS on-time reporting programme, including data documentation and field descriptions.",
-    "Global hourly surface weather observations compiled from over 100 sources, spanning 1901 to present across more than 14,000 active stations.",
-    "Interactive and programmatic access to the NCEI global-hourly subset, supporting station search and date-range subsetting.",
-    "Open-data download page for airport reference files, including airports.csv with IATA/ICAO codes, coordinates, and metadata.",
-    "GitHub-hosted daily data dumps for all OurAirports CSV files; the canonical source since November 2021."
+    "Monthly carrier on-time performance records; primary source of flight departure, arrival, delay, and cancellation data.",
+    "Global hourly surface weather observations from 14,000+ stations spanning 1901–present; used for station metadata and weather-to-flight spatial joins.",
+    "Programmatic API access to the NCEI global-hourly subset; supports station search and date-range subsetting.",
+    "Airport reference files with IATA/ICAO codes, coordinates, and metadata; GitHub-hosted daily dumps used as the canonical source.",
+    "Aircraft physical characteristics including seat count, engine count, and aircraft type; 2025 snapshot used for time-invariant features in the xgb_full_aircraft feature set."
   ),
   URL = c(
     "[transtats.bts.gov](https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr)",
-    "[transtats.bts.gov/ontime](https://www.transtats.bts.gov/ontime/)",
     "[ncei.noaa.gov/products/land-based-station/integrated-surface-database](https://www.ncei.noaa.gov/products/land-based-station/integrated-surface-database)",
     "[ncei.noaa.gov/access/search/data-search/global-hourly](https://www.ncei.noaa.gov/access/search/data-search/global-hourly)",
     "[ourairports.com/data](https://ourairports.com/data/)",
-    "[github.com/davidmegginson/ourairports-data](https://github.com/davidmegginson/ourairports-data)"
+    "[registry.faa.gov/aircraftinquiry](https://registry.faa.gov/aircraftinquiry/)"
   )
 )
 
@@ -218,133 +221,328 @@ kable(sources, col.names = c("Source", "Description", "URL"), align = c("l", "l"
 
 ### Ingestion
 
-Each data stream is ingested independently. BTS monthly ZIP archives are downloaded with exponential backoff, extracted, and parsed into Polars DataFrames with explicit schema inference and null handling before being serialised to Parquet. Weather records are retrieved in station-month chunks of 25 stations per request, returned as JSON, and similarly persisted to monthly Parquet cache files. Airport and station reference data are loaded from CSV and held in memory as dimension tables. Caching intermediate outputs at this stage is deliberate: it decouples the computationally expensive download and format-conversion steps from all downstream transformations, allowing the pipeline to be re-run from clean intermediates without re-fetching raw data.
+Each data stream is ingested independently and cached to Parquet before any downstream
+processing begins. This decouples the expensive download and format-conversion steps
+from feature engineering, allowing the pipeline to be re-run without re-fetching raw
+data.
 
-### Cleaning and normalization 
+- **BTS flight records** are downloaded as monthly ZIP archives from the BTS Transtats
+  PREZIP endpoint using an HTTP session with exponential backoff (up to 6 retries,
+  base delay of 2 seconds). Each archive is extracted, parsed into a Polars DataFrame
+  with explicit schema inference, and serialized to Parquet. Empty strings, `"NA"`,
+  and `"NULL"` values are treated as nulls at parse time.
 
-Flight records are filtered to a defined route universe — a set of core airport pairs plus permissible two-hop connections — and deduplicated. Weather records undergo field-level parsing to extract temperature (`TMP`), wind speed and direction (`WND`), and ceiling height (`CIG`) from their packed NOAA format representations; observations with missing values across all primary meteorological fields are dropped. On the reference side, each airport in the BTS route universe is matched to its best-candidate ISD weather station using a nearest-neighbour procedure over geodetic distance, with timezone resolution falling back to a longitude-based estimate where the `timezonefinder` library cannot resolve a canonical IANA zone.
+- **Weather observations** are retrieved from the NOAA NCEI REST API in station-month
+  chunks of 5 stations per request, returned as JSON, and persisted to monthly Parquet
+  cache files. A progressive fallback strategy handles malformed or truncated responses
+  by splitting the date window from 15-day to 7-day to 3-day to 1-day chunks, and
+  finally retrying each station individually if necessary.
 
-### Timestamp alignment and temporal join
+- **Airport and station reference data** are loaded from CSV (OurAirports and NOAA
+  ISD history) and held in memory as dimension tables for spatial and timezone joins
+  downstream.
 
-Correct temporal alignment between flight records and weather observations is the most consequential step in the pipeline, and the one most susceptible to subtle error. Flight departure and arrival times in BTS data are recorded in **local airport time** as four-digit integers (HHMM), with no timezone annotation and a known edge case at midnight where the integer representation rolls over incorrectly. These are first converted to timezone-aware datetimes using the IANA timezone resolved for each airport, then projected to **UTC** by applying `ZoneInfo`-based offsets. Weather observations from NOAA are similarly recorded in station-local time; these are converted to UTC using station-level timezone mappings derived from the reference dimension stage.
+### Cleaning and Normalization
 
-Once both datasets share a common UTC timeline, flight records are joined to weather observations using an **as-of join**: for each departure or arrival event, the most recent weather observation at the corresponding station that precedes the event time is selected. This approach correctly handles the irregular and variable cadence of surface weather reporting — stations do not report on a fixed schedule, and naive equi-joins on rounded timestamps would systematically introduce look-ahead bias or large temporal gaps. Separate as-of joins are performed for the origin station at departure time and the destination station at arrival time, yielding paired meteorological conditions for both endpoints of every flight.
+**Flight records** with cancellations, diversions, or missing critical timestamps are removed, and duplicate records are eliminated.
+Numeric delay fields (`DepDelay`, `ArrDelay`) and their binary indicators (`DepDel15`,
+`ArrDel15`) are null-filled to zero for non-cancelled flights. Cancellation and
+diversion flags are cast to binary integers.
 
-Failure to handle timezones rigorously at this stage would propagate systematic errors through all downstream features. A one-hour offset error at a UTC−5 airport, for example, would cause the as-of join to select weather observations from the wrong side of a frontal passage, corrupting both the meteorological predictors and any propagation-chain features that depend on accurate sequencing of events.
+**Weather records** undergo field-level parsing to extract structured values from
+NOAA's packed string format:
 
-### Feature engineering
+- `TMP` → temperature in °C (integer divided by 10)
+- `WND` → wind direction (degrees) and wind speed (m/s, divided by 10)
+- `CIG` → ceiling height in meters
 
-Three families of derived features are constructed from the aligned dataset. **Flight-level features** include a unique flight identifier constructed from carrier, tail number, origin, destination, and scheduled departure time; aircraft rotation sequences linking successive legs flown by the same tail number; and the standard BTS delay component breakdown (carrier, weather, NAS, security, late aircraft). **Airport-level features** aggregate traffic volume and delay rates within configurable time windows around each departure, capturing congestion dynamics at both origin and destination. **Route-level features** encode delay propagation along rotation chains: a late-aircraft delay on an inbound leg is explicitly linked to the downstream departure it constrains, allowing the model to condition on upstream disruption state.
+Observations where all three primary meteorological fields are null are dropped.
+Records are deduplicated on `(station, valid_ts)`, keeping the last observation per
+timestamp.
 
-A **two-hop flight** represents a single aircraft operating two consecutive legs on the same day, connected by a turnaround at an intermediate airport. When the first leg arrives late, the delayed aircraft becomes the inbound for the second leg, compressing or eliminating the scheduled ground time and propagating the delay forward. @fig-two-hop illustrates this for tail N471AA operating BOS → ATL → MIA: a 52-minute departure delay on Leg 1 carries through the ATL turnaround and manifests as a 49-minute departure delay on Leg 2, despite no adverse weather at ATL. This propagation mechanism is captured in the dataset through the `prev_arr_late_15` and `rotation_continuity_flag` columns, which allow the model to condition on upstream disruption state when predicting downstream delays.
+**Airport-to-station mapping** is constructed by matching each BTS airport to its
+nearest ISD weather station using a nearest-neighbour procedure over geodetic distance.
+Timezone resolution uses the `timezonefinder` library, with a fallback to a
+longitude-based UTC offset estimate for airports that cannot be resolved to a canonical
+IANA zone. For this study there were only 2 stations out of 360 that could not be located. 
+
+### Timestamp Alignment and Temporal Join
+
+Correct temporal alignment is the most consequential and error-prone step in the
+pipeline. The process involves three stages:
+
+**1. Local timestamp construction.** BTS departure and arrival times are stored as
+four-digit integers in local airport time (e.g., `1435` = 14:35). These are zero-padded
+and parsed into naive local datetimes using the flight date. A known edge case arises when a flight departs late at night and arrives after midnight.
+For example, a flight with a scheduled departure of **23:45** and arrival of **00:30**
+will have both times recorded as integers on the same `FlightDate`:
+
+```
+CRSDepTime = 2345
+CRSArrTime = 0030
+```
+
+A naive parser would read the arrival as earlier than the departure on the same date.
+The pipeline detects this condition — where `arr_ts < dep_ts` — and adds one calendar
+day to the arrival timestamp, correctly placing it on the following date.
+
+**2. UTC projection.** All local datetimes are converted to UTC using
+`ZoneInfo`-based offsets for both flight timestamps and NOAA weather observation
+timestamps. Any timestamp that cannot be resolved — due to a missing timezone or
+conversion error — is set to null and excluded from downstream joins. A one-hour
+offset error at a UTC−5 airport, for example, would cause the as-of join to select
+weather observations from the wrong side of a frontal passage, corrupting both
+meteorological predictors and propagation-chain features.
+
+**3. As-of join.** Once both datasets share a common UTC timeline, flight records are
+joined to weather observations using a backward-looking as-of join: for each departure
+or arrival event, the most recent weather observation at the corresponding station
+that precedes the event time is selected, within a 2-hour tolerance window.
+Observations outside the tolerance are left as null rather than matched to a stale
+reading. Separate as-of joins are performed for the origin station at departure time
+and the destination station at arrival time, yielding paired meteorological snapshots
+for both endpoints of every flight.
+
+For example, consider a flight departing ATL at **14:32 UTC**. The pipeline looks
+backward through ATL's weather observations and selects the most recent one recorded
+before that time — say, a station report at **14:20 UTC**. That 12-minute-old
+observation is attached to the flight as its departure weather snapshot.
+
+If the most recent observation is older than 2 hours — for instance, the last report
+was at **11:45 UTC** — the weather fields are left as `null` rather than attached,
+since a reading that stale is unlikely to reflect actual conditions at departure.
+
+```
+ATL weather observations:
+  11:45 UTC -> temp: 18°C, wind: 12 m/s   <- too old (> 2h), not used
+  14:20 UTC -> temp: 22°C, wind:  8 m/s   <- selected (most recent before 14:32)
+  14:55 UTC -> temp: 23°C, wind:  7 m/s   <- in the future, not used
+
+Flight departs ATL at 14:32 UTC
+  dep_temp_c          = 22.0
+  dep_wind_speed_m_s  = 8.0
+```
+
+The same process is repeated independently for the arrival airport at the flight's
+arrival time, yielding a second weather snapshot for the destination.
+
+This approach correctly handles the irregular cadence of surface weather
+reporting — naive equi-joins on rounded timestamps would systematically introduce
+look-ahead bias or large temporal gaps.
+
+### Postprocessing and Output
+
+After feature engineering, the pipeline performs a final cleanup pass before writing
+outputs. Because the fully enriched dataset contains hundreds of columns — raw BTS
+fields, intermediate join keys, duplicate timestamp formats, and processing artifacts
+— only the modeling-relevant subset is retained. This selection is driven by a
+configured column list; any requested column not present in the data is logged as a
+warning and skipped.
+
+Final outputs are written as annual Parquet files. The primary modeling dataset
+contains one row per flight with all joined weather, operational, and propagation
+features attached. Alongside it, separate Parquet tables are written for aircraft
+rotation sequences, propagation chains, airport-time aggregates, and route-time
+aggregates, which are consumed independently during the ML pipeline.
+
+### Feature Engineering
+
+Three families of derived features are constructed from the aligned dataset, spanning
+flight-level identifiers, airport-level congestion context, and route-level propagation
+state. All features are strictly restricted to information available at or before
+scheduled departure time, ensuring no look-ahead bias.
+
+#### Flight-Level Features
+
+Flight-level features establish the core identity of each observation and capture
+schedule structure, operational outcomes, and temporal context. A unique flight
+identifier is constructed from carrier, tail number, origin, destination, and scheduled
+departure time. Aircraft rotation sequences link successive legs flown by the same tail
+number, forming the backbone of the propagation feature set.
+
+#### Airport-Level Features
+
+Airport-level features aggregate traffic volume, delay rates, and congestion indicators
+within configurable rolling time windows around each departure. These features capture
+the systemic load at both origin and destination airports independently of any
+individual aircraft's history.
+
+#### Route-Level and Propagation Features
+
+Route-level features encode delay transmission along aircraft rotation chains. A
+late-aircraft delay on an inbound leg is explicitly linked to the downstream departure
+it constrains, allowing the model to condition on upstream disruption state at
+prediction time. The two-hop propagation architecture, described below, operationalizes
+this mechanism as a structured feature family.
+
+---
+
+#### The Two-Hop Propagation Architecture
+
+A central contribution of this framework is the explicit modeling of delay carryover
+across aircraft rotations through a **two-hop propagation structure**. A two-hop flight
+represents a single aircraft operating two consecutive legs on the same day, connected
+by a turnaround at an intermediate airport. When the first leg arrives late, the delayed
+aircraft becomes the inbound for the second leg, compressing or eliminating the
+scheduled ground time and propagating the delay forward.
+
+@fig-two-hop illustrates this for tail N471AA operating BOS → ATL → MIA: a 52-minute
+departure delay on Leg 1 carries through the ATL turnaround and manifests as a
+49-minute departure delay on Leg 2, despite no adverse weather at ATL.
 
 ```{r}
 #| label: fig-two-hop
-#| fig-cap: "Two-hop delay propagation for tail N471AA (BOS → ATL → MIA, 2024-03-15). A 52-minute departure delay on Leg 1 propagates to a 49-minute delay on Leg 2 via the tail rotation, independent of weather conditions at the intermediate airport."
-#| fig-alt: "Diagram showing two flight legs sharing a tail number, with delay columns, weather as-of joins, and a propagation arrow connecting the delay on the first leg to the second."
+#| fig-cap: "Two-hop delay propagation for tail N471AA (BOS → ATL → MIA, 2024-03-15).
+#|   A 52-minute departure delay on Leg 1 propagates to a 49-minute delay on Leg 2 via
+#|   the tail rotation, independent of weather conditions at the intermediate airport."
+#| fig-alt: "Diagram showing two flight legs sharing a tail number, with delay columns,
+#|   weather as-of joins, and a propagation arrow connecting the delay on the first leg
+#|   to the second."
 #| echo: false
 #| out-width: "100%"
 knitr::include_graphics("images/paper/2hop-clean.png")
 ```
 
-Turnaround time captures the buffer between flights:
+The turnaround buffer between consecutive legs is defined as:
 
 $$
-Turnaround_i = DepartureTime_i - PreviousArrivalTime_i
+\text{Turnaround}_i = \text{DepartureTime}_i - \text{PreviousArrivalTime}_i
 $$
 
-See @tbl-predictors for more information on engineered features. 
+A tight turnaround compresses the airline's ability to absorb inbound lateness, making
+this interval one of the most operationally informative features in the model. The
+propagation mechanism is captured through the `prev_arr_late_15` and
+`rotation_continuity_flag` columns, allowing the model to condition on upstream
+disruption state when predicting downstream delays.
 
-### Postprocessing and output
+**Why two hops?** The two-hop window balances propagation depth against feature
+complexity and temporal leakage risk. A single-hop representation misses the
+accumulated stress that builds across a multi-leg aircraft day, while deeper windows
+expand the feature space rapidly and increase the risk of incorporating state that was
+not yet observable at prediction time. Two hops provides a practical, well-motivated
+approximation of the delay carryover window most relevant to pre-departure prediction.
 
-A `PostProcessConfig` object specifies the column subset retained for modelling, allowing the full engineered dataset to be filtered to task-specific representations without rerunning upstream stages. Final outputs are written as monthly and annual Parquet files containing the joined flight-weather records, alongside separate Parquet tables for the canonical flight records, airport-time aggregates, route-time aggregates, aircraft rotation sequences, and delay propagation chains.
+---
 
-## Prediction Targets
+#### Feature Summary
 
-We considered flight delay prediction as both a regression and classification problem. Let
+@tbl-predictors provides a complete inventory of all engineered features, organized by
+family.
 
-$$
-Y_i^{(reg)} = \text{ArrDelay}_i
-$$
-
-denote the arrival delay in minutes for flight $i$, and let
-
-$$
-Y_i^{(cls)} =
-\begin{cases}
-1 & \text{if } \text{ArrDel15}_i = 1 \\
-0 & \text{otherwise}
-\end{cases}
-$$
-
-denote whether the flight arrived at least 15 minutes late.
-
-Thus, our predictive tasks were:
-
-1. **Regression:** predict continuous arrival delay in minutes.
-2. **Classification:** predict whether a flight experiences a material arrival delay.
-
-### Raw Predictors and Important Data Elements
-
-Table @tbl-predictors summarizes the major predictors and supporting data elements used in the pipeline.
-
-| Category | Variables / Data Items | Description and Role in Modeling |
+| Family | Feature(s) | Role |
 |:---|:---|:---|
-| Flight identifiers and route | `FlightDate`, `Reporting_Airline`, `Tail_Number`, `Origin`, `Dest`, `route_key`, `flight_id` | Core identifiers used to define each flight, link feature tables, and represent route-level context. |
-| Schedule and realized timing | `CRSDepTime`, `DepTime`, `CRSArrTime`, `ArrTime`, `dep_ts_sched`, `dep_ts_actual`, `arr_ts_sched`, `arr_ts_actual`, UTC timestamp variants | Used to represent schedule adherence, construct valid temporal ordering, and support weather joins and aircraft rotation logic. |
-| Delay targets and related operational outcomes | `ArrDelay`, `ArrDel15`, `DepDelay`, `DepDel15`, `Cancelled`, `Diverted` | Primary response variables and closely related operational outputs used in modeling and filtering. |
-| Surface movement and flight characteristics | `TaxiOut`, `TaxiIn`, `Distance`, `ActualElapsedTime` | Capture operational complexity, congestion effects, and route structure. |
-| Delay cause information | `CarrierDelay`, `WeatherDelay`, `NASDelay`, `LateAircraftDelay` | Useful for descriptive analysis, route aggregation, and interpretation of operational drivers of delay. |
-| Temporal features | Departure hour, weekday, month, local date, UTC date, seasonal indicators, holiday indicators | Capture cyclic demand, seasonal traffic patterns, and calendar effects. |
-| Airport reference data | Airport name, municipality, country, latitude, longitude, IATA code, ICAO code, airport timezone | Used to map BTS airports to weather stations, assign time zones, and support timestamp normalization. |
-| Weather station reference data | NOAA station ID, station timezone, airport-to-station mapping | Used to associate flights with nearby weather observations and enable correct UTC conversion of NOAA timestamps. |
-| Weather predictors | `dep_temp_c`, `dep_wind_speed_m_s`, `dep_wind_dir_deg`, `dep_ceiling_height_m`, `arr_temp_c`, `arr_wind_speed_m_s`, `arr_wind_dir_deg`, `arr_ceiling_height_m` | Represent meteorological conditions associated with the departure and arrival environments. These are joined temporally using the most recent prior observation within a two-hour window. |
-| Aircraft rotation / propagation features | Previous flight ID, previous origin and destination, previous arrival delay, previous departure delay, turnaround time, continuity flag, aircraft leg number, cumulative delay by aircraft-day | Capture propagation effects caused by late inbound aircraft and tight turnarounds. These were among the most meaningful operational predictors. |
-| Chain and cascade indicators | `has_prev_leg`, `has_next_leg`, `is_middle_leg`, tight turnaround flags | Represent whether a flight is embedded within a larger aircraft sequence and whether it is vulnerable to upstream or downstream delay propagation. |
-| Airport-time aggregate context | Hourly airport flight counts, average delay, median delay, delay rate, cancellation rate, diversion rate, taxi metrics, rolling means over 1h/3h/6h | Capture airport congestion and short-horizon system state. |
-| Route-time aggregate context | Hourly route counts, mean route delay, route delay rate, average weather, rolling means over 1h/3h/6h | Capture recent route-specific operating conditions and network-level delay tendencies. |
+| **Flight identity** | `FlightDate`, `Reporting_Airline`, `Tail_Number`, `Origin`, `Dest`, `route_key`, `flight_id` | Core identifiers; link feature tables and define route context |
+| **Schedule & timing** | `CRSDepTime`, `DepTime`, `CRSArrTime`, `ArrTime`, UTC timestamp variants | Schedule adherence, temporal ordering, weather join keys |
+| **Delay targets** | `ArrDelay`, `ArrDel15`, `DepDelay`, `DepDel15`, `Cancelled`, `Diverted` | Primary response variables and operational outcome filters |
+| **Surface movement** | `TaxiOut`, `TaxiIn`, `Distance`, `ActualElapsedTime` | Operational complexity and route structure |
+| **Delay cause** | `CarrierDelay`, `WeatherDelay`, `NASDelay`, `LateAircraftDelay` | Descriptive analysis and delay-driver interpretation |
+| **Temporal / calendar** | Departure hour, weekday, month, holiday indicators, `days_to_nearest_holiday`, `is_weekend` | Cyclic demand, seasonal patterns, calendar effects |
+| **Airport reference** | Latitude, longitude, IATA/ICAO codes, timezone | Weather station mapping and timestamp normalization |
+| **Weather station ref.** | NOAA station ID, station timezone, airport-to-station mapping | UTC conversion and weather-to-flight spatial joins |
+| **Weather** | `dep_temp_c`, `dep_wind_speed_m_s`, `dep_wind_dir_deg`, `dep_ceiling_height_m`, `arr_*` variants | Meteorological conditions at departure and arrival; as-of joined within a 2-hour pre-departure window |
+| **Two-hop propagation** | `prev1_arr_delay`, `prev1_dep_delay`, `prev1_arr_del15`, `prev1_dep_del15`, `prev2_arr_delay`, `prev2_dep_delay`, `prev2_arr_del15`, `prev2_dep_del15`, `prev1_turnaround_minutes`, `time_since_prev2_arrival_minutes` | Upstream delay state across the two most recent aircraft legs; dominant predictive signal |
+| **Rotation state** | `rotation_continuity_flag`, `aircraft_leg_number_day`, `relative_leg_position`, `has_prev_leg`, `has_next_leg`, `is_middle_leg`, tight turnaround flags | Aircraft sequence position and vulnerability to upstream propagation |
+| **Aircraft metadata** | `aircraft_age`, `aircraft_no_eng`, `aircraft_no_seats`, `aircraft_year_mfr` | Fleet composition signal; time-invariant FAA registry features |
+| **Airport-time context** | Hourly flight counts, average/median delay, delay rate, cancellation rate, taxi metrics, rolling means over 1h/3h/6h | Airport congestion and short-horizon system state |
+| **Route-time context** | Hourly route counts, mean route delay, route delay rate, rolling means over 1h/3h/6h | Recent route-specific conditions and network-level delay tendencies |
 
-: Major predictors and important data items used in the flight delay pipeline. {#tbl-predictors}
+: Complete engineered feature inventory organized by family. {#tbl-predictors}
+
+### Sample Dataset 
+
+@tbl-sample-records shows three example records from the final modeling dataset,
+illustrating how flight operational data, weather observations, and propagation
+features are combined into a single row per flight.
+
+```{r}
+#| label: tbl-sample-records
+#| tbl-cap: "Three example records from the final modeling dataset."
+#| echo: false
+
+library(knitr)
+
+sample_records <- data.frame(
+  Field = c(
+    "FlightDate", "Reporting_Airline", "Tail_Number",
+    "Origin", "Dest", "CRSDepTime", "DepDelay", "ArrDelay", "ArrDel15",
+    "dep_hour_local", "dep_weekday_local", "dep_month_local",
+    "dep_temp_c", "dep_wind_speed_m_s", "dep_ceiling_height_m",
+    "arr_temp_c", "arr_wind_speed_m_s", "arr_ceiling_height_m",
+    "prev1_arr_delay", "prev1_arr_del15", "prev1_turnaround_minutes",
+    "prev2_arr_delay", "prev2_arr_del15",
+    "rotation_continuity_flag", "aircraft_leg_number_day"
+  ),
+  Record_1 = c(
+    "2023-06-15", "WN", "N8731A",
+    "ATL", "ORD", "0800", "0", "-3", "0",
+    "8", "3", "6",
+    "21.4", "4.2", "3200",
+    "18.1", "6.7", "2800",
+    "0", "0", "52",
+    "0", "0",
+    "1", "2"
+  ),
+  Record_2 = c(
+    "2023-06-15", "AA", "N3CDAA",
+    "DFW", "LAX", "1430", "47", "38", "1",
+    "14", "3", "6",
+    "34.2", "9.1", "9999",
+    "22.3", "3.4", "9999",
+    "52", "1", "28",
+    "12", "0",
+    "1", "3"
+  ),
+  Record_3 = c(
+    "2023-06-16", "UA", "N76502",
+    "ORD", "EWR", "0630", "112", "98", "1",
+    "6", "4", "6",
+    "14.8", "11.3", "600",
+    "12.1", "14.2", "450",
+    "89", "1", "18",
+    "34", "1",
+    "1", "4"
+  )
+)
+
+kable(sample_records,
+      col.names = c("Field", "Record 1", "Record 2", "Record 3"),
+      align = c("l", "r", "r", "r"))
+```
+
+Note @tbl-sample-records is for demonstration purposes. 
 
 ## Limitations in Data
 
-Several limitations should be noted:
+Several structural limitations of the dataset should be acknowledged:
 
-- BTS delay categories are aggregated and sometimes coarse
-- weather observations may not perfectly represent local flight conditions
-- route-level analysis cannot capture all national network effects
-- airline operational decisions such as crew scheduling are not directly observed
+- **BTS delay categories** are self-reported across five broad buckets, obscuring
+  compounding causes — a late aircraft delay may itself originate from a weather event
+  several legs upstream.
+- **Weather observations** are spatially approximate; ISD station measurements may not
+  capture localized runway-level conditions or sub-hourly convective events.
+- **Network effects** are only partially visible — route and airport aggregates cannot
+  fully represent cascading disruptions originating at distant hubs beyond the two-hop
+  propagation window.
+- **Operational factors** including crew scheduling, gate conflicts, maintenance holds,
+  and ATC staffing are absent from BTS records entirely.
+- **FAA aircraft metadata** is drawn from a 2025 registry snapshot applied to
+  historical data, introducing minor inconsistencies where aircraft were reconfigured
+  or retired during the study period.
 
-Despite these limitations, the dataset provides a strong foundation for studying delay patterns.
+Despite these limitations, the dataset provides a strong foundation for large-scale
+delay prediction.
 
-- Add catalog as appendix item 
+## EDA  
 
+### Distribution of Delays
 
-**Note: create a section of the site that represents reproducable instructions of our project and data processing steps, including code snippets and explanations.**
+### Delays by Time of Day
 
-## Initially started with a BWI–EWR Market Pair 
+### Weather vs Delay
 
-The BWI–EWR corridor sits within one of the most operationally complex airspaces in the United States. Newark Liberty International Airport operates within the highly congested New York airspace, while BWI serves as a key mid-Atlantic hub.
+### Delay Propagation 
 
-Flights between these airports are vulnerable to multiple sources of disruption:
-
-- upstream aircraft delays
-- weather disruptions
-- airspace congestion
-- operational scheduling constraints
-
-
-# EDA  
-
-## Distribution of Delays
-
-## Delays by Time of Day
-
-## Weather vs Delay
-
-## Delay Propagation 
-
-## Centrality Metrics 
+### Centrality Metrics 
 ```{r}
 #| label: fig-centrality-metrics-airport-bubble
 #| fig-cap: "Centrality Metrics - Airport Bubble"
@@ -354,15 +552,49 @@ Flights between these airports are vulnerable to multiple sources of disruption:
 knitr::include_graphics("images/paper/airport-centrality-bubble.png")
 ```
 
-
-....Otehrs....
-
 ---
 
-# Models 
+# Problem Formulation and Models
 
-We are interested in building an multi-output model that both classifies an arrival delay and determins how long that arrival delay will be using 
-features that are available during the present time. 
+## Two-Phase Modeling Approach
+
+This study follows a two-phase modeling strategy to progressively develop and evaluate flight delay prediction methods. In Phase 1, we focused on a single-year dataset (2019) and implemented baseline models. This phase emphasized rapid iteration, feature validation, and establishing a foundational understanding of the problem.
+
+In Phase 2, we expanded to a large-scale, multi-year dataset spanning approximately ten years of U.S. flight operations. This phase introduced more advanced modeling techniques, including gradient-boosted trees (XGBoost) and sequence-based neural networks (LSTM), along with a richer feature set incorporating weather, operational, and propagation-based variables. The transition from Phase 1 to Phase 2 reflects a shift from exploratory modeling to scalable, production-oriented system design.
+
+## Problem Formulation
+
+We formulate flight delay prediction as two related supervised learning tasks over temporally ordered flight observations. For each flight $i$, let $\mathbf{x}_i \in \mathbb{R}^p$ denote the feature vector constructed from information available at or before prediction time.
+
+We define two prediction targets:
+
+$$
+Y_i^{(reg)} = \text{ArrDelay}_i
+$$
+
+$$
+Y_i^{(cls)} =
+\begin{cases}
+1 & \text{if } \text{ArrDel15}_i = 1 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+The classification task estimates the probability of a material arrival delay:
+
+$$
+f_{cls}(\mathbf{x}_i) = P(Y_i^{(cls)} = 1 \mid \mathbf{x}_i)
+$$
+
+The regression task estimates the expected delay magnitude in minutes:
+
+$$
+f_{reg}(\mathbf{x}_i) = \mathbb{E}[Y_i^{(reg)} \mid \mathbf{x}_i]
+$$
+
+In this study, classification and regression are modeled as separate but complementary supervised learning tasks for the XGBoost pipeline. The classification model estimates the probability of a material arrival delay, while the regression model estimates delay magnitude in minutes. A joint multi-output formulation was explored separately in the LSTM architecture, where a shared sequence encoder feeds both a classification head and a regression head.
+
+Crucially, all features are restricted to information available at or before prediction time, ensuring a realistic operational setting without look-ahead bias.
 
 ## Phase 1: 2019 Baseline
 
@@ -401,7 +633,7 @@ PCA identifies dominant dimensions in the feature space.
 
 ### Unsupervised Analysis: K-Means Clustering
 
-## Phase 2: Multi Year 
+## Phase 2: Temporal Expansion and Model Scaling
 
 In the final modeling training phase we used all our data. The 10 year run used over 61 million final training records, tuned it with rolling time-aware 5 fold cross-validation across historical years, then evaluated it on a fully unseen 2025 holdout test year containing 6.86 million flights. In total we are working with around 70 million flight records! The following sections will cover the details and how well the models performed. 
 
@@ -1228,4 +1460,35 @@ The architecture — real-time telemetry ingestion, predictive state modeling, n
 
 [See AeroFlux here](aero-flux.qmd)
 
-[Official AeroFlux App](https://aeroflux.duckdns.org/) - Note: this domain might change in the future. If this happens notify the authors for more information. 
+[Official AeroFlux App](https://aeroflux.duckdns.org/) - Note: this domain might change in the future. If this happens notify the authors for more information.
+
+# Additional 
+
+Baseline Comparison - table of all models 
+
+Comparison to Prior Work: Prior studies typically report AUC values in the range of 0.75–0.82 for flight delay prediction tasks. The proposed propagation-aware framework achieves an AUC of 0.845 on a fully unseen 2025 dataset, suggesting that incorporating upstream aircraft state provides measurable predictive gains over traditional approaches. 
+
+Calibration / Probability Quality
+
+Threshold Sensitivity Analysis 
+Error Analysis - When does the model fail
+
+  
+4. Problem Formulation and Models
+   4.1 Problem Definition
+   4.2 XGBoost Models
+   4.3 LSTM Model
+   4.4 Training Strategy
+5. Experimental Setup
+  train/val/test split years
+  dataset sizes
+  hardware (optional but good)
+  hyperparameters (brief)
+6. Results
+   6.1 Performance - AUC, F1, MAE, RMSE
+   6.2 Baselines 
+   6.3 Feature Analysis
+7. Discussion
+8. Limitations
+9. Future Work (AeroFlux direction)
+10. Conclusion
