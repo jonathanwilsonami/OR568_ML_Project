@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-03-13">
 
-<title>Predicting Flight Delays in the United States: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors – Flight Delays: A Machine Learning Approach</title>
+<title>From Prediction to Digital Twin: A Propagation-Aware Machine Learning Framework for Flight Delay Modeling – Flight Delays: A Machine Learning Approach</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -197,7 +197,13 @@ window.Quarto = {
   <li><a href="#introduction-background" id="toc-introduction-background" class="nav-link active" data-scroll-target="#introduction-background"><span class="header-section-number">1</span> Introduction &amp; Background</a>
   <ul class="collapse">
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation"><span class="header-section-number">1.1</span> Motivation</a></li>
-  <li><a href="#related-works" id="toc-related-works" class="nav-link" data-scroll-target="#related-works"><span class="header-section-number">1.2</span> Related Works</a></li>
+  <li><a href="#related-works" id="toc-related-works" class="nav-link" data-scroll-target="#related-works"><span class="header-section-number">1.2</span> Related Works</a>
+  <ul class="collapse">
+  <li><a href="#time-of-day-impacts" id="toc-time-of-day-impacts" class="nav-link" data-scroll-target="#time-of-day-impacts"><span class="header-section-number">1.2.1</span> Time of Day Impacts</a></li>
+  <li><a href="#delay-propagation" id="toc-delay-propagation" class="nav-link" data-scroll-target="#delay-propagation"><span class="header-section-number">1.2.2</span> Delay Propagation</a></li>
+  <li><a href="#quick-survey-of-common-flight-delay-models" id="toc-quick-survey-of-common-flight-delay-models" class="nav-link" data-scroll-target="#quick-survey-of-common-flight-delay-models"><span class="header-section-number">1.2.3</span> Quick Survey of Common Flight Delay Models</a></li>
+  <li><a href="#digital-twins-and-real-time-monitoring" id="toc-digital-twins-and-real-time-monitoring" class="nav-link" data-scroll-target="#digital-twins-and-real-time-monitoring"><span class="header-section-number">1.2.4</span> Digital Twins and Real-Time Monitoring</a></li>
+  </ul></li>
   <li><a href="#research-questions" id="toc-research-questions" class="nav-link" data-scroll-target="#research-questions"><span class="header-section-number">1.3</span> Research Questions</a></li>
   <li><a href="#what-this-research-contributes" id="toc-what-this-research-contributes" class="nav-link" data-scroll-target="#what-this-research-contributes"><span class="header-section-number">1.4</span> What This Research Contributes</a></li>
   </ul></li>
@@ -225,7 +231,7 @@ window.Quarto = {
   <li><a href="#distribution-of-delays" id="toc-distribution-of-delays" class="nav-link" data-scroll-target="#distribution-of-delays"><span class="header-section-number">3.1</span> Distribution of Delays</a></li>
   <li><a href="#delays-by-time-of-day" id="toc-delays-by-time-of-day" class="nav-link" data-scroll-target="#delays-by-time-of-day"><span class="header-section-number">3.2</span> Delays by Time of Day</a></li>
   <li><a href="#weather-vs-delay" id="toc-weather-vs-delay" class="nav-link" data-scroll-target="#weather-vs-delay"><span class="header-section-number">3.3</span> Weather vs Delay</a></li>
-  <li><a href="#delay-propagation" id="toc-delay-propagation" class="nav-link" data-scroll-target="#delay-propagation"><span class="header-section-number">3.4</span> Delay Propagation</a></li>
+  <li><a href="#delay-propagation-1" id="toc-delay-propagation-1" class="nav-link" data-scroll-target="#delay-propagation-1"><span class="header-section-number">3.4</span> Delay Propagation</a></li>
   <li><a href="#centrality-metrics" id="toc-centrality-metrics" class="nav-link" data-scroll-target="#centrality-metrics"><span class="header-section-number">3.5</span> Centrality Metrics</a></li>
   </ul></li>
   <li><a href="#models" id="toc-models" class="nav-link" data-scroll-target="#models"><span class="header-section-number">4</span> Models</a>
@@ -295,7 +301,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Predicting Flight Delays in the United States: A Machine Learning Analysis of Weather, Network Effects, and Operational Factors</h1>
+<h1 class="title">From Prediction to Digital Twin: A Propagation-Aware Machine Learning Framework for Flight Delay Modeling</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Machine Learning</div>
     <div class="quarto-category">Aviation</div>
@@ -339,9 +345,9 @@ window.Quarto = {
 </div>
 <div class="callout-body-container">
 <p>Abstract</p>
-<p>Flight delays remain one of the most persistent operational challenges in modern aviation, affecting airline efficiency, passenger satisfaction, and the broader transportation network. In this study, we examine flight delays within the United States using machine learning, exploratory data analysis, and engineered operational features.</p>
-<p>Using Bureau of Transportation Statistics (BTS) flight records enriched with weather and temporal features, we construct predictors related to schedule timing, prior aircraft movement, weather conditions, and airport-level activity. We evaluate multiple supervised and unsupervised learning approaches and even some neural networks using LSTMs.</p>
-<p>Our findings suggest that delay behavior is shaped by a combination of operational and environmental effects, especially upstream aircraft delay propagation, airport congestion patterns, and weather-related variables. Tree-based (with extreme gradient boosting) approaches and penalized regression provide the most stable predictive performance, while simpler baseline models remain valuable for interpretation.</p>
+<p>Flight delays remain a persistent challenge in modern aviation, driven by complex interactions between weather, operations, and network dynamics. This study presents a propagation-aware machine learning framework that models delays as a function of upstream aircraft state rather than isolated flight events. Using large-scale U.S. flight data (~70 million records) enriched with weather and operational features, we construct a two-hop aircraft rotation representation that captures delay carryover across consecutive legs.</p>
+<p>We evaluate multiple modeling approaches, including gradient-boosted trees and sequence-based neural networks, under strict time-aware validation to ensure production realism. Results show that upstream delay propagation is the dominant predictive signal, with tree-based models achieving strong performance while remaining computationally efficient at scale.</p>
+<p>Beyond prediction, this work establishes the foundation for AeroFlux, a real-time, network-aware system designed to evolve into a digital twin of the U.S. air transportation system, enabling forward simulation and proactive disruption management.</p>
 </div>
 </div>
 </div>
@@ -350,27 +356,49 @@ window.Quarto = {
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction &amp; Background</h1>
 <section id="motivation" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="motivation"><span class="header-section-number">1.1</span> Motivation</h2>
-<p>Flight delays represent one of the most visible operational challenges in modern aviation. A single disruption can ripple across aircraft rotations, crews, passengers, and airports, creating cascading effects throughout the network.</p>
-<p>Understanding the causes of delay propagation is critical for improving airline efficiency and passenger reliability.</p>
+<p>Flight delays represent one of the most visible and persistent operational challenges in modern aviation. In 2025 alone, nearly 25% of U.S. domestic flights failed to arrive on time, marking one of the worst on-time performance levels in over a decade <span class="citation" data-cites="usafacts_ontime"><a href="#ref-usafacts_ontime" role="doc-biblioref">[1]</a></span>. At scale, these disruptions impose significant societal and economic costs—U.S. travelers collectively lost over 1.5 million hours (171 years) waiting on delayed flights <span class="citation" data-cites="people_delayed_airline"><a href="#ref-people_delayed_airline" role="doc-biblioref">[2]</a></span>, while delays across global air travel totaled millions of hours annually <span class="citation" data-cites="skyrefund_ustravel"><a href="#ref-skyrefund_ustravel" role="doc-biblioref">[3]</a></span>.</p>
+<p>A single disruption rarely remains isolated. Instead, delays propagate through tightly coupled airline operations, affecting aircraft rotations, crew assignments, passenger connections, and airport congestion. Empirical studies of the U.S. air transportation network show that primary delays—caused by weather, congestion, or operational issues—can cascade and amplify across the network, leading to systemic disruptions that impact a significant portion of flights <span class="citation" data-cites="Fleurquin_2013"><a href="#ref-Fleurquin_2013" role="doc-biblioref">[4]</a></span>. More recent research further demonstrates that accurately modeling delay propagation and absorption dynamics is essential for improving prediction performance and operational resilience <span class="citation" data-cites="zhou2025integratingdelayabsorptioncapabilityflight"><a href="#ref-zhou2025integratingdelayabsorptioncapabilityflight" role="doc-biblioref">[5]</a></span>.</p>
+<p>Understanding the mechanisms of delay propagation is therefore critical for improving airline efficiency, reducing operational costs, and enhancing passenger reliability. As air traffic demand continues to grow and systems become increasingly interconnected, the ability to model and predict these cascading effects represents a key challenge—and opportunity—for modern aviation analytics.</p>
 </section>
 <section id="related-works" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="related-works"><span class="header-section-number">1.2</span> Related Works</h2>
-<ul>
-<li>Add at least 3</li>
-</ul>
+<p>This work introduces a propagation-aware machine learning framework that models flight delays as a function of upstream aircraft state rather than isolated events. By incorporating a two-hop aircraft rotation structure, enforcing strict pre-departure feature availability, and training on multi-year, large-scale data (~70M flights), the approach produces both operationally realistic and high-performing predictions. It further serves as the foundation for AeroFlux, a system designed to evolve from static prediction into a real-time, network-aware digital twin of the U.S. airspace.</p>
+<section id="time-of-day-impacts" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="time-of-day-impacts"><span class="header-section-number">1.2.1</span> Time of Day Impacts</h3>
+<p>Flight delays exhibit strong temporal patterns, with peak congestion typically occurring during morning and evening “banking” periods at major hubs. Studies using Bureau of Transportation Statistics data consistently show that delays increase throughout the day due to cumulative disruption effects and reduced recovery buffers <span class="citation" data-cites="bts_ontime"><a href="#ref-bts_ontime" role="doc-biblioref">[6]</a></span>. Prior work in transportation analytics confirms that departure time is one of the most statistically significant predictors of delay due to its correlation with demand surges and network congestion <span class="citation" data-cites="rebollo2014predictability"><a href="#ref-rebollo2014predictability" role="doc-biblioref">[7]</a></span>.</p>
+</section>
+<section id="delay-propagation" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="delay-propagation"><span class="header-section-number">1.2.2</span> Delay Propagation</h3>
+<p>Delay propagation has been widely studied as a network phenomenon where disruptions spread through aircraft rotations and airport interactions. Foundational work by <span class="citation" data-cites="Fleurquin_2013"><a href="#ref-Fleurquin_2013" role="doc-biblioref">[4]</a></span> demonstrates that primary delays can cascade across the U.S. air transportation network, amplifying system-wide disruption. Subsequent research modeled these dynamics using complex network theory, showing how disruptions propagate through tightly coupled flight schedules <span class="citation" data-cites="li2016delay"><a href="#ref-li2016delay" role="doc-biblioref">[8]</a></span>. More recent work highlights that incorporating upstream flight state — including delay absorption capacity at intermediate airports — significantly improves predictive performance, reinforcing the importance of modeling propagation dynamics explicitly <span class="citation" data-cites="zhou2025integratingdelayabsorptioncapabilityflight"><a href="#ref-zhou2025integratingdelayabsorptioncapabilityflight" role="doc-biblioref">[5]</a></span>.</p>
+</section>
+<section id="quick-survey-of-common-flight-delay-models" class="level3" data-number="1.2.3">
+<h3 data-number="1.2.3" class="anchored" data-anchor-id="quick-survey-of-common-flight-delay-models"><span class="header-section-number">1.2.3</span> Quick Survey of Common Flight Delay Models</h3>
+<p>Machine learning approaches to flight delay prediction commonly include tree-based models such as XGBoost and deep learning models such as Long Short-Term Memory (LSTM) networks. XGBoost, introduced by <span class="citation" data-cites="chen2016xgboost"><a href="#ref-chen2016xgboost" role="doc-biblioref">[9]</a></span>, is widely favored for large-scale tabular data due to its strong performance, interpretability, and computational efficiency. LSTMs <span class="citation" data-cites="hochreiter1997lstm"><a href="#ref-hochreiter1997lstm" role="doc-biblioref">[10]</a></span> are used to capture temporal dependencies across sequential flight events, making them a natural fit for rotation-chain modeling. Benchmark evaluations on structured tabular data consistently show that tree-based ensembles remain state-of-the-art over deep learning models, with deep learning offering advantages primarily when temporal or graph-based relationships are explicitly modeled <span class="citation" data-cites="grinsztajn2022tree"><a href="#ref-grinsztajn2022tree" role="doc-biblioref">[11]</a></span>.</p>
+<p>More recent work has explored advanced architectures including Graph Neural Networks (GNNs) for modeling airport connectivity and network effects <span class="citation" data-cites="zhao2020gnn_airtraffic"><a href="#ref-zhao2020gnn_airtraffic" role="doc-biblioref">[12]</a></span>, Spatio-Temporal Graph Convolutional Networks (ST-GCN) for capturing joint spatial and temporal dependencies <span class="citation" data-cites="yu2018stgcn"><a href="#ref-yu2018stgcn" role="doc-biblioref">[13]</a></span>, Transformer-based sequence models applied to air traffic trajectory and flow prediction <span class="citation" data-cites="vos2024transformer_airtraffic airtraffic_transformer_flow"><a href="#ref-vos2024transformer_airtraffic" role="doc-biblioref">[14]</a>, <a href="#ref-airtraffic_transformer_flow" role="doc-biblioref">[15]</a></span>, and attention-based multi-agent models for capturing interactions in air traffic systems <span class="citation" data-cites="yoon2025maiformer"><a href="#ref-yoon2025maiformer" role="doc-biblioref">[16]</a></span>.</p>
+</section>
+<section id="digital-twins-and-real-time-monitoring" class="level3" data-number="1.2.4">
+<h3 data-number="1.2.4" class="anchored" data-anchor-id="digital-twins-and-real-time-monitoring"><span class="header-section-number">1.2.4</span> Digital Twins and Real-Time Monitoring</h3>
+<p>Digital twins in aviation aim to create continuously updated virtual representations of physical systems for monitoring and simulation. Foundational frameworks in digital twin design emphasize the integration of live telemetry, predictive modeling, and simulation as the basis for proactive decision-making in complex physical systems <span class="citation" data-cites="tao2019digitaltwin fuller2020digital"><a href="#ref-tao2019digitaltwin" role="doc-biblioref">[17]</a>, <a href="#ref-fuller2020digital" role="doc-biblioref">[18]</a></span>. In the aviation domain, the Federal Aviation Administration’s System Wide Information Management (SWIM) program represents a significant step toward real-time data integration for air traffic management and disruption response <span class="citation" data-cites="faa_swim"><a href="#ref-faa_swim" role="doc-biblioref">[19]</a></span>. Recent work in cyber-physical systems reinforces that this combination of live data and predictive intelligence forms the foundation for next-generation intelligent transportation systems — a direction that directly motivates the AeroFlux architecture described in this paper.</p>
+<p>Several operational systems now demonstrate this capability in practice. NASA Ames has developed a Digital Twin Simulator of the National Airspace System (NAS) that creates a virtual copy of the live NAS, ingesting real-time SWIM data to enable side-by-side simulation of proposed changes against actual operations <span class="citation" data-cites="nasa_nas_twin"><a href="#ref-nasa_nas_twin" role="doc-biblioref">[20]</a></span>. At the industry level, Airspace Intelligence’s Flyways AI platform applies a 4D airspace simulation built on live FAA SWIM feeds to predict demand-capacity imbalances and recommend optimized traffic management initiatives before disruptions materialize <span class="citation" data-cites="asi_flyways"><a href="#ref-asi_flyways" role="doc-biblioref">[21]</a></span>. Similarly, Mosaic ATM’s Alternate Route Availability Tool (ARAT), developed in collaboration with NASA, integrates real-time weather and TMI data with machine learning models to provide actionable alternate routing recommendations for air traffic controllers <span class="citation" data-cites="mosaicatm_arat"><a href="#ref-mosaicatm_arat" role="doc-biblioref">[22]</a></span>. In the research literature, Liu et al. demonstrate an L3-level airport digital twin for flight ground service delay diagnosis that connects real-time operational data to simulation, enabling timely identification and propagation analysis of delays that offline models cannot achieve <span class="citation" data-cites="liu2024digitaltwin"><a href="#ref-liu2024digitaltwin" role="doc-biblioref">[23]</a></span>.</p>
+<p>Recent work in cyber-physical systems reinforces that this combination of live data and predictive intelligence forms the foundation for next-generation intelligent transportation systems — a direction that directly motivates the AeroFlux architecture described in this paper.</p>
+</section>
 </section>
 <section id="research-questions" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="research-questions"><span class="header-section-number">1.3</span> Research Questions</h2>
 <p>This study seeks to answer the following questions:</p>
 <ol type="1">
-<li>Which operational and weather variables most strongly predict flight delays?</li>
-<li>How strongly do delays propagate from prior flights?</li>
-<li>Which machine learning models best classify delayed flights?</li>
+<li>To what extent does upstream aircraft delay propagation influence downstream flight delay outcomes?</li>
+<li>Which features — including operational, weather, and network-based variables — provide the strongest predictive signal under realistic pre-departure constraints?</li>
+<li>How do different machine learning approaches (tree-based vs.&nbsp;sequence-based) perform on large-scale, temporally structured aviation data?</li>
+<li>Can a propagation-aware modeling framework serve as a foundation for real-time, network-level prediction and simulation systems in aviation?</li>
 </ol>
 </section>
 <section id="what-this-research-contributes" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="what-this-research-contributes"><span class="header-section-number">1.4</span> What This Research Contributes</h2>
-<p>This study contributes a route-focused machine learning framework for airline delay analysis. By combining exploratory analysis, feature engineering, classification modeling, and model comparison, we provide a systematic approach for identifying the drivers of flight delays.</p>
+<p>This research contributes a propagation-aware machine learning framework for flight delay prediction that explicitly models delay transmission across aircraft rotations. By introducing a two-hop representation of upstream flight state and enforcing strict pre-departure feature availability, the approach captures the operational dynamics underlying delay formation while remaining suitable for real-world deployment.</p>
+<p>The study demonstrates the effectiveness of this framework at scale, training and evaluating models on approximately 70 million U.S. flight records using time-aware validation. Results show that delay propagation is the dominant predictive signal, significantly outperforming models that treat flights independently.</p>
+<p>Beyond predictive performance, this work establishes the architectural foundation for AeroFlux — a real-time, network-aware system designed to evolve into a digital twin of the national airspace, enabling forward simulation, disruption propagation analysis, and proactive operational decision-making.</p>
+<p>The ultimate objective of this work is to move beyond static prediction and toward dynamic, system-level reasoning in aviation operations. By combining propagation-aware modeling with real-time data integration and simulation capabilities, this research aims to enable predictive intelligence systems that can anticipate, propagate, and mitigate disruptions across the air transportation network. This vision is realized through AeroFlux, which represents a step toward a fully operational digital twin of the U.S. airspace.</p>
 </section>
 </section>
 <section id="data" class="level1" data-number="2">
@@ -400,8 +428,8 @@ Figure&nbsp;1: Overview of the flight delay data pipeline, from raw data sources
 <p>Flight performance data are sourced from the BTS Transtats PREZIP endpoint, which publishes monthly on-time reporting files for all US carriers. Weather observations are obtained from the NOAA National Centers for Environmental Information (NCEI) global-hourly dataset via a REST API, providing sub-hourly surface measurements at reporting stations worldwide. Airport and station reference data are drawn from the OurAirports CSV registry and the NOAA Integrated Surface Database (ISD) station history file, which together supply the geographic coordinates and ICAO codes required to link flight records to their corresponding weather stations.</p>
 <p>The primary data sources for this project were:</p>
 <ul>
-<li><p>The Bureau of Transportation Statistics (BTS) Airline On-Time Performance dataset and the National Oceanic and Atmospheric Administration (NOAA) National Centers for Environmental Information (NCEI) global hourly weather dataset <span class="citation" data-cites="bts_ontime noaa_ncei"><a href="#ref-bts_ontime" role="doc-biblioref">[1]</a>, <a href="#ref-noaa_ncei" role="doc-biblioref">[2]</a></span>.</p></li>
-<li><p>To support geospatial alignment between flights and environmental conditions, additional metadata sources were incorporated, including the NOAA Integrated Surface Database (ISD) station history dataset for weather station metadata and the OurAirports global airport dataset for airport identifiers and geographic coordinates <span class="citation" data-cites="noaa_isd_history ourairports"><a href="#ref-noaa_isd_history" role="doc-biblioref">[3]</a>, <a href="#ref-ourairports" role="doc-biblioref">[4]</a></span>.</p></li>
+<li><p>The Bureau of Transportation Statistics (BTS) Airline On-Time Performance dataset and the National Oceanic and Atmospheric Administration (NOAA) National Centers for Environmental Information (NCEI) global hourly weather dataset <span class="citation" data-cites="bts_ontime noaa_ncei"><a href="#ref-bts_ontime" role="doc-biblioref">[6]</a>, <a href="#ref-noaa_ncei" role="doc-biblioref">[24]</a></span>.</p></li>
+<li><p>To support geospatial alignment between flights and environmental conditions, additional metadata sources were incorporated, including the NOAA Integrated Surface Database (ISD) station history dataset for weather station metadata and the OurAirports global airport dataset for airport identifiers and geographic coordinates <span class="citation" data-cites="noaa_isd_history ourairports"><a href="#ref-noaa_isd_history" role="doc-biblioref">[25]</a>, <a href="#ref-ourairports" role="doc-biblioref">[26]</a></span>.</p></li>
 </ul>
 <p>The data pipeline also relied on auxiliary airport and station reference data to connect flights to airport metadata, time zones, and weather stations. The overall pipeline included BTS ingestion, airport and station reference construction, weather ingestion, temporal and spatial joins, and downstream feature engineering. These stages were implemented as a modular, cached pipeline to support reproducibility and scalable re-runs.</p>
 <p>The BTS data provided detailed flight-level operational records for 2019, including scheduled and actual departure and arrival times, origin and destination airports, carrier information, delay durations, cancellation indicators, diversion indicators, taxi times, and delay-cause variables. The NOAA weather data provided airport-associated weather observations such as temperature, wind speed, wind direction, and ceiling height, which were joined to flights using a backward-looking as-of temporal join.</p>
@@ -661,8 +689,8 @@ Table&nbsp;2: Major predictors and important data items used in the flight delay
 <section id="weather-vs-delay" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="weather-vs-delay"><span class="header-section-number">3.3</span> Weather vs Delay</h2>
 </section>
-<section id="delay-propagation" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="delay-propagation"><span class="header-section-number">3.4</span> Delay Propagation</h2>
+<section id="delay-propagation-1" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="delay-propagation-1"><span class="header-section-number">3.4</span> Delay Propagation</h2>
 </section>
 <section id="centrality-metrics" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="centrality-metrics"><span class="header-section-number">3.5</span> Centrality Metrics</h2>
@@ -1859,17 +1887,83 @@ Figure&nbsp;9: AeroFlux Flight Map
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-usafacts_ontime" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">USAFacts Team, <span>“What are the best and worst airports and airlines for on-time performance?”</span> <a href="https://usafacts.org/articles/what-are-the-best-and-worst-airlines-for-on-time-performance/" class="uri">https://usafacts.org/articles/what-are-the-best-and-worst-airlines-for-on-time-performance/</a>; USAFacts, 2025.</div>
+</div>
+<div id="ref-people_delayed_airline" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">People Staff, <span>“The world’s most delayed airline in 2025 might surprise travelers.”</span> <a href="https://people.com/the-world-s-most-delayed-airline-in-2025-might-surprise-travelers-11870658" class="uri">https://people.com/the-world-s-most-delayed-airline-in-2025-might-surprise-travelers-11870658</a>; People, 2025.</div>
+</div>
+<div id="ref-skyrefund_ustravel" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">SkyRefund, <span>“SkyRefund analysis reveals US travelers lost 1.5 million hours to flight delays in 2025 — and what caused them.”</span> <a href="https://www.prnewswire.com/news-releases/skyrefund-analysis-reveals-us-travelers-lost-1-5-million-hours-to-flight-delays-in-2025--and-what-caused-them-302675101.html" class="uri">https://www.prnewswire.com/news-releases/skyrefund-analysis-reveals-us-travelers-lost-1-5-million-hours-to-flight-delays-in-2025--and-what-caused-them-302675101.html</a>; PR Newswire, Jan. 2026.</div>
+</div>
+<div id="ref-Fleurquin_2013" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">P. Fleurquin, J. J. Ramasco, and V. M. Eguiluz, <span>“Systemic delay propagation in the US airport network,”</span> <em>Scientific Reports</em>, vol. 3, no. 1, Jan. 2013, doi: <a href="https://doi.org/10.1038/srep01159">10.1038/srep01159</a>.</div>
+</div>
+<div id="ref-zhou2025integratingdelayabsorptioncapabilityflight" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">J. Zhou, <span>“Integrating delay-absorption capability into flight departure delay prediction.”</span> 2025. Available: <a href="https://arxiv.org/abs/2512.08197">https://arxiv.org/abs/2512.08197</a></div>
+</div>
 <div id="ref-bts_ontime" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[1] </div><div class="csl-right-inline">Bureau of Transportation Statistics, <span>“Airline on-time performance data.”</span> <a href="https://transtats.bts.gov/" class="uri">https://transtats.bts.gov/</a>; U.S. Department of Transportation, 2025.</div>
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">Bureau of Transportation Statistics, <span>“Airline on-time performance data.”</span> <a href="https://transtats.bts.gov/" class="uri">https://transtats.bts.gov/</a>; U.S. Department of Transportation, 2025.</div>
+</div>
+<div id="ref-rebollo2014predictability" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">J. J. Rebollo and H. Balakrishnan, <span>“Characterization and prediction of air traffic delays,”</span> <em>Transportation Research Part C</em>, vol. 44, pp. 231–241, 2014.</div>
+</div>
+<div id="ref-li2016delay" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">J. Li, N. Chen, and J. Zhang, <span>“Modeling and simulation of flight delay propagation based on complex networks,”</span> <em>Physica A</em>, vol. 444, pp. 102–112, 2016.</div>
+</div>
+<div id="ref-chen2016xgboost" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">T. Chen and C. Guestrin, <span>“XGBoost: A scalable tree boosting system,”</span> <em>Proceedings of the ACM SIGKDD</em>, 2016.</div>
+</div>
+<div id="ref-hochreiter1997lstm" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">S. Hochreiter and J. Schmidhuber, <span>“Long short-term memory,”</span> <em>Neural Computation</em>, vol. 9, no. 8, pp. 1735–1780, 1997.</div>
+</div>
+<div id="ref-grinsztajn2022tree" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">L. Grinsztajn, E. Oyallon, and G. Varoquaux, <span>“Why do tree-based models still outperform deep learning on tabular data?”</span> in <em>Advances in neural information processing systems (NeurIPS)</em>, 2022. Available: <a href="https://arxiv.org/abs/2207.08815">https://arxiv.org/abs/2207.08815</a></div>
+</div>
+<div id="ref-zhao2020gnn_airtraffic" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline"><span class="nocase">L. Zhao <em>et al.</em></span>, <span>“Graph neural networks for air traffic flow prediction,”</span> <em>IEEE Access</em>, vol. 8, pp. 134984–134994, 2020.</div>
+</div>
+<div id="ref-yu2018stgcn" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">B. Yu, H. Yin, and Z. Zhu, <span>“Spatio-temporal graph convolutional networks: A deep learning framework for traffic forecasting,”</span> in <em>Proceedings of the 27th international joint conference on artificial intelligence (IJCAI)</em>, AAAI Press, 2018, pp. 3634–3640.</div>
+</div>
+<div id="ref-vos2024transformer_airtraffic" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">R. W. Vos, J. Sun, and J. M. Hoekstra, <span>“A transformer-based trajectory prediction model to support air traffic demand forecasting,”</span> in <em>Proceedings of the international conference on research in air transportation (ICRAT)</em>, 2024.</div>
+</div>
+<div id="ref-airtraffic_transformer_flow" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline"><span>“Air traffic flow representation and prediction using transformer neural networks,”</span> in <em>SESAR innovation days</em>, 2022.</div>
+</div>
+<div id="ref-yoon2025maiformer" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">S. Yoon and K. Lee, <span>“MAIFormer: Multi-agent inverted transformer for flight trajectory prediction,”</span> <em>arXiv preprint arXiv:2509.21004</em>, 2025.</div>
+</div>
+<div id="ref-tao2019digitaltwin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">F. Tao and M. Zhang, <span>“Digital twin shop-floor: A new shop-floor paradigm towards smart manufacturing,”</span> <em>IEEE Access</em>, vol. 7, pp. 7427–7438, 2019.</div>
+</div>
+<div id="ref-fuller2020digital" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">A. Fuller, Z. Fan, C. Day, and C. Barlow, <span>“Digital twin: Enabling technologies, challenges and open research,”</span> <em>IEEE Access</em>, vol. 8, pp. 108952–108971, 2020.</div>
+</div>
+<div id="ref-faa_swim" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">Federal Aviation Administration, <span>“System wide information management (SWIM).”</span> <a href="https://www.faa.gov/air_traffic/technology/swim" class="uri">https://www.faa.gov/air_traffic/technology/swim</a>, 2025.</div>
+</div>
+<div id="ref-nasa_nas_twin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">NASA Ames Research Center, <span>“Digital twin simulator of the national airspace system (NAS).”</span> <a href="https://technology.nasa.gov/patent/TOP2-325" class="uri">https://technology.nasa.gov/patent/TOP2-325</a>; NASA, 2024.</div>
+</div>
+<div id="ref-asi_flyways" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">Airspace Intelligence, <span>“Flyways <span>AI</span>: Air traffic management platform.”</span> <a href="https://www.airspace-intelligence.com/solutions/air-traffic-management" class="uri">https://www.airspace-intelligence.com/solutions/air-traffic-management</a>; Airspace Intelligence, 2025.</div>
+</div>
+<div id="ref-mosaicatm_arat" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[22] </div><div class="csl-right-inline">M. Rodriguez, <span>“Using real-time data and machine learning to improve air traffic management operations.”</span> <a href="https://mosaicatm.com/2024/12/16/machine-learning-for-air-traffic-management/" class="uri">https://mosaicatm.com/2024/12/16/machine-learning-for-air-traffic-management/</a>; Mosaic ATM, Dec. 2024.</div>
+</div>
+<div id="ref-liu2024digitaltwin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[23] </div><div class="csl-right-inline"><span class="nocase">Liu <em>et al.</em></span>, <span>“Digital twin-enabled delay diagnosis traceability and propagation process for airport flight ground service,”</span> <em>International Journal of Intelligent Systems</em>, 2024, doi: <a href="https://doi.org/10.1155/int/7458758">10.1155/int/7458758</a>.</div>
 </div>
 <div id="ref-noaa_ncei" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[2] </div><div class="csl-right-inline">National Oceanic and Atmospheric Administration, <span>“NCEI access services API: Global hourly weather dataset.”</span> <a href="https://www.ncei.noaa.gov/access/services/data/v1" class="uri">https://www.ncei.noaa.gov/access/services/data/v1</a>; NOAA National Centers for Environmental Information, 2025.</div>
+<div class="csl-left-margin">[24] </div><div class="csl-right-inline">National Oceanic and Atmospheric Administration, <span>“NCEI access services API: Global hourly weather dataset.”</span> <a href="https://www.ncei.noaa.gov/access/services/data/v1" class="uri">https://www.ncei.noaa.gov/access/services/data/v1</a>; NOAA National Centers for Environmental Information, 2025.</div>
 </div>
 <div id="ref-noaa_isd_history" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[3] </div><div class="csl-right-inline">National Oceanic and Atmospheric Administration, <span>“Integrated surface database (ISD) station history metadata file.”</span> <a href="https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv" class="uri">https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv</a>; NOAA National Centers for Environmental Information, 2025.</div>
+<div class="csl-left-margin">[25] </div><div class="csl-right-inline">National Oceanic and Atmospheric Administration, <span>“Integrated surface database (ISD) station history metadata file.”</span> <a href="https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv" class="uri">https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv</a>; NOAA National Centers for Environmental Information, 2025.</div>
 </div>
 <div id="ref-ourairports" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[4] </div><div class="csl-right-inline">OurAirports, <span>“OurAirports global airport database.”</span> <a href="https://davidmegginson.github.io/ourairports-data/airports.csv" class="uri">https://davidmegginson.github.io/ourairports-data/airports.csv</a>; OurAirports, 2025.</div>
+<div class="csl-left-margin">[26] </div><div class="csl-right-inline">OurAirports, <span>“OurAirports global airport database.”</span> <a href="https://davidmegginson.github.io/ourairports-data/airports.csv" class="uri">https://davidmegginson.github.io/ourairports-data/airports.csv</a>; OurAirports, 2025.</div>
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
