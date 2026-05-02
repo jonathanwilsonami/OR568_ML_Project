@@ -1,0 +1,14 @@
+feature,importance
+dep_time_bucket,0.37810564
+dep_hour_local,0.29162335
+distance,0.07134518
+dep_month_local,0.061038543
+days_to_nearest_holiday,0.049193364
+crs_elapsed_time,0.047995683
+aircraft_no_seats,0.03067551
+dep_weekday_local,0.02324071
+is_weekend,0.015700212
+aircraft_year_mfr,0.013687171
+aircraft_age,0.009249965
+is_holiday,0.0066399444
+aircraft_no_eng,0.0015046363

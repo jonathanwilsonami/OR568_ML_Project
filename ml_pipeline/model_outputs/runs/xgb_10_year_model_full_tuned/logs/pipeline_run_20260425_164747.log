@@ -1,0 +1,126 @@
+2026-04-25 16:47:47,785 | INFO | Logging initialized
+2026-04-25 16:47:47,785 | INFO | Log file: /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/logs/pipeline_run_20260425_164747.log
+2026-04-25 16:47:47,785 | INFO | ============================================================
+2026-04-25 16:47:47,785 | INFO | FLIGHT DELAY ML PIPELINE
+2026-04-25 16:47:47,785 | INFO | ============================================================
+2026-04-25 16:47:47,785 | INFO | [RUN] version=xgb_train_2015_2023_test_2025_2025_20260425_164747
+2026-04-25 16:47:47,785 | INFO | [RUN] run_dir=/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747
+2026-04-25 16:47:47,785 | INFO | [SYSTEM] Detected 24 CPU cores
+2026-04-25 16:47:47,785 | INFO | [SYSTEM] Using 8 worker cores
+2026-04-25 16:47:47,785 | INFO | [SYSTEM] use_gpu=False
+2026-04-25 16:47:47,785 | INFO | [PATH] canonical_dir=/home/jon/projects/OR568_ML_Project/data_pipeline/data/features
+2026-04-25 16:47:47,786 | INFO | [PATH] output_dir=/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs
+2026-04-25 16:47:47,786 | INFO | [TF] CPU-only mode enabled.
+2026-04-25 16:47:47,786 | INFO | [CONFIG] train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]
+2026-04-25 16:47:47,786 | INFO | [CONFIG] validation_years=[2024]
+2026-04-25 16:47:47,786 | INFO | [CONFIG] test_years=[2025]
+2026-04-25 16:47:47,786 | INFO | [CONFIG] all_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+2026-04-25 16:47:47,786 | INFO | [CONFIG] cv_enabled=True
+2026-04-25 16:47:47,786 | INFO | [CONFIG] use_validation_holdout=True
+2026-04-25 16:47:47,786 | INFO | [CONFIG] xgb_feature_sets=['xgb_full_aircraft']
+2026-04-25 16:47:47,786 | INFO | [CONFIG] sample_fraction_for_tuning=0.1
+2026-04-25 16:47:47,786 | INFO | [CONFIG] sample_fraction_for_lstm_tuning=0.03
+2026-04-25 16:47:47,786 | INFO | [CONFIG] sample_fraction_for_final_train=0.35
+2026-04-25 16:47:47,786 | INFO | [MEM] startup | maxrss≈794.75 MB
+2026-04-25 16:47:47,786 | INFO | [STEP] Starting memory-safe collect_modeling_splits
+2026-04-25 16:47:47,786 | INFO | [DATA] years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+2026-04-25 16:47:47,786 | INFO | [DATA] projecting 41 required columns
+2026-04-25 16:47:47,786 | INFO | [DATA] required columns=['aircraft_age', 'aircraft_leg_number_day', 'aircraft_no_eng', 'aircraft_no_seats', 'aircraft_year_mfr', 'arr_ceiling_height_m', 'arr_del15', 'arr_delay', 'arr_temp_c', 'arr_wind_dir_deg', 'arr_wind_speed_m_s', 'crs_elapsed_time', 'days_to_nearest_holiday', 'dep_ceiling_height_m', 'dep_hour_local', 'dep_month_local', 'dep_temp_c', 'dep_time_bucket', 'dep_ts_actual_utc', 'dep_weekday_local', 'dep_wind_dir_deg', 'dep_wind_speed_m_s', 'dest_flight_volume', 'distance', 'is_holiday', 'is_weekend', 'origin_flight_volume', 'prev1_arr_del15', 'prev1_arr_delay', 'prev1_dep_del15', 'prev1_dep_delay', 'prev1_turnaround_minutes', 'prev2_arr_del15', 'prev2_arr_delay', 'prev2_dep_del15', 'prev2_dep_delay', 'relative_leg_position', 'rotation_continuity_flag', 'route_frequency', 'time_since_prev2_arrival_minutes', 'year']
+2026-04-25 16:47:47,786 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2015.parquet
+2026-04-25 16:47:47,803 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2016.parquet
+2026-04-25 16:47:47,811 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2017.parquet
+2026-04-25 16:47:47,819 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2018.parquet
+2026-04-25 16:47:47,829 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2019.parquet
+2026-04-25 16:47:47,840 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2020.parquet
+2026-04-25 16:47:47,847 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2021.parquet
+2026-04-25 16:47:47,856 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2022.parquet
+2026-04-25 16:47:47,866 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2023.parquet
+2026-04-25 16:47:47,875 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2024.parquet
+2026-04-25 16:47:47,886 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2025.parquet
+2026-04-25 16:47:47,895 | INFO | [TIMER] Load years lazy: 0.11s
+2026-04-25 16:47:47,899 | INFO | [DATA] Aircraft enrichment enabled — joining FAA registry
+2026-04-25 16:47:47,899 | INFO | [FAA] Using cached zip at /home/jon/projects/OR568_ML_Project/data_pipeline/data/faa_registry/ReleasableAircraft.zip
+2026-04-25 16:47:53,025 | INFO | [FAA] ACFTREF columns (fixed): ['code', 'mfr', 'model', 'type_acft', 'type_eng', 'ac_cat', 'build_cert_ind', 'no_eng', 'no_seats', 'ac_weight', 'speed', 'tc_data_sheet', 'tc_data_holder', 'unnamed:_13']
+2026-04-25 16:47:53,025 | INFO | [FAA] MASTER columns (fixed): ['n_number', 'serial_number', 'mfr_mdl_code', 'eng_mfr_mdl', 'year_mfr', 'type_registrant', 'name', 'street', 'street2', 'city', 'state', 'zip_code', 'region', 'county', 'country', 'last_action_date', 'cert_issue_date', 'certification', 'type_aircraft', 'type_engine', 'status_code', 'mode_s_code', 'fract_owner', 'air_worth_date', 'other_names(1)', 'other_names(2)', 'other_names(3)', 'other_names(4)', 'other_names(5)', 'expiration_date', 'unique_id', 'kit_mfr', 'kit_model', 'mode_s_code_hex', 'unnamed:_34']
+2026-04-25 16:47:53,025 | INFO | [FAA] DEREG columns (fixed): ['n_number', 'serial_number', 'mfr_mdl_code', 'status_code', 'name', 'street_mail', 'street2_mail', 'city_mail', 'state_abbrev_mail', 'zip_code_mail', 'eng_mfr_mdl', 'year_mfr', 'certification', 'region', 'county_mail', 'country_mail', 'air_worth_date', 'cancel_date', 'mode_s_code', 'indicator_group', 'exp_country', 'last_act_date', 'cert_issue_date', 'street_physical', 'street2_physical', 'city_physical', 'state_abbrev_physical', 'zip_code_physical', 'county_physical', 'country_physical', 'other_names(1)', 'other_names(2)', 'other_names(3)', 'other_names(4)', 'other_names(5)', 'kit_mfr', 'kit_model', 'mode_s_code_hex', 'unnamed:_38']
+2026-04-25 16:47:53,091 | INFO | [FAA] tail lookup built | rows=531,253 cols=['tail_number', 'mfr_mdl_code', 'year_mfr', 'type_acft', 'mfr', 'model', 'no_seats', 'ac_weight', 'no_eng']
+2026-04-25 16:47:53,099 | INFO | [TIMER] Build modeling table lazy: 5.20s
+2026-04-25 16:48:11,926 | INFO | [TIMER] Collect train: 18.83s
+2026-04-25 16:48:11,927 | INFO | [SPLIT] train collected | years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023] rows=54,620,695 cols=41 est_size≈13518.93 MB
+2026-04-25 16:48:28,353 | INFO | [TIMER] Collect validation: 16.43s
+2026-04-25 16:48:28,355 | INFO | [SPLIT] validation collected | years=[2024] rows=6,947,566 cols=41 est_size≈1711.83 MB
+2026-04-25 16:48:44,035 | INFO | [TIMER] Collect test: 15.68s
+2026-04-25 16:48:44,036 | INFO | [SPLIT] test collected | years=[2025] rows=6,857,845 cols=41 est_size≈1689.53 MB
+2026-04-25 16:48:44,037 | INFO | [TIMER] Collect all split partitions: 50.94s
+2026-04-25 16:48:44,050 | INFO | [TIMER] Collect split modeling data: 56.26s
+2026-04-25 16:48:44,050 | INFO | [TIMER] Collect split modeling data: 56.26s
+2026-04-25 16:48:44,050 | INFO | [ROWS] train=54,620,695 validation=6,947,566 test=6,857,845
+2026-04-25 16:48:44,052 | INFO | [DF] train_df | rows=54,620,695 cols=41 est_size≈13518.93 MB | columns=['aircraft_age', 'aircraft_leg_number_day', 'aircraft_no_eng', 'aircraft_no_seats', 'aircraft_year_mfr', 'arr_ceiling_height_m', 'arr_del15', 'arr_delay', 'arr_temp_c', 'arr_wind_dir_deg', 'arr_wind_speed_m_s', 'crs_elapsed_time'] ...
+2026-04-25 16:48:44,053 | INFO | [DF] val_df | rows=6,947,566 cols=41 est_size≈1711.83 MB | columns=['aircraft_age', 'aircraft_leg_number_day', 'aircraft_no_eng', 'aircraft_no_seats', 'aircraft_year_mfr', 'arr_ceiling_height_m', 'arr_del15', 'arr_delay', 'arr_temp_c', 'arr_wind_dir_deg', 'arr_wind_speed_m_s', 'crs_elapsed_time'] ...
+2026-04-25 16:48:44,054 | INFO | [DF] test_df | rows=6,857,845 cols=41 est_size≈1689.53 MB | columns=['aircraft_age', 'aircraft_leg_number_day', 'aircraft_no_eng', 'aircraft_no_seats', 'aircraft_year_mfr', 'arr_ceiling_height_m', 'arr_del15', 'arr_delay', 'arr_temp_c', 'arr_wind_dir_deg', 'arr_wind_speed_m_s', 'crs_elapsed_time'] ...
+2026-04-25 16:48:44,054 | INFO | [MEM] after split collection | maxrss≈81103.91 MB
+2026-04-25 16:48:44,054 | INFO | [STEP] Building rolling CV splits
+2026-04-25 16:48:51,252 | INFO | [TIMER] Build rolling CV splits: 7.20s
+2026-04-25 16:48:51,252 | INFO | [TIMER] Build rolling CV splits: 7.20s
+2026-04-25 16:48:51,252 | INFO | [CV] built 5 folds
+2026-04-25 16:48:51,252 | INFO | [CV] fold=1 train_years=[2015, 2016, 2017, 2018] val_year=2019
+2026-04-25 16:48:51,252 | INFO | [CV] fold=2 train_years=[2015, 2016, 2017, 2018, 2019] val_year=2020
+2026-04-25 16:48:51,252 | INFO | [CV] fold=3 train_years=[2015, 2016, 2017, 2018, 2019, 2020] val_year=2021
+2026-04-25 16:48:51,252 | INFO | [CV] fold=4 train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021] val_year=2022
+2026-04-25 16:48:51,252 | INFO | [CV] fold=5 train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022] val_year=2023
+2026-04-25 16:48:51,252 | INFO | [MEM] after CV split build | maxrss≈85700.15 MB
+2026-04-25 16:48:51,252 | INFO | [STEP] Building final training dataframe
+2026-04-25 16:48:51,258 | INFO | [FINAL TRAIN] rows used for final refit: 61,568,261
+2026-04-25 16:48:51,259 | INFO | [DF] final_train_df | rows=61,568,261 cols=41 est_size≈15230.76 MB | columns=['aircraft_age', 'aircraft_leg_number_day', 'aircraft_no_eng', 'aircraft_no_seats', 'aircraft_year_mfr', 'arr_ceiling_height_m', 'arr_del15', 'arr_delay', 'arr_temp_c', 'arr_wind_dir_deg', 'arr_wind_speed_m_s', 'crs_elapsed_time'] ...
+2026-04-25 16:48:51,259 | INFO | [MEM] after final_train_df creation | maxrss≈85700.15 MB
+2026-04-25 16:48:51,259 | INFO | [XGB] Feature sets to run: ['xgb_full_aircraft']
+2026-04-25 16:48:51,377 | INFO | [MEM] after releasing train_df/val_df before XGB loop | maxrss≈85700.15 MB
+2026-04-25 16:48:51,377 | INFO | ============================================================
+2026-04-25 16:48:51,377 | INFO | [XGB] Starting feature set: xgb_full_aircraft
+2026-04-25 16:48:51,377 | INFO | ============================================================
+2026-04-25 16:48:51,377 | INFO | [XGB] number of features=37
+2026-04-25 16:48:51,377 | INFO | [XGB] tune_xgb=True
+2026-04-25 16:48:51,377 | INFO | [XGB:xgb_full_aircraft] Starting time-aware CV search with 4 configs
+2026-04-25 17:00:35,728 | INFO | [TIMER] XGB time-aware CV search: xgb_full_aircraft: 704.35s
+2026-04-25 17:00:35,728 | INFO | [TIMER] XGB time-aware CV search: xgb_full_aircraft: 704.35s
+2026-04-25 17:00:35,728 | INFO | [XGB:xgb_full_aircraft] Top configs:
+  model_family   feature_set_name config_id                                             params  cv_auc_mean  cv_auc_min  ...  cv_mae_mean  cv_mae_min  cv_mae_max  cv_rmse_mean  cv_rmse_min  cv_rmse_max
+0          xgb  xgb_full_aircraft    xgb_03  {'n_estimators': 300, 'max_depth': 6, 'learnin...     0.835704    0.804807  ...    18.091205   17.123714   18.889994     40.860520    35.065461    45.491135
+1          xgb  xgb_full_aircraft    xgb_04  {'n_estimators': 400, 'max_depth': 6, 'learnin...     0.834230    0.802525  ...    18.099154   17.072809   18.953720     41.041636    35.027075    45.764542
+2          xgb  xgb_full_aircraft    xgb_02  {'n_estimators': 350, 'max_depth': 4, 'learnin...     0.827804    0.795460  ...    18.472655   17.456665   19.543121     42.196271    35.119293    47.421831
+3          xgb  xgb_full_aircraft    xgb_01  {'n_estimators': 250, 'max_depth': 4, 'learnin...     0.825129    0.792998  ...    18.538802   17.463947   19.692358     42.638793    35.278131    48.025056
+
+[4 rows x 25 columns]
+2026-04-25 17:00:35,743 | INFO | [XGB:xgb_full_aircraft] Best config row={'model_family': 'xgb', 'feature_set_name': 'xgb_full_aircraft', 'config_id': 'xgb_03', 'params': {'n_estimators': 300, 'max_depth': 6, 'learning_rate': 0.05, 'subsample': 0.8, 'colsample_bytree': 0.8, 'min_child_weight': 1, 'reg_lambda': 1.0}, 'cv_auc_mean': 0.8357035951197862, 'cv_auc_min': 0.804806541354774, 'cv_auc_max': 0.8525428911198539, 'cv_f1_mean': 0.5024850169576276, 'cv_f1_min': 0.4121648541368472, 'cv_f1_max': 0.5702034798526541, 'cv_precision_mean': 0.7483897791805513, 'cv_precision_min': 0.5695526283593655, 'cv_precision_max': 0.8355549358616843, 'cv_recall_mean': 0.3821541666910798, 'cv_recall_min': 0.2976594941487354, 'cv_recall_max': 0.4547762546568663, 'cv_accuracy_mean': 0.8714413856948454, 'cv_accuracy_min': 0.8531563594918121, 'cv_accuracy_max': 0.9093218429265029, 'cv_mae_mean': 18.091205215454103, 'cv_mae_min': 17.123714447021484, 'cv_mae_max': 18.88999366760254, 'cv_rmse_mean': 40.86051960525473, 'cv_rmse_min': 35.06546089603789, 'cv_rmse_max': 45.4911349536918}
+2026-04-25 17:00:35,743 | INFO | [MEM] after XGB CV search: xgb_full_aircraft | maxrss≈87507.52 MB
+2026-04-25 17:00:35,853 | INFO | [MEM] after releasing CV results: xgb_full_aircraft | maxrss≈87507.52 MB
+2026-04-25 17:00:35,853 | INFO | [XGB:xgb_full_aircraft] Starting final refit + test
+2026-04-25 17:00:40,811 | INFO | [XGB:xgb_full_aircraft] final_fit_df rows=21,548,891 from original final_train_df rows=61,568,261
+2026-04-25 17:04:58,079 | INFO | [TIMER] Final XGB refit + test: xgb_full_aircraft: 262.23s
+2026-04-25 17:04:58,087 | INFO | [TIMER] Final XGB refit + test: xgb_full_aircraft: 262.23s
+2026-04-25 17:04:58,087 | INFO | [XGB FINAL:xgb_full_aircraft] Classification={'auc': 0.8452212718345182, 'f1': 0.5561764053240207, 'precision': 0.8029417937164373, 'recall': 0.4254303372645875, 'accuracy': 0.848631312022946}
+2026-04-25 17:04:58,087 | INFO | [XGB FINAL:xgb_full_aircraft] Regression={'mae': 20.136465072631836, 'rmse': 46.16684881695414}
+2026-04-25 17:04:58,463 | INFO | [ARTIFACTS:xgb_full_aircraft] Saved artifacts: {'run_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747', 'logs_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/logs', 'models_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/models', 'evaluations_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations', 'plots_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/plots', 'tables_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/tables', 'classifier_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/models/xgb_classifier_xgb_full_aircraft.joblib', 'regressor_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/models/xgb_regressor_xgb_full_aircraft.joblib', 'metadata_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/models/metadata_xgb_full_aircraft.json', 'summary_json_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations/results_summary.json', 'feature_importance_csv_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations/feature_importance_xgb_full_aircraft.csv', 'predictions_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations/test_predictions_xgb_full_aircraft.parquet'}
+2026-04-25 17:04:58,587 | INFO | [MEM] after cleanup for feature set: xgb_full_aircraft | maxrss≈88462.48 MB
+2026-04-25 17:04:58,588 | INFO | ================================================
+2026-04-25 17:04:58,588 | INFO | FINAL TEST RESULTS
+2026-04-25 17:04:58,588 | INFO | ================================================
+2026-04-25 17:04:58,588 | INFO | 
+  model_family            details  test_auc   test_f1  test_precision  test_recall  test_accuracy   test_mae  test_rmse
+0          xgb  xgb_full_aircraft  0.845221  0.556176        0.802942      0.42543       0.848631  20.136465  46.166849
+2026-04-25 17:04:58,593 | INFO | ================================================
+2026-04-25 17:04:58,593 | INFO | BEST OVERALL MODEL
+2026-04-25 17:04:58,593 | INFO | ================================================
+2026-04-25 17:04:58,593 | INFO | {'model_family': 'xgb', 'details': 'xgb_full_aircraft', 'test_auc': 0.8452212718345182, 'test_f1': 0.5561764053240207, 'test_precision': 0.8029417937164373, 'test_recall': 0.4254303372645875, 'test_accuracy': 0.848631312022946, 'test_mae': 20.136465072631836, 'test_rmse': 46.16684881695414}
+2026-04-25 17:04:58,593 | INFO | [SAVE] Attempting to write results summary under: /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations
+2026-04-25 17:04:58,594 | INFO | [SAVE] Wrote /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations/results_summary.json
+2026-04-25 17:04:58,594 | INFO | [SAVE] Results summary written under: /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747/evaluations
+2026-04-25 17:04:58,594 | INFO | [TIMER] Save results summary: 0.00s
+2026-04-25 17:04:58,594 | INFO | [TIMER] Save results summary: 0.00s
+2026-04-25 17:05:02,808 | INFO | [VIZ] Generated evaluation plots and tables under /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260425_164747
+2026-04-25 17:05:02,808 | INFO | [TIMER] Generate visualizations: 4.21s
+2026-04-25 17:05:02,808 | INFO | [TIMER] Generate visualizations: 4.21s
+2026-04-25 17:05:02,929 | INFO | [MEM] before return | maxrss≈88462.48 MB
+2026-04-25 17:05:02,930 | INFO | [TIMER] TOTAL PIPELINE TIME: 1035.15s
+2026-04-25 17:05:02,930 | INFO | [TIMER] TOTAL PIPELINE TIME: 1035.15s
+2026-04-25 17:05:03,037 | INFO | [MEM] final cleanup | maxrss≈88462.48 MB

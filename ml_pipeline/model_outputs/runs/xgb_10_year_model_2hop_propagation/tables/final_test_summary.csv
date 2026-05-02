@@ -1,0 +1,2 @@
+model,variant,test_auc,test_f1,test_precision,test_recall,test_accuracy,test_mae,test_rmse
+xgb,xgb_2hop_propagation_aircraft,0.8317801944071468,0.5220238283126931,0.7915758683729434,0.38941720590322587,0.841020612160234,21.032108306884766,50.19821064104278

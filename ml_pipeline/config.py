@@ -52,7 +52,7 @@ class RuntimeConfig:
     use_gpu: bool = False
 
     # Avoid -1 on huge XGB fits; fewer threads usually lowers memory pressure
-    n_jobs: int = 20
+    n_jobs: int = 8
 
     # Tuning can be very expensive on full data.
     # Keep None for full data, or use e.g. 0.10 for 10%.
@@ -63,7 +63,7 @@ class RuntimeConfig:
 
     # Optional safety valve for final fit on very large data.
     # Keep None for full data, or try 0.50 / 0.75 if needed.
-    sample_fraction_for_final_train: float | None = None
+    sample_fraction_for_final_train: float | None = 0.35
 
 
 @dataclass
@@ -77,6 +77,18 @@ class ModelConfig:
     # XGBoost feature set
     # xgb_feature_set_name: str = "xgb_full"
     xgb_feature_set_name: str = "xgb_full_aircraft" 
+
+    # Disable multi-model batch run
+    xgb_feature_set_names: list[str] = field(default_factory=list)
+
+    # Enable multi-model batch run 
+    # xgb_feature_set_names: list[str] = field(default_factory=lambda: [
+    #     "xgb_schedule",
+    #     "xgb_context",
+    #     "xgb_2hop_propagation",
+    #     "xgb_full",
+    #     "xgb_full_aircraft",
+    # ])
 
     # LSTM feature set
     lstm_variant_name: str = "context_full"
@@ -192,6 +204,9 @@ class VisualizationConfig:
     scatter_sample_n: int = 5000
     figure_dpi: int = 150
     image_format: str = "png"
+
+    make_side_by_side_metric_charts: bool = True
+    make_overlay_metric_charts: bool = True
 
 
 @dataclass

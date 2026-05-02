@@ -63,9 +63,10 @@ def save_xgb_artifacts(
 
     classifier_path = models_dir / f"xgb_classifier_{feature_set_name}.joblib"
     regressor_path = models_dir / f"xgb_regressor_{feature_set_name}.joblib"
-    metadata_path = models_dir / "metadata.json"
+    metadata_path = models_dir / f"metadata_{feature_set_name}.json"
     summary_json_path = eval_dir / "results_summary.json"
-    feature_importance_csv_path = eval_dir / "feature_importance.csv"
+    feature_importance_csv_path = eval_dir / f"feature_importance_{feature_set_name}.csv"
+    predictions_path = eval_dir / f"test_predictions_{feature_set_name}.parquet"
 
     joblib.dump(classifier, classifier_path)
     joblib.dump(regressor, regressor_path)
@@ -98,18 +99,24 @@ def save_xgb_artifacts(
             "y_test_reg": y_test_reg,
             "test_pred_reg": test_pred_reg,
         })
-        pred_df.to_parquet(eval_dir / "test_predictions.parquet", index=False)
+        pred_df.to_parquet(predictions_path, index=False)
 
     return {
-        "run_dir": str(run_paths["run_dir"]),
-        "logs_dir": str(run_paths["logs_dir"]),
-        "models_dir": str(models_dir),
-        "evaluations_dir": str(eval_dir),
-        "plots_dir": str(run_paths["plots_dir"]),
-        "tables_dir": str(run_paths["tables_dir"]),
-        "classifier_path": str(classifier_path),
-        "regressor_path": str(regressor_path),
-        "metadata_path": str(metadata_path),
-        "summary_json_path": str(summary_json_path),
-        "feature_importance_csv_path": str(feature_importance_csv_path),
-    }
+    "run_dir": str(run_paths["run_dir"]),
+    "logs_dir": str(run_paths["logs_dir"]),
+    "models_dir": str(models_dir),
+    "evaluations_dir": str(eval_dir),
+    "plots_dir": str(run_paths["plots_dir"]),
+    "tables_dir": str(run_paths["tables_dir"]),
+    "classifier_path": str(classifier_path),
+    "regressor_path": str(regressor_path),
+    "metadata_path": str(metadata_path),
+    "summary_json_path": str(summary_json_path),
+    "feature_importance_csv_path": str(feature_importance_csv_path),
+    "predictions_path": str(predictions_path) if (
+        y_test_cls is not None
+        and test_pred_cls is not None
+        and y_test_reg is not None
+        and test_pred_reg is not None
+    ) else None,
+}

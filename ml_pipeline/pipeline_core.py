@@ -521,9 +521,16 @@ def resolve_required_columns(
     if run_xgb:
         if xgb_feature_set_name is None:
             raise ValueError("xgb_feature_set_name is required when run_xgb=True")
-        if xgb_feature_set_name not in XGB_FEATURE_SETS:
-            raise ValueError(f"Unknown XGB feature set: {xgb_feature_set_name}")
-        required.update(XGB_FEATURE_SETS[xgb_feature_set_name])
+
+        if isinstance(xgb_feature_set_name, str):
+            feature_set_names = [xgb_feature_set_name]
+        else:
+            feature_set_names = list(xgb_feature_set_name)
+
+        for fs_name in feature_set_names:
+            if fs_name not in XGB_FEATURE_SETS:
+                raise ValueError(f"Unknown XGB feature set: {fs_name}")
+            required.update(XGB_FEATURE_SETS[fs_name])
 
     if run_lstm:
         required.update(LSTM_REQUIRED_COLUMNS)
