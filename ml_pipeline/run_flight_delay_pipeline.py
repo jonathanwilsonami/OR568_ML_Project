@@ -220,23 +220,6 @@ def main():
     train_years = list(range(CONFIG.split.train_start_year, CONFIG.split.train_end_year + 1))
     all_years = sorted(set(train_years + CONFIG.split.validation_years + CONFIG.split.test_years))
 
-    # ------------------------------------------------------------
-    # Resolve XGB feature sets once
-    # ------------------------------------------------------------
-    # Supports both modes:
-    #
-    # Single model:
-    #   xgb_feature_set_name = "xgb_full_aircraft"
-    #   xgb_feature_set_names = []
-    #
-    # Multiple models:
-    #   xgb_feature_set_names = [
-    #       "xgb_schedule",
-    #       "xgb_context",
-    #       "xgb_2hop_propagation",
-    #       "xgb_full_aircraft",
-    #   ]
-    # ------------------------------------------------------------
     configured_xgb_feature_sets = (
         CONFIG.models.xgb_feature_set_names
         if getattr(CONFIG.models, "xgb_feature_set_names", None)
@@ -250,9 +233,15 @@ def main():
     logging.info("[CONFIG] cv_enabled=%s", CONFIG.cv.enabled)
     logging.info("[CONFIG] use_validation_holdout=%s", CONFIG.split.use_validation_holdout)
     logging.info("[CONFIG] xgb_feature_sets=%s", configured_xgb_feature_sets)
-    logging.info("[CONFIG] sample_fraction_for_tuning=%s", CONFIG.runtime.sample_fraction_for_tuning)
-    logging.info("[CONFIG] sample_fraction_for_lstm_tuning=%s", CONFIG.runtime.sample_fraction_for_lstm_tuning)
-    logging.info("[CONFIG] sample_fraction_for_final_train=%s", CONFIG.runtime.sample_fraction_for_final_train)
+    logging.info("[CONFIG] tune_xgb=%s", CONFIG.models.tune_xgb)
+    logging.info(
+        "[CONFIG] early sample fractions — train=%s val=%s test=%s",
+        CONFIG.runtime.train_sample_fraction,
+        CONFIG.runtime.val_sample_fraction,
+        CONFIG.runtime.test_sample_fraction,
+    )
+    logging.info("[CONFIG] sample_fraction_for_tuning (in-memory)=%s", CONFIG.runtime.sample_fraction_for_tuning)
+    logging.info("[CONFIG] sample_fraction_for_final_train (in-memory)=%s", CONFIG.runtime.sample_fraction_for_final_train)
 
     memory_snapshot("startup")
 
@@ -264,6 +253,8 @@ def main():
     try:
         # ============================================================
         # LOAD / SPLIT MODELING DATA
+        # Early-sample fractions are applied *before* .collect() inside
+        # _collect_partition so Polars never materialises the full data.
         # ============================================================
         t0 = time.perf_counter()
         logging.info("[STEP] Starting memory-safe collect_modeling_splits")
@@ -278,6 +269,11 @@ def main():
             run_xgb=CONFIG.models.run_xgb,
             run_lstm=CONFIG.models.run_lstm,
             xgb_feature_set_name=configured_xgb_feature_sets,
+            # OOM fix: sample before collect
+            train_sample_fraction=CONFIG.runtime.train_sample_fraction,
+            val_sample_fraction=CONFIG.runtime.val_sample_fraction,
+            test_sample_fraction=CONFIG.runtime.test_sample_fraction,
+            sample_seed=CONFIG.runtime.random_seed,
         )
 
         train_df = split_dict["train_df"]
@@ -304,7 +300,7 @@ def main():
             raise RuntimeError("test_df is empty after split collection.")
 
         # ============================================================
-        # CV SPLITS INSIDE TRAIN YEARS
+        # CV SPLITS
         # ============================================================
         cv_splits = []
         if CONFIG.cv.enabled:
@@ -321,16 +317,18 @@ def main():
 
             for s in cv_splits:
                 logging.info(
-                    "[CV] fold=%s train_years=%s val_year=%s",
+                    "[CV] fold=%s train_years=%s val_year=%s train_rows=%s val_rows=%s",
                     s["fold"],
                     s["train_years"],
                     s["val_year"],
+                    f"{s['train_df'].height:,}",
+                    f"{s['val_df'].height:,}",
                 )
 
             memory_snapshot("after CV split build")
 
         # ============================================================
-        # OPTIONAL FINAL TRAINING DATA = train + validation
+        # FINAL TRAINING DATA = train + validation
         # ============================================================
         logging.info("[STEP] Building final training dataframe")
         if CONFIG.split.use_validation_holdout and val_df is not None:
@@ -342,7 +340,6 @@ def main():
         log_df_info("final_train_df", final_train_df)
         memory_snapshot("after final_train_df creation")
 
-        # Cache row counts before any large references are released
         train_rows = 0 if train_df is None else train_df.height
         validation_rows = 0 if val_df is None else val_df.height
         test_rows = 0 if test_df is None else test_df.height
@@ -364,6 +361,9 @@ def main():
                 "lstm_variant_name": CONFIG.models.lstm_variant_name,
                 "use_gpu": CONFIG.runtime.use_gpu,
                 "worker_cores": WORKER_CORES,
+                "train_sample_fraction": CONFIG.runtime.train_sample_fraction,
+                "val_sample_fraction": CONFIG.runtime.val_sample_fraction,
+                "test_sample_fraction": CONFIG.runtime.test_sample_fraction,
             },
             "row_counts": {
                 "train_rows": train_rows,
@@ -393,10 +393,8 @@ def main():
 
         if CONFIG.models.run_xgb:
             feature_set_names = configured_xgb_feature_sets
-
             logging.info("[XGB] Feature sets to run: %s", feature_set_names)
 
-            # Release train/val references after CV split construction
             train_df = None
             val_df = None
             gc.collect()
@@ -410,32 +408,37 @@ def main():
                 if feature_set_name not in XGB_FEATURE_SETS:
                     raise ValueError(f"Unknown XGB feature set name: {feature_set_name}")
 
-                logging.info(
-                    "[XGB] number of features=%s",
-                    len(XGB_FEATURE_SETS[feature_set_name]),
-                )
+                logging.info("[XGB] number of features=%s", len(XGB_FEATURE_SETS[feature_set_name]))
                 logging.info("[XGB] tune_xgb=%s", CONFIG.models.tune_xgb)
 
                 xgb_cv_results = None
                 best_xgb_row = None
                 best_xgb_final = None
+                best_xgb_fold_cls_metrics: list[dict] = []
+                best_xgb_fold_reg_metrics: list[dict] = []
 
-                # ----------------------------------------------------
-                # Optional tuning
-                # ----------------------------------------------------
-                if CONFIG.models.tune_xgb and cv_splits:
+                # CV always runs when splits exist; tune_xgb controls param selection only.
+                if cv_splits:
                     t0 = time.perf_counter()
 
+                    cv_param_grid = (
+                        CONFIG.xgb_search.param_grid
+                        if CONFIG.models.tune_xgb
+                        else CONFIG.xgb_search.param_grid[:1]
+                    )
+
                     logging.info(
-                        "[XGB:%s] Starting time-aware CV search with %s configs",
+                        "[XGB:%s] Running CV (%s) — %s config(s), in-memory sample=%s",
                         feature_set_name,
-                        len(CONFIG.xgb_search.param_grid),
+                        "tuning" if CONFIG.models.tune_xgb else "diagnostics only",
+                        len(cv_param_grid),
+                        CONFIG.runtime.sample_fraction_for_tuning,
                     )
 
                     xgb_cv_results = run_xgb_time_cv(
                         cv_splits=cv_splits,
                         feature_set_name=feature_set_name,
-                        param_grid=CONFIG.xgb_search.param_grid,
+                        param_grid=cv_param_grid,
                         use_gpu=CONFIG.runtime.use_gpu,
                         n_jobs=CONFIG.runtime.n_jobs,
                         sample_fraction=CONFIG.runtime.sample_fraction_for_tuning,
@@ -443,78 +446,67 @@ def main():
                     )
 
                     safe_timer_log(
-                        f"XGB time-aware CV search: {feature_set_name}",
+                        f"XGB CV ({'tuning' if CONFIG.models.tune_xgb else 'diagnostics'}): {feature_set_name}",
                         t0,
                     )
 
-                    logging.info(
-                        "[XGB:%s] Top configs:\n%s",
-                        feature_set_name,
-                        xgb_cv_results.head(10),
+                    logging.info("[XGB:%s] CV results:\n%s", feature_set_name, xgb_cv_results.head(10))
+
+                    best_cv_row = xgb_cv_results.iloc[0].to_dict()
+                    best_xgb_fold_cls_metrics = best_cv_row.pop("fold_cls_metrics", [])
+                    best_xgb_fold_reg_metrics = best_cv_row.pop("fold_reg_metrics", [])
+
+                    if CONFIG.models.tune_xgb:
+                        best_xgb_row = best_cv_row
+                        logging.info("[XGB:%s] Best config (tuned): %s", feature_set_name, best_xgb_row)
+                    else:
+                        best_xgb_row = {
+                            "model_family": "xgb",
+                            "feature_set_name": feature_set_name,
+                            "config_id": "manual_01",
+                            "params": CONFIG.xgb_search.param_grid[0],
+                        }
+                        logging.info(
+                            "[XGB:%s] Using manual params (tune_xgb=False): %s",
+                            feature_set_name,
+                            best_xgb_row["params"],
+                        )
+
+                    memory_snapshot(f"after XGB CV: {feature_set_name}")
+
+                    summary_df = xgb_cv_results.drop(
+                        columns=["fold_cls_metrics", "fold_reg_metrics"], errors="ignore"
                     )
-
-                    best_xgb_row = xgb_cv_results.iloc[0].to_dict()
-
-                    logging.info(
-                        "[XGB:%s] Best config row=%s",
-                        feature_set_name,
-                        best_xgb_row,
-                    )
-
-                    memory_snapshot(
-                        f"after XGB CV search: {feature_set_name}"
-                    )
-
-                    xgb_cv_results_by_feature_set[
-                        feature_set_name
-                    ] = xgb_cv_results.to_dict(orient="records")
+                    xgb_cv_results_by_feature_set[feature_set_name] = {
+                        "summary": summary_df.to_dict(orient="records"),
+                        "best_config_fold_cls_metrics": best_xgb_fold_cls_metrics,
+                        "best_config_fold_reg_metrics": best_xgb_fold_reg_metrics,
+                    }
 
                     del xgb_cv_results
                     xgb_cv_results = None
                     gc.collect()
-
-                    memory_snapshot(
-                        f"after releasing CV results: {feature_set_name}"
-                    )
+                    memory_snapshot(f"after releasing CV results: {feature_set_name}")
 
                 else:
-                    if CONFIG.models.tune_xgb and not cv_splits:
-                        logging.warning(
-                            "[XGB:%s] tune_xgb=True but no CV splits "
-                            "were built. Falling back to first parameter set.",
-                            feature_set_name,
-                        )
-
+                    logging.warning(
+                        "[XGB:%s] No CV splits available — falling back to first parameter set.",
+                        feature_set_name,
+                    )
                     best_xgb_row = {
                         "model_family": "xgb",
                         "feature_set_name": feature_set_name,
                         "config_id": "manual_01",
                         "params": CONFIG.xgb_search.param_grid[0],
                     }
+                    xgb_cv_results_by_feature_set[feature_set_name] = None
+                    logging.info("[XGB:%s] Using params=%s", feature_set_name, best_xgb_row["params"])
 
-                    xgb_cv_results_by_feature_set[
-                        feature_set_name
-                    ] = None
+                best_xgb_rows_by_feature_set[feature_set_name] = best_xgb_row
 
-                    logging.info(
-                        "[XGB:%s] Using params=%s",
-                        feature_set_name,
-                        best_xgb_row["params"],
-                    )
-
-                best_xgb_rows_by_feature_set[
-                    feature_set_name
-                ] = best_xgb_row
-
-                # ----------------------------------------------------
                 # Final fit
-                # ----------------------------------------------------
                 t0 = time.perf_counter()
-
-                logging.info(
-                    "[XGB:%s] Starting final refit + test",
-                    feature_set_name,
-                )
+                logging.info("[XGB:%s] Starting final refit + test", feature_set_name)
 
                 final_fit_df = maybe_sample(
                     final_train_df,
@@ -523,8 +515,7 @@ def main():
                 )
 
                 logging.info(
-                    "[XGB:%s] final_fit_df rows=%s "
-                    "from original final_train_df rows=%s",
+                    "[XGB:%s] final_fit_df rows=%s (from final_train_df rows=%s)",
                     feature_set_name,
                     f"{final_fit_df.height:,}",
                     f"{final_train_df.height:,}",
@@ -539,29 +530,11 @@ def main():
                     n_jobs=CONFIG.runtime.n_jobs,
                 )
 
-                safe_timer_log(
-                    f"Final XGB refit + test: {feature_set_name}",
-                    t0,
-                )
+                safe_timer_log(f"Final XGB refit + test: {feature_set_name}", t0)
+                logging.info("[XGB FINAL:%s] Classification=%s", feature_set_name, best_xgb_final["test_cls_metrics"])
+                logging.info("[XGB FINAL:%s] Regression=%s", feature_set_name, best_xgb_final["test_reg_metrics"])
 
-                logging.info(
-                    "[XGB FINAL:%s] Classification=%s",
-                    feature_set_name,
-                    best_xgb_final["test_cls_metrics"],
-                )
-
-                logging.info(
-                    "[XGB FINAL:%s] Regression=%s",
-                    feature_set_name,
-                    best_xgb_final["test_reg_metrics"],
-                )
-
-                # ----------------------------------------------------
-                # Keep only lightweight metrics in memory
-                # ----------------------------------------------------
-                best_xgb_finals_by_feature_set[
-                    feature_set_name
-                ] = {
+                best_xgb_finals_by_feature_set[feature_set_name] = {
                     "model_family": best_xgb_final["model_family"],
                     "feature_set_name": best_xgb_final["feature_set_name"],
                     "params": best_xgb_final["params"],
@@ -569,9 +542,6 @@ def main():
                     "test_reg_metrics": best_xgb_final["test_reg_metrics"],
                 }
 
-                # ----------------------------------------------------
-                # Save artifacts per feature set
-                # ----------------------------------------------------
                 if CONFIG.artifacts.enabled:
                     artifact_paths = save_xgb_artifacts(
                         run_paths=run_paths,
@@ -581,60 +551,28 @@ def main():
                         classifier=best_xgb_final["classifier"],
                         regressor=best_xgb_final["regressor"],
                         results_payload=results_payload,
-                        feature_names=XGB_FEATURE_SETS[
-                            feature_set_name
-                        ],
+                        feature_names=XGB_FEATURE_SETS[feature_set_name],
                         y_test_cls=best_xgb_final.get("y_test_cls"),
-                        test_pred_cls=best_xgb_final.get(
-                            "test_pred_cls"
-                        ),
+                        test_pred_cls=best_xgb_final.get("test_pred_cls"),
                         y_test_reg=best_xgb_final.get("y_test_reg"),
-                        test_pred_reg=best_xgb_final.get(
-                            "test_pred_reg"
-                        ),
+                        test_pred_reg=best_xgb_final.get("test_pred_reg"),
+                        fold_cls_metrics=best_xgb_fold_cls_metrics,
+                        fold_reg_metrics=best_xgb_fold_reg_metrics,
                     )
+                    artifact_paths_by_feature_set[feature_set_name] = artifact_paths
+                    logging.info("[ARTIFACTS:%s] Saved: %s", feature_set_name, artifact_paths)
 
-                    artifact_paths_by_feature_set[
-                        feature_set_name
-                    ] = artifact_paths
-
-                    logging.info(
-                        "[ARTIFACTS:%s] Saved artifacts: %s",
-                        feature_set_name,
-                        artifact_paths,
-                    )
-
-                # ----------------------------------------------------
-                # Memory cleanup after each feature set
-                # ----------------------------------------------------
                 del final_fit_df
                 del best_xgb_final
                 best_xgb_final = None
-
                 gc.collect()
+                memory_snapshot(f"after cleanup for feature set: {feature_set_name}")
 
-                memory_snapshot(
-                    f"after cleanup for feature set: {feature_set_name}"
-                )
-
-            results_payload[
-                "xgb_cv_results_by_feature_set"
-            ] = xgb_cv_results_by_feature_set
-
-            results_payload[
-                "best_xgb_rows_by_feature_set"
-            ] = best_xgb_rows_by_feature_set
-
-            results_payload[
-                "best_xgb_finals_by_feature_set"
-            ] = best_xgb_finals_by_feature_set
-
-            results_payload[
-                "artifact_paths_by_feature_set"
-            ] = artifact_paths_by_feature_set
-
+            results_payload["xgb_cv_results_by_feature_set"] = xgb_cv_results_by_feature_set
+            results_payload["best_xgb_rows_by_feature_set"] = best_xgb_rows_by_feature_set
+            results_payload["best_xgb_finals_by_feature_set"] = best_xgb_finals_by_feature_set
+            results_payload["artifact_paths_by_feature_set"] = artifact_paths_by_feature_set
             results_payload["model_version"] = run_version
-
 
         # ============================================================
         # LSTM
@@ -650,40 +588,51 @@ def main():
                 raise RuntimeError("LSTM requested but TensorFlow is not installed/available.")
 
             variant_name = CONFIG.models.lstm_variant_name
-            logging.info("[LSTM] variant_name=%s", variant_name)
-            logging.info("[LSTM] tune_lstm=%s", CONFIG.models.tune_lstm)
+            logging.info("[LSTM] variant_name=%s tune_lstm=%s", variant_name, CONFIG.models.tune_lstm)
 
-            if CONFIG.models.tune_lstm and cv_splits:
+            if cv_splits:
                 t0 = time.perf_counter()
+                lstm_cv_param_grid = (
+                    CONFIG.lstm_search.param_grid
+                    if CONFIG.models.tune_lstm
+                    else CONFIG.lstm_search.param_grid[:1]
+                )
                 logging.info(
-                    "[LSTM] Starting time-aware CV search with %s configs",
-                    len(CONFIG.lstm_search.param_grid),
+                    "[LSTM] Running CV (%s) with %s config(s)",
+                    "tuning" if CONFIG.models.tune_lstm else "diagnostics only",
+                    len(lstm_cv_param_grid),
                 )
 
                 lstm_cv_results = run_lstm_time_cv(
                     cv_splits=cv_splits,
                     variant_name=variant_name,
-                    param_grid=CONFIG.lstm_search.param_grid,
+                    param_grid=lstm_cv_param_grid,
                     sample_fraction=CONFIG.runtime.sample_fraction_for_lstm_tuning,
                     seed=CONFIG.runtime.random_seed,
                 )
 
-                safe_timer_log("LSTM time-aware CV search", t0)
-                logging.info("[LSTM] Top configs:\n%s", lstm_cv_results.head(10))
-                best_lstm_row = lstm_cv_results.iloc[0].to_dict()
-                logging.info("[LSTM] Best config row=%s", best_lstm_row)
-                memory_snapshot("after LSTM CV search")
-            else:
-                if CONFIG.models.tune_lstm and not cv_splits:
-                    logging.warning(
-                        "[LSTM] tune_lstm=True but no CV splits were built. Falling back to first parameter set."
-                    )
+                safe_timer_log("LSTM CV", t0)
+                logging.info("[LSTM] CV results:\n%s", lstm_cv_results.head(10))
 
+                best_lstm_cv_row = lstm_cv_results.iloc[0].to_dict()
+                best_lstm_cv_row.pop("fold_cls_metrics", None)
+                best_lstm_cv_row.pop("fold_reg_metrics", None)
+
+                if CONFIG.models.tune_lstm:
+                    best_lstm_row = best_lstm_cv_row
+                else:
+                    best_lstm_row = {
+                        "variant_name": variant_name,
+                        "params": CONFIG.lstm_search.param_grid[0],
+                    }
+                memory_snapshot("after LSTM CV")
+
+            else:
+                logging.warning("[LSTM] No CV splits — falling back to first parameter set.")
                 best_lstm_row = {
                     "variant_name": variant_name,
                     "params": CONFIG.lstm_search.param_grid[0],
                 }
-                logging.info("[LSTM] Using params=%s", best_lstm_row["params"])
 
             t0 = time.perf_counter()
             logging.info("[LSTM] Starting final refit + test")
@@ -700,7 +649,12 @@ def main():
             logging.info("[LSTM FINAL] Regression=%s", best_lstm_final["test_reg_metrics"])
             memory_snapshot("after final LSTM")
 
-            results_payload["lstm_cv_results"] = None if lstm_cv_results is None else lstm_cv_results.to_dict(orient="records")
+            results_payload["lstm_cv_results"] = (
+                None if lstm_cv_results is None
+                else lstm_cv_results.drop(
+                    columns=["fold_cls_metrics", "fold_reg_metrics"], errors="ignore"
+                ).to_dict(orient="records")
+            )
             results_payload["best_lstm_row"] = best_lstm_row
             results_payload["best_lstm_final"] = {
                 "model_family": best_lstm_final["model_family"],
@@ -715,7 +669,6 @@ def main():
         # ============================================================
         final_rows = []
 
-        # XGBoost multi-feature-set results
         for feature_set_name, xgb_result in best_xgb_finals_by_feature_set.items():
             final_rows.append({
                 "model_family": "xgb",
@@ -729,7 +682,6 @@ def main():
                 "test_rmse": xgb_result["test_reg_metrics"]["rmse"],
             })
 
-        # LSTM result, if enabled
         if best_lstm_final is not None:
             final_rows.append({
                 "model_family": "lstm",
@@ -769,7 +721,7 @@ def main():
             results_payload["best_overall_model"] = best_overall_model
 
         else:
-            logging.info("[INFO] No models were run, so no final comparison table was created.")
+            logging.info("[INFO] No models were run.")
             final_test_results = pd.DataFrame()
             best_overall_model = None
             results_payload["final_test_results"] = []
@@ -783,47 +735,30 @@ def main():
         try:
             output_dir = run_paths["evaluations_dir"]
             output_dir.mkdir(parents=True, exist_ok=True)
-
-            logging.info("[SAVE] Attempting to write results summary under: %s", output_dir)
+            logging.info("[SAVE] Writing results summary under: %s", output_dir)
 
             save_succeeded = False
-
-            try:
-                save_results_summary(results_payload=results_payload, output_dir=output_dir)
-                save_succeeded = True
-            except TypeError:
-                pass
-
-            if not save_succeeded:
+            for call in [
+                lambda: save_results_summary(results_payload=results_payload, output_dir=output_dir),
+                lambda: save_results_summary(payload=results_payload, output_dir=output_dir),
+                lambda: save_results_summary(results_payload, output_dir),
+                lambda: save_results_summary(results_payload),
+            ]:
+                if save_succeeded:
+                    break
                 try:
-                    save_results_summary(payload=results_payload, output_dir=output_dir)
-                    save_succeeded = True
-                except TypeError:
-                    pass
-
-            if not save_succeeded:
-                try:
-                    save_results_summary(results_payload, output_dir)
-                    save_succeeded = True
-                except TypeError:
-                    pass
-
-            if not save_succeeded:
-                try:
-                    save_results_summary(results_payload)
+                    call()
                     save_succeeded = True
                 except TypeError:
                     pass
 
             if save_succeeded:
-                logging.info("[SAVE] Results summary written under: %s", output_dir)
+                logging.info("[SAVE] Results summary written.")
             else:
-                logging.warning(
-                    "[SAVE] save_results_summary was available, but its signature did not match any expected call pattern."
-                )
+                logging.warning("[SAVE] save_results_summary signature mismatch — summary not written.")
 
         except Exception as e:
-            logging.exception("[SAVE] Could not save results summary automatically: %s", e)
+            logging.exception("[SAVE] Could not save results summary: %s", e)
 
         safe_timer_log("Save results summary", t0)
 
@@ -855,7 +790,7 @@ def main():
                     dpi=CONFIG.visualizations.figure_dpi,
                 )
 
-                logging.info("[VIZ] Generated evaluation plots and tables under %s", run_paths["run_dir"])
+                logging.info("[VIZ] Generated plots and tables under %s", run_paths["run_dir"])
 
             except Exception as e:
                 logging.exception("[VIZ] Failed to generate visualizations: %s", e)

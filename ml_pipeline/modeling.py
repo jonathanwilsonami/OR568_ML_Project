@@ -93,6 +93,15 @@ def run_xgb_time_cv(
             val_pred_reg = reg.predict(X_val)
             reg_metrics = regression_metrics(y_val_reg, val_pred_reg)
 
+            # --- Annotate each fold metric dict with fold number and train/val year info ---
+            cls_metrics["fold"] = fold
+            cls_metrics["train_years"] = str(split["train_years"])
+            cls_metrics["val_year"] = split["val_year"]
+
+            reg_metrics["fold"] = fold
+            reg_metrics["train_years"] = str(split["train_years"])
+            reg_metrics["val_year"] = split["val_year"]
+
             cls_fold_metrics.append(cls_metrics)
             reg_fold_metrics.append(reg_metrics)
 
@@ -114,6 +123,9 @@ def run_xgb_time_cv(
             "feature_set_name": feature_set_name,
             "config_id": f"xgb_{config_id:02d}",
             "params": deepcopy(params),
+            # --- Per-fold metric lists preserved for downstream saving ---
+            "fold_cls_metrics": deepcopy(cls_fold_metrics),
+            "fold_reg_metrics": deepcopy(reg_fold_metrics),
         }
         row.update(summarize_cv_metrics(cls_fold_metrics, prefix="cv"))
         row.update(summarize_cv_metrics(reg_fold_metrics, prefix="cv"))
@@ -266,6 +278,15 @@ def run_lstm_time_cv(
             cls_metrics = classification_metrics(y_val_cls.astype(int), pred_cls)
             reg_metrics = regression_metrics(y_val_reg, pred_reg)
 
+            # Annotate with fold info
+            cls_metrics["fold"] = fold
+            cls_metrics["train_years"] = str(split["train_years"])
+            cls_metrics["val_year"] = split["val_year"]
+
+            reg_metrics["fold"] = fold
+            reg_metrics["train_years"] = str(split["train_years"])
+            reg_metrics["val_year"] = split["val_year"]
+
             cls_fold_metrics.append(cls_metrics)
             reg_fold_metrics.append(reg_metrics)
 
@@ -285,6 +306,8 @@ def run_lstm_time_cv(
             "variant_name": variant_name,
             "config_id": f"lstm_{config_id:02d}",
             "params": deepcopy(params),
+            "fold_cls_metrics": deepcopy(cls_fold_metrics),
+            "fold_reg_metrics": deepcopy(reg_fold_metrics),
         }
         row.update(summarize_cv_metrics(cls_fold_metrics, prefix="cv"))
         row.update(summarize_cv_metrics(reg_fold_metrics, prefix="cv"))

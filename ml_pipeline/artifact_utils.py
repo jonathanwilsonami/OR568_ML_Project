@@ -57,6 +57,9 @@ def save_xgb_artifacts(
     test_pred_cls=None,
     y_test_reg=None,
     test_pred_reg=None,
+    # --- New: per-fold CV metric lists from the best config ---
+    fold_cls_metrics: list[dict] | None = None,
+    fold_reg_metrics: list[dict] | None = None,
 ) -> dict[str, str]:
     models_dir = run_paths["models_dir"]
     eval_dir = run_paths["evaluations_dir"]
@@ -68,9 +71,11 @@ def save_xgb_artifacts(
     feature_importance_csv_path = eval_dir / f"feature_importance_{feature_set_name}.csv"
     predictions_path = eval_dir / f"test_predictions_{feature_set_name}.parquet"
 
+    # --- Model files ---
     joblib.dump(classifier, classifier_path)
     joblib.dump(regressor, regressor_path)
 
+    # --- Metadata ---
     metadata = {
         "version": version,
         "model_family": "xgb",
@@ -79,20 +84,25 @@ def save_xgb_artifacts(
         "feature_names": feature_names,
     }
     save_json(metadata, metadata_path)
+
+    # --- Full results summary JSON ---
     save_json(results_payload, summary_json_path)
 
+    # --- Feature importance CSV ---
     feature_importance_df = pd.DataFrame({
         "feature": feature_names,
         "importance": classifier.feature_importances_,
     }).sort_values("importance", ascending=False)
     feature_importance_df.to_csv(feature_importance_csv_path, index=False)
 
-    if (
+    # --- Test predictions parquet ---
+    has_predictions = (
         y_test_cls is not None
         and test_pred_cls is not None
         and y_test_reg is not None
         and test_pred_reg is not None
-    ):
+    )
+    if has_predictions:
         pred_df = pd.DataFrame({
             "y_test_cls": y_test_cls,
             "test_pred_cls": test_pred_cls,
@@ -101,22 +111,48 @@ def save_xgb_artifacts(
         })
         pred_df.to_parquet(predictions_path, index=False)
 
+    # --- Per-fold CV classification metrics CSV ---
+    # Columns: feature_set_name, fold, train_years, val_year, auc, f1, precision, recall, accuracy
+    cv_fold_cls_path = None
+    if fold_cls_metrics:
+        cv_fold_cls_df = pd.DataFrame(fold_cls_metrics)
+        cv_fold_cls_df.insert(0, "feature_set_name", feature_set_name)
+        # Reorder so identifier columns come first
+        id_cols = ["feature_set_name", "fold", "train_years", "val_year"]
+        metric_cols = [c for c in cv_fold_cls_df.columns if c not in id_cols]
+        cv_fold_cls_df = cv_fold_cls_df[
+            [c for c in id_cols if c in cv_fold_cls_df.columns] + metric_cols
+        ]
+        cv_fold_cls_path = eval_dir / f"cv_fold_cls_metrics_{feature_set_name}.csv"
+        cv_fold_cls_df.to_csv(cv_fold_cls_path, index=False)
+
+    # --- Per-fold CV regression metrics CSV ---
+    # Columns: feature_set_name, fold, train_years, val_year, mae, rmse
+    cv_fold_reg_path = None
+    if fold_reg_metrics:
+        cv_fold_reg_df = pd.DataFrame(fold_reg_metrics)
+        cv_fold_reg_df.insert(0, "feature_set_name", feature_set_name)
+        id_cols = ["feature_set_name", "fold", "train_years", "val_year"]
+        metric_cols = [c for c in cv_fold_reg_df.columns if c not in id_cols]
+        cv_fold_reg_df = cv_fold_reg_df[
+            [c for c in id_cols if c in cv_fold_reg_df.columns] + metric_cols
+        ]
+        cv_fold_reg_path = eval_dir / f"cv_fold_reg_metrics_{feature_set_name}.csv"
+        cv_fold_reg_df.to_csv(cv_fold_reg_path, index=False)
+
     return {
-    "run_dir": str(run_paths["run_dir"]),
-    "logs_dir": str(run_paths["logs_dir"]),
-    "models_dir": str(models_dir),
-    "evaluations_dir": str(eval_dir),
-    "plots_dir": str(run_paths["plots_dir"]),
-    "tables_dir": str(run_paths["tables_dir"]),
-    "classifier_path": str(classifier_path),
-    "regressor_path": str(regressor_path),
-    "metadata_path": str(metadata_path),
-    "summary_json_path": str(summary_json_path),
-    "feature_importance_csv_path": str(feature_importance_csv_path),
-    "predictions_path": str(predictions_path) if (
-        y_test_cls is not None
-        and test_pred_cls is not None
-        and y_test_reg is not None
-        and test_pred_reg is not None
-    ) else None,
-}
+        "run_dir": str(run_paths["run_dir"]),
+        "logs_dir": str(run_paths["logs_dir"]),
+        "models_dir": str(models_dir),
+        "evaluations_dir": str(eval_dir),
+        "plots_dir": str(run_paths["plots_dir"]),
+        "tables_dir": str(run_paths["tables_dir"]),
+        "classifier_path": str(classifier_path),
+        "regressor_path": str(regressor_path),
+        "metadata_path": str(metadata_path),
+        "summary_json_path": str(summary_json_path),
+        "feature_importance_csv_path": str(feature_importance_csv_path),
+        "predictions_path": str(predictions_path) if has_predictions else None,
+        "cv_fold_cls_metrics_path": str(cv_fold_cls_path) if cv_fold_cls_path else None,
+        "cv_fold_reg_metrics_path": str(cv_fold_reg_path) if cv_fold_reg_path else None,
+    }

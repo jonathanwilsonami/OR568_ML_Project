@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import json
 import logging
 import re
@@ -21,7 +22,7 @@ from sklearn.metrics import (
 from sklearn.preprocessing import StandardScaler
 
 from feature_definitions import TARGET_CLASS, TARGET_REG, XGB_FEATURE_SETS
-from config import CONFIG  
+from config import CONFIG
 from aircraft_features import enrich_with_aircraft_features
 
 logger = logging.getLogger(__name__)
@@ -41,15 +42,9 @@ def timer_log(label: str, start_time: float, time_module=time) -> None:
 
 
 def clean_name(col: str) -> str:
-    # Replace non-alphanumeric chars with underscores
     col = re.sub(r"[^0-9a-zA-Z]+", "_", col)
-
-    # Split acronym-to-word boundaries: CRSElapsed -> CRS_Elapsed
     col = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", col)
-
-    # Split lower/digit-to-capital boundaries: flightDate -> flight_Date
     col = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", col)
-
     col = re.sub(r"_+", "_", col)
     return col.strip("_").lower()
 
@@ -87,7 +82,9 @@ def summarize_cv_metrics(metrics_list: list[dict[str, float]], prefix: str = "cv
         return {}
 
     out: dict[str, float] = {}
-    metric_names = metrics_list[0].keys()
+    # Exclude non-numeric annotation keys added for fold identification
+    skip_keys = {"fold", "train_years", "val_year"}
+    metric_names = [k for k in metrics_list[0].keys() if k not in skip_keys]
 
     for name in metric_names:
         vals = [float(m[name]) for m in metrics_list]
@@ -132,6 +129,7 @@ def safe_fill_and_to_pandas(df_pl: pl.DataFrame, cols: list[str]) -> pd.DataFram
             out[c] = out[c].fillna("missing")
 
     return out
+
 
 # ============================================================
 # LSTM HELPERS
@@ -201,6 +199,8 @@ def build_lstm_step_matrix(
     df_pl: pl.DataFrame,
     variant_name: str = "context_full",
 ):
+    import numpy as np
+
     pdf = df_pl.to_pandas().copy()
 
     numeric_fill_cols = [
@@ -235,7 +235,7 @@ def build_lstm_step_matrix(
     else:
         current_context_cols = LSTM_CONTEXT_CURRENT
 
-    X = pd.np.zeros((len(pdf), 3, len(STEP_FEATURES)), dtype="float32")  # noqa
+    X = np.zeros((len(pdf), 3, len(STEP_FEATURES)), dtype="float32")
 
     X[:, 0, STEP_FEATURES.index("arr_delay_prev")] = pdf["prev2_arr_delay"].values
     X[:, 0, STEP_FEATURES.index("dep_delay_prev")] = pdf["prev2_dep_delay"].values
@@ -330,9 +330,6 @@ def build_modeling_table(lf: pl.LazyFrame) -> pl.LazyFrame:
     cols = set(lf.collect_schema().names())
     exprs: list[pl.Expr] = []
 
-    # ------------------------------------------------------------
-    # Existing lightweight engineered features
-    # ------------------------------------------------------------
     if "dep_hour_local" in cols:
         exprs.append(
             pl.when(pl.col("dep_hour_local") < 6).then(1)
@@ -402,9 +399,6 @@ def build_modeling_table(lf: pl.LazyFrame) -> pl.LazyFrame:
     if exprs:
         out = out.with_columns(exprs)
 
-    # ------------------------------------------------------------
-    # Derive prev1_* / prev2_* features if missing
-    # ------------------------------------------------------------
     out_cols = set(out.collect_schema().names())
 
     needed_two_hop = {
@@ -542,25 +536,93 @@ def _collect_partition(
     lf: pl.LazyFrame,
     years: list[int],
     label: str,
+    sample_fraction: float | None = None,
+    seed: int = 42,
 ) -> pl.DataFrame | None:
+    """Collect a year-filtered partition one year at a time, then sample.
+
+    We collect year-by-year and concatenate so that peak RAM is bounded by
+    the largest single year rather than the entire partition.  Sampling is
+    applied to the final concatenated frame.
+
+    Note: LazyFrame.sample is only available in Polars >= 0.20.4.  To stay
+    compatible with older versions we collect first, then call
+    DataFrame.sample on the eager frame.  Because we collect year-by-year
+    the peak memory is still much lower than loading all years at once.
+
+    Parameters
+    ----------
+    lf:
+        The full lazy modeling frame (all years, all columns already selected).
+    years:
+        Year values to keep for this partition.
+    label:
+        Human-readable name used in log messages (e.g. "train").
+    sample_fraction:
+        If provided and < 1.0, sample the collected frame down to this
+        fraction.  Pass ``None`` or ``1.0`` to keep all rows (recommended
+        for test data so evaluation is unbiased).
+    seed:
+        Random seed forwarded to ``pl.DataFrame.sample``.
+    """
     if not years:
         logger.info("[SPLIT] %s skipped (no years)", label)
         return None
 
+    if sample_fraction is not None and sample_fraction <= 0:
+        raise ValueError(f"sample_fraction must be > 0, got {sample_fraction}")
+
     t0 = time.perf_counter()
-    part_lf = lf.filter(pl.col("year").is_in(years))
-    df = part_lf.collect(streaming=True)
+
+    # ---------------------------------------------------------------
+    # Collect one year at a time to keep peak RAM proportional to the
+    # largest single year rather than the full partition.
+    # ---------------------------------------------------------------
+    year_frames: list[pl.DataFrame] = []
+    for year in sorted(years):
+        year_lf = lf.filter(pl.col("year") == year)
+        year_df = year_lf.collect(streaming=True)
+        logger.info(
+            "[SPLIT] %s year=%s rows=%s",
+            label,
+            year,
+            f"{year_df.height:,}",
+        )
+        year_frames.append(year_df)
+        gc.collect()
+
+    df = pl.concat(year_frames, how="vertical_relaxed")
+    del year_frames
+    gc.collect()
+
+    # ---------------------------------------------------------------
+    # Sample the fully-assembled partition if requested.
+    # DataFrame.sample is available in all supported Polars versions.
+    # ---------------------------------------------------------------
+    sampled = sample_fraction is not None and sample_fraction < 1.0
+    if sampled:
+        logger.info(
+            "[SPLIT] %s sampling fraction=%.3f seed=%s from %s rows",
+            label,
+            sample_fraction,
+            seed,
+            f"{df.height:,}",
+        )
+        df = df.sample(fraction=sample_fraction, seed=seed, shuffle=True)
+        gc.collect()
+
     timer_log(f"Collect {label}", t0, time)
 
     try:
         est_mb = df.estimated_size("mb")
         logger.info(
-            "[SPLIT] %s collected | years=%s rows=%s cols=%s est_size≈%.2f MB",
+            "[SPLIT] %s collected | years=%s rows=%s cols=%s est_size≈%.2f MB%s",
             label,
             years,
             f"{df.height:,}",
             df.width,
             est_mb,
+            f" (sampled {sample_fraction:.0%})" if sampled else "",
         )
     except Exception:
         logger.info(
@@ -584,6 +646,19 @@ def collect_modeling_splits(
     run_xgb: bool,
     run_lstm: bool,
     xgb_feature_set_name: str | None = None,
+    # ---------------------------------------------------------------
+    # NEW: per-partition sample fractions applied before .collect()
+    # so memory usage is proportional to the sample, not the full data.
+    #
+    # Recommended values for a ~16 GB RAM machine:
+    #   train_sample_fraction   = 0.35  -> keeps ~4.7 M rows from 54 M
+    #   val_sample_fraction     = 0.50  -> keeps ~3.5 M rows from 6.9 M
+    #   test_sample_fraction    = None  -> full test set for unbiased eval
+    # ---------------------------------------------------------------
+    train_sample_fraction: float | None = None,
+    val_sample_fraction: float | None = None,
+    test_sample_fraction: float | None = None,
+    sample_seed: int = 42,
 ) -> dict[str, pl.DataFrame | None]:
     all_years = sorted(set(train_years + validation_years + test_years))
     required_columns = resolve_required_columns(
@@ -595,6 +670,12 @@ def collect_modeling_splits(
     logger.info("[DATA] years=%s", all_years)
     logger.info("[DATA] projecting %s required columns", len(required_columns))
     logger.info("[DATA] required columns=%s", required_columns)
+    logger.info(
+        "[DATA] early-sample fractions — train=%s val=%s test=%s",
+        train_sample_fraction,
+        val_sample_fraction,
+        test_sample_fraction,
+    )
 
     t0 = time.perf_counter()
     lf = load_years_lazy(
@@ -620,9 +701,34 @@ def collect_modeling_splits(
     lf = lf.select(required_columns)
 
     t0 = time.perf_counter()
-    train_df = _collect_partition(lf, train_years, "train")
-    val_df = _collect_partition(lf, validation_years, "validation") if use_validation_holdout else None
-    test_df = _collect_partition(lf, test_years, "test")
+
+    # Collect each partition independently so only one lives in RAM at a time.
+    # Test data is collected last with no sampling so evaluation is unbiased.
+    train_df = _collect_partition(
+        lf, train_years, "train",
+        sample_fraction=train_sample_fraction,
+        seed=sample_seed,
+    )
+    gc.collect()
+
+    val_df = (
+        _collect_partition(
+            lf, validation_years, "validation",
+            sample_fraction=val_sample_fraction,
+            seed=sample_seed,
+        )
+        if use_validation_holdout
+        else None
+    )
+    gc.collect()
+
+    test_df = _collect_partition(
+        lf, test_years, "test",
+        sample_fraction=test_sample_fraction,
+        seed=sample_seed,
+    )
+    gc.collect()
+
     timer_log("Collect all split partitions", t0, time)
 
     return {

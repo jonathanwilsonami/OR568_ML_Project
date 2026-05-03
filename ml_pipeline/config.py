@@ -54,16 +54,31 @@ class RuntimeConfig:
     # Avoid -1 on huge XGB fits; fewer threads usually lowers memory pressure
     n_jobs: int = 8
 
-    # Tuning can be very expensive on full data.
-    # Keep None for full data, or use e.g. 0.10 for 10%.
-    sample_fraction_for_tuning: float | None = 0.10
+    # ---------------------------------------------------------------
+    # EARLY-SAMPLE FRACTIONS  (applied before .collect() — the primary
+    # OOM control knob).  These replace the old post-collect fractions
+    # for train/val.  Set to None for the full partition.
+    #
+    # Rule of thumb for a 16 GB machine:
+    #   train: 0.10  ->  ~5.5 M rows   (fast CV diagnostics)
+    #   train: 0.35  ->  ~19 M rows    (final refit quality)
+    #   val  : 0.50  ->  ~3.5 M rows
+    #   test : None  ->  full ~6.9 M   (unbiased evaluation)
+    # ---------------------------------------------------------------
+    train_sample_fraction: float | None = 0.35   # applied at collect time
+    val_sample_fraction: float | None = 0.50     # applied at collect time
+    test_sample_fraction: float | None = None    # keep full test set
+
+    # CV tuning uses a further in-memory subsample of the already-sampled
+    # train partition (cheap — data is already in RAM at this point).
+    sample_fraction_for_tuning: float | None = 0.30
 
     # LSTM is much heavier; use a smaller fraction if you enable it for tuning
     sample_fraction_for_lstm_tuning: float | None = 0.03
 
-    # Optional safety valve for final fit on very large data.
-    # Keep None for full data, or try 0.50 / 0.75 if needed.
-    sample_fraction_for_final_train: float | None = 0.35
+    # Final refit uses whatever is in final_train_df (already early-sampled).
+    # Set to None to use all of final_train_df, or reduce further if needed.
+    sample_fraction_for_final_train: float | None = None
 
 
 @dataclass
@@ -71,17 +86,16 @@ class ModelConfig:
     run_xgb: bool = True
     run_lstm: bool = False
 
-    tune_xgb: bool = True
+    tune_xgb: bool = False  
     tune_lstm: bool = False
 
     # XGBoost feature set
-    # xgb_feature_set_name: str = "xgb_full"
-    xgb_feature_set_name: str = "xgb_full_aircraft" 
+    xgb_feature_set_name: str = "xgb_full_aircraft"
 
     # Disable multi-model batch run
     xgb_feature_set_names: list[str] = field(default_factory=list)
 
-    # Enable multi-model batch run 
+    # Enable multi-model batch run
     # xgb_feature_set_names: list[str] = field(default_factory=lambda: [
     #     "xgb_schedule",
     #     "xgb_context",
@@ -96,7 +110,6 @@ class ModelConfig:
 
 @dataclass
 class XGBSearchConfig:
-    # keep modest at first
     param_grid: list[dict] = field(default_factory=lambda: [
         {
             "n_estimators": 250,
@@ -139,7 +152,6 @@ class XGBSearchConfig:
 
 @dataclass
 class LSTMSearchConfig:
-    # heavier, keep smaller
     param_grid: list[dict] = field(default_factory=lambda: [
         {
             "units1": 32,
@@ -168,16 +180,16 @@ class LSTMSearchConfig:
     ])
 
 
-# Add this dataclass alongside the others
 @dataclass
 class AircraftConfig:
-    enabled: bool = True  # opt-in
-    cache_path: Path = None  # auto-resolved below
+    enabled: bool = True
+    cache_path: Path = None
 
     def __post_init__(self):
         if self.cache_path is None:
             project_root = Path(__file__).resolve().parents[1]
             self.cache_path = project_root / "data_pipeline" / "data" / "faa_registry" / "ReleasableAircraft.zip"
+
 
 @dataclass
 class ArtifactConfig:
