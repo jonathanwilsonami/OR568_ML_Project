@@ -1696,6 +1696,10 @@ Table&nbsp;13: Top predictive features by XGBoost gain-based importance score.
 <td><code>xgb_full_aircraft</code></td>
 <td>Complete 37-feature set including aircraft metadata</td>
 </tr>
+<tr class="odd">
+<td><code>xgb_full</code></td>
+<td>xgb_full_aircraft excluding aircraft metadata</td>
+</tr>
 </tbody>
 </table>
 <p>The fully enriched <code>xgb_full_aircraft</code> model was the best overall performer. The largest single performance gain occurred when two-hop propagation features were added to the context feature set. Aircraft metadata provided a smaller but consistent additional improvement.</p>
