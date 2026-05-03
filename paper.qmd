@@ -1095,6 +1095,7 @@ evaluated under identical cross-validation conditions:
 | `xgb_context` | Schedule + weather + network congestion |
 | `xgb_2hop_propagation` | All features except aircraft metadata |
 | `xgb_full_aircraft` | Complete 37-feature set including aircraft metadata |
+| `xgb_full` | xgb_full_aircraft excluding aircraft metadata |
 
 The fully enriched `xgb_full_aircraft` model was the best overall performer. The
 largest single performance gain occurred when two-hop propagation features were added
