@@ -1,0 +1,324 @@
+{
+  "config": {
+    "train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "validation_years": [
+      2024
+    ],
+    "test_years": [
+      2025
+    ],
+    "final_train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "use_validation_holdout": true,
+    "cv_enabled": true,
+    "cv_min_train_years": 4,
+    "run_xgb": true,
+    "run_lstm": false,
+    "tune_xgb": false,
+    "tune_lstm": false,
+    "xgb_feature_set_name": "xgb_full_aircraft",
+    "lstm_variant_name": "context_full",
+    "use_gpu": false,
+    "worker_cores": 8,
+    "train_sample_fraction": null,
+    "val_sample_fraction": null,
+    "test_sample_fraction": null
+  },
+  "cv_splits": [
+    {
+      "fold": 1,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018
+      ],
+      "val_year": 2019
+    },
+    {
+      "fold": 2,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019
+      ],
+      "val_year": 2020
+    },
+    {
+      "fold": 3,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ],
+      "val_year": 2021
+    },
+    {
+      "fold": 4,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "val_year": 2022
+    },
+    {
+      "fold": 5,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "val_year": 2023
+    }
+  ],
+  "xgb_cv_results_by_feature_set": {
+    "xgb_full_aircraft": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_full_aircraft",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.8222200165266813,
+          "cv_auc_min": 0.7928206888086087,
+          "cv_auc_max": 0.8399900613219192,
+          "cv_f1_mean": 0.47653897408536067,
+          "cv_f1_min": 0.39536534955176345,
+          "cv_f1_max": 0.5329404606183968,
+          "cv_precision_mean": 0.7515331264533925,
+          "cv_precision_min": 0.620390175633626,
+          "cv_precision_max": 0.8107811241117253,
+          "cv_recall_mean": 0.3508612058940702,
+          "cv_recall_min": 0.28886803041364345,
+          "cv_recall_max": 0.4068944290550939,
+          "cv_accuracy_mean": 0.8681228322332514,
+          "cv_accuracy_min": 0.8468609979125034,
+          "cv_accuracy_max": 0.9129682935456718,
+          "cv_mae_mean": 18.68819580078125,
+          "cv_mae_min": 17.571748733520508,
+          "cv_mae_max": 19.81736946105957,
+          "cv_rmse_mean": 42.011560114411616,
+          "cv_rmse_min": 34.80800085940192,
+          "cv_rmse_max": 47.43347263454232
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.8399900613219192,
+          "f1": 0.5329404606183968,
+          "precision": 0.7721265507666635,
+          "recall": 0.4068944290550939,
+          "accuracy": 0.8637630224953319,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.7928206888086087,
+          "f1": 0.39536534955176345,
+          "precision": 0.620390175633626,
+          "recall": 0.2901306200506884,
+          "accuracy": 0.9129682935456718,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.817174620045658,
+          "f1": 0.4259699476962781,
+          "precision": 0.8107811241117253,
+          "recall": 0.28886803041364345,
+          "accuracy": 0.8661727643827613,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.8297418462601105,
+          "f1": 0.5140515816071874,
+          "precision": 0.7764069809045493,
+          "recall": 0.38421995647095597,
+          "accuracy": 0.8468609979125034,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.8313728661971097,
+          "f1": 0.5143675309531773,
+          "precision": 0.7779608008503984,
+          "recall": 0.38419299347996955,
+          "accuracy": 0.8508490828299887,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 18.686853408813477,
+          "rmse": 41.344919201154575,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 17.84480857849121,
+          "rmse": 34.80800085940192,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 17.571748733520508,
+          "rmse": 41.53916314991568,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 19.520198822021484,
+          "rmse": 44.9322447270436,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 19.81736946105957,
+          "rmse": 47.43347263454232,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    }
+  },
+  "best_xgb_rows_by_feature_set": {
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    }
+  },
+  "best_xgb_finals_by_feature_set": {
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.8302153899063465,
+        "f1": 0.5305061936712351,
+        "precision": 0.7867142263809827,
+        "recall": 0.400180134335475,
+        "accuracy": 0.8420917941423289
+      },
+      "test_reg_metrics": {
+        "mae": 21.093121795439995,
+        "rmse": 48.35682871501054
+      }
+    }
+  },
+  "artifact_paths_by_feature_set": {
+    "xgb_full_aircraft": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/xgb_classifier_xgb_full_aircraft.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/xgb_regressor_xgb_full_aircraft.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/metadata_xgb_full_aircraft.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/feature_importance_xgb_full_aircraft.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/test_predictions_xgb_full_aircraft.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/cv_fold_cls_metrics_xgb_full_aircraft.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/cv_fold_reg_metrics_xgb_full_aircraft.csv"
+    }
+  },
+  "model_version": "xgb_train_2015_2023_test_2025_2025_20260504_170810",
+  "final_test_results": [
+    {
+      "model_family": "xgb",
+      "details": "xgb_full_aircraft",
+      "test_auc": 0.8302153899063465,
+      "test_f1": 0.5305061936712351,
+      "test_precision": 0.7867142263809827,
+      "test_recall": 0.400180134335475,
+      "test_accuracy": 0.8420917941423289,
+      "test_mae": 21.093121795439995,
+      "test_rmse": 48.35682871501054
+    }
+  ],
+  "best_overall_model": {
+    "model_family": "xgb",
+    "details": "xgb_full_aircraft",
+    "test_auc": 0.8302153899063465,
+    "test_f1": 0.5305061936712351,
+    "test_precision": 0.7867142263809827,
+    "test_recall": 0.400180134335475,
+    "test_accuracy": 0.8420917941423289,
+    "test_mae": 21.093121795439995,
+    "test_rmse": 48.35682871501054
+  }
+}

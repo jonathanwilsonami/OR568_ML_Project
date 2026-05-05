@@ -6,16 +6,9 @@ from pathlib import Path
 
 @dataclass
 class DataConfig:
-    # Automatically resolve project root relative to this file
     project_root: Path = Path(__file__).resolve().parents[1]
-
-    # Directory containing flights_canonical_YYYY.parquet
     canonical_dir: Path = None
-
-    # File naming pattern
     file_pattern: str = "flights_canonical_{year}.parquet"
-
-    # Where to save results / artifacts
     output_dir: Path = None
 
     def __post_init__(self):
@@ -30,19 +23,18 @@ class SplitConfig:
     validation_years: list[int] = field(default_factory=lambda: [2024])
     test_years: list[int] = field(default_factory=lambda: [2025])
 
-    # If False, skip separate validation holdout and rely only on rolling CV
+    # True = final model trains on 2015-2023 + 2024, evaluates on 2025
     use_validation_holdout: bool = True
 
 
 @dataclass
 class CVConfig:
-    enabled: bool = True
+    # ---------------------------------------------------------------
+    # CV DISABLED for the final refit run.
+    # Set enabled=True to restore rolling CV diagnostics.
+    # ---------------------------------------------------------------
+    enabled: bool = False
     strategy: str = "rolling_year"
-
-    # With train years 2015-2023 this yields:
-    # train 2015-2018 -> val 2019
-    # train 2015-2019 -> val 2020
-    # ...
     min_train_years: int = 4
 
 
@@ -50,34 +42,15 @@ class CVConfig:
 class RuntimeConfig:
     random_seed: int = 42
     use_gpu: bool = False
-
-    # Avoid -1 on huge XGB fits; fewer threads usually lowers memory pressure
     n_jobs: int = 8
 
-    # ---------------------------------------------------------------
-    # EARLY-SAMPLE FRACTIONS  (applied before .collect() — the primary
-    # OOM control knob).  These replace the old post-collect fractions
-    # for train/val.  Set to None for the full partition.
-    #
-    # Rule of thumb for a 16 GB machine:
-    #   train: 0.10  ->  ~5.5 M rows   (fast CV diagnostics)
-    #   train: 0.35  ->  ~19 M rows    (final refit quality)
-    #   val  : 0.50  ->  ~3.5 M rows
-    #   test : None  ->  full ~6.9 M   (unbiased evaluation)
-    # ---------------------------------------------------------------
-    train_sample_fraction: float | None = 0.35   # applied at collect time
-    val_sample_fraction: float | None = 0.50     # applied at collect time
-    test_sample_fraction: float | None = None    # keep full test set
-
-    # CV tuning uses a further in-memory subsample of the already-sampled
-    # train partition (cheap — data is already in RAM at this point).
-    sample_fraction_for_tuning: float | None = 0.30
-
-    # LSTM is much heavier; use a smaller fraction if you enable it for tuning
+    # Streaming architecture — no sampling needed.
+    # Peak RAM = one year at a time (~1-2 GB).
+    train_sample_fraction: float | None = None
+    val_sample_fraction: float | None = None
+    test_sample_fraction: float | None = None
+    sample_fraction_for_tuning: float | None = None
     sample_fraction_for_lstm_tuning: float | None = 0.03
-
-    # Final refit uses whatever is in final_train_df (already early-sampled).
-    # Set to None to use all of final_train_df, or reduce further if needed.
     sample_fraction_for_final_train: float | None = None
 
 
@@ -86,13 +59,13 @@ class ModelConfig:
     run_xgb: bool = True
     run_lstm: bool = False
 
-    tune_xgb: bool = False  
+    tune_xgb: bool = False
     tune_lstm: bool = False
 
-    # XGBoost feature set
+    # Single feature set for the final refit run
     xgb_feature_set_name: str = "xgb_full_aircraft"
 
-    # Disable multi-model batch run
+    # Empty list = use xgb_feature_set_name above (single model)
     xgb_feature_set_names: list[str] = field(default_factory=list)
 
     # Enable multi-model batch run
@@ -104,31 +77,16 @@ class ModelConfig:
     #     "xgb_full_aircraft",
     # ])
 
-    # LSTM feature set
     lstm_variant_name: str = "context_full"
 
 
 @dataclass
 class XGBSearchConfig:
+    # ---------------------------------------------------------------
+    # BEST PARAMS from prior tuned run.
+    # Only param_grid[0] is used since tune_xgb=False and cv=False.
+    # ---------------------------------------------------------------
     param_grid: list[dict] = field(default_factory=lambda: [
-        {
-            "n_estimators": 250,
-            "max_depth": 4,
-            "learning_rate": 0.05,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "min_child_weight": 1,
-            "reg_lambda": 1.0,
-        },
-        {
-            "n_estimators": 350,
-            "max_depth": 4,
-            "learning_rate": 0.05,
-            "subsample": 0.8,
-            "colsample_bytree": 1.0,
-            "min_child_weight": 1,
-            "reg_lambda": 1.0,
-        },
         {
             "n_estimators": 300,
             "max_depth": 6,
@@ -137,15 +95,6 @@ class XGBSearchConfig:
             "colsample_bytree": 0.8,
             "min_child_weight": 1,
             "reg_lambda": 1.0,
-        },
-        {
-            "n_estimators": 400,
-            "max_depth": 6,
-            "learning_rate": 0.03,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "min_child_weight": 5,
-            "reg_lambda": 5.0,
         },
     ])
 
@@ -161,22 +110,6 @@ class LSTMSearchConfig:
             "epochs": 10,
             "learning_rate": 1e-3,
         },
-        {
-            "units1": 64,
-            "units2": 32,
-            "dropout": 0.2,
-            "batch_size": 256,
-            "epochs": 10,
-            "learning_rate": 1e-3,
-        },
-        {
-            "units1": 64,
-            "units2": 32,
-            "dropout": 0.3,
-            "batch_size": 256,
-            "epochs": 12,
-            "learning_rate": 1e-3,
-        },
     ])
 
 
@@ -188,7 +121,10 @@ class AircraftConfig:
     def __post_init__(self):
         if self.cache_path is None:
             project_root = Path(__file__).resolve().parents[1]
-            self.cache_path = project_root / "data_pipeline" / "data" / "faa_registry" / "ReleasableAircraft.zip"
+            self.cache_path = (
+                project_root / "data_pipeline" / "data"
+                / "faa_registry" / "ReleasableAircraft.zip"
+            )
 
 
 @dataclass

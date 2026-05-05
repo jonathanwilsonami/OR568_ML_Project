@@ -1,0 +1,136 @@
+{
+  "config": {
+    "train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "validation_years": [
+      2024
+    ],
+    "test_years": [
+      2025
+    ],
+    "final_train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "use_validation_holdout": true,
+    "cv_enabled": false,
+    "cv_min_train_years": 4,
+    "run_xgb": true,
+    "run_lstm": false,
+    "tune_xgb": false,
+    "tune_lstm": false,
+    "xgb_feature_set_name": "xgb_full_aircraft",
+    "lstm_variant_name": "context_full",
+    "use_gpu": false,
+    "worker_cores": 8,
+    "train_sample_fraction": null,
+    "val_sample_fraction": null,
+    "test_sample_fraction": null
+  },
+  "cv_splits": [],
+  "xgb_cv_results_by_feature_set": {
+    "xgb_full_aircraft": null
+  },
+  "best_xgb_rows_by_feature_set": {
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 300,
+        "max_depth": 6,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    }
+  },
+  "best_xgb_finals_by_feature_set": {
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "params": {
+        "n_estimators": 300,
+        "max_depth": 6,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.8401511305683771,
+        "f1": 0.5541631914331075,
+        "precision": 0.7937502439309968,
+        "recall": 0.4256762723050327,
+        "accuracy": 0.8473040729266993
+      },
+      "test_reg_metrics": {
+        "mae": 20.318101754700997,
+        "rmse": 46.0343204746487
+      }
+    }
+  },
+  "artifact_paths_by_feature_set": {
+    "xgb_full_aircraft": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/models/xgb_classifier_xgb_full_aircraft.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/models/xgb_regressor_xgb_full_aircraft.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/models/metadata_xgb_full_aircraft.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/evaluations/feature_importance_xgb_full_aircraft.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260505_064821/evaluations/test_predictions_xgb_full_aircraft.parquet",
+      "cv_fold_cls_metrics_path": null,
+      "cv_fold_reg_metrics_path": null
+    }
+  },
+  "model_version": "xgb_train_2015_2023_test_2025_2025_20260505_064821",
+  "final_test_results": [
+    {
+      "model_family": "xgb",
+      "details": "xgb_full_aircraft",
+      "test_auc": 0.8401511305683771,
+      "test_f1": 0.5541631914331075,
+      "test_precision": 0.7937502439309968,
+      "test_recall": 0.4256762723050327,
+      "test_accuracy": 0.8473040729266993,
+      "test_mae": 20.318101754700997,
+      "test_rmse": 46.0343204746487
+    }
+  ],
+  "best_overall_model": {
+    "model_family": "xgb",
+    "details": "xgb_full_aircraft",
+    "test_auc": 0.8401511305683771,
+    "test_f1": 0.5541631914331075,
+    "test_precision": 0.7937502439309968,
+    "test_recall": 0.4256762723050327,
+    "test_accuracy": 0.8473040729266993,
+    "test_mae": 20.318101754700997,
+    "test_rmse": 46.0343204746487
+  }
+}

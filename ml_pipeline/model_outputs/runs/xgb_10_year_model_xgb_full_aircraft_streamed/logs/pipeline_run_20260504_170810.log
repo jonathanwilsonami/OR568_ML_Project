@@ -1,0 +1,257 @@
+2026-05-04 17:08:10,129 | INFO | Logging initialized — log file: /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/logs/pipeline_run_20260504_170810.log
+2026-05-04 17:08:10,129 | INFO | ============================================================
+2026-05-04 17:08:10,129 | INFO | FLIGHT DELAY ML PIPELINE
+2026-05-04 17:08:10,129 | INFO | ============================================================
+2026-05-04 17:08:10,129 | INFO | [RUN] version=xgb_train_2015_2023_test_2025_2025_20260504_170810
+2026-05-04 17:08:10,129 | INFO | [SYSTEM] 24 CPU cores detected, using 8
+2026-05-04 17:08:10,129 | INFO | [SYSTEM] use_gpu=False
+2026-05-04 17:08:10,129 | INFO | [TF] CPU-only mode.
+2026-05-04 17:08:10,129 | INFO | [CONFIG] train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]
+2026-05-04 17:08:10,129 | INFO | [CONFIG] validation_years=[2024]
+2026-05-04 17:08:10,129 | INFO | [CONFIG] test_years=[2025]
+2026-05-04 17:08:10,129 | INFO | [CONFIG] final_train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+2026-05-04 17:08:10,129 | INFO | [CONFIG] cv_enabled=True
+2026-05-04 17:08:10,129 | INFO | [CONFIG] tune_xgb=False
+2026-05-04 17:08:10,129 | INFO | [CONFIG] xgb_feature_sets=['xgb_full_aircraft']
+2026-05-04 17:08:10,129 | INFO | [CONFIG] train_sample_fraction=None (None = full data)
+2026-05-04 17:08:10,130 | INFO | [MEM] startup | maxrss≈800.53 MB
+2026-05-04 17:08:10,130 | INFO | [DATA] Building lazy modeling frame for years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+2026-05-04 17:08:10,130 | INFO | [DATA] Projecting 41 columns
+2026-05-04 17:08:10,130 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2015.parquet
+2026-05-04 17:08:10,147 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2016.parquet
+2026-05-04 17:08:10,155 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2017.parquet
+2026-05-04 17:08:10,164 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2018.parquet
+2026-05-04 17:08:10,174 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2019.parquet
+2026-05-04 17:08:10,185 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2020.parquet
+2026-05-04 17:08:10,192 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2021.parquet
+2026-05-04 17:08:10,201 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2022.parquet
+2026-05-04 17:08:10,211 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2023.parquet
+2026-05-04 17:08:10,221 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2024.parquet
+2026-05-04 17:08:10,231 | INFO | [LOAD] /home/jon/projects/OR568_ML_Project/data_pipeline/data/features/flights_canonical_2025.parquet
+2026-05-04 17:08:10,241 | INFO | [TIMER] Load years lazy: 0.11s
+2026-05-04 17:08:10,244 | INFO | [DATA] Aircraft enrichment enabled — joining FAA registry
+2026-05-04 17:08:10,244 | INFO | [FAA] Using cached zip at /home/jon/projects/OR568_ML_Project/data_pipeline/data/faa_registry/ReleasableAircraft.zip
+2026-05-04 17:08:15,398 | INFO | [FAA] ACFTREF columns (fixed): ['code', 'mfr', 'model', 'type_acft', 'type_eng', 'ac_cat', 'build_cert_ind', 'no_eng', 'no_seats', 'ac_weight', 'speed', 'tc_data_sheet', 'tc_data_holder', 'unnamed:_13']
+2026-05-04 17:08:15,398 | INFO | [FAA] MASTER columns (fixed): ['n_number', 'serial_number', 'mfr_mdl_code', 'eng_mfr_mdl', 'year_mfr', 'type_registrant', 'name', 'street', 'street2', 'city', 'state', 'zip_code', 'region', 'county', 'country', 'last_action_date', 'cert_issue_date', 'certification', 'type_aircraft', 'type_engine', 'status_code', 'mode_s_code', 'fract_owner', 'air_worth_date', 'other_names(1)', 'other_names(2)', 'other_names(3)', 'other_names(4)', 'other_names(5)', 'expiration_date', 'unique_id', 'kit_mfr', 'kit_model', 'mode_s_code_hex', 'unnamed:_34']
+2026-05-04 17:08:15,398 | INFO | [FAA] DEREG columns (fixed): ['n_number', 'serial_number', 'mfr_mdl_code', 'status_code', 'name', 'street_mail', 'street2_mail', 'city_mail', 'state_abbrev_mail', 'zip_code_mail', 'eng_mfr_mdl', 'year_mfr', 'certification', 'region', 'county_mail', 'country_mail', 'air_worth_date', 'cancel_date', 'mode_s_code', 'indicator_group', 'exp_country', 'last_act_date', 'cert_issue_date', 'street_physical', 'street2_physical', 'city_physical', 'state_abbrev_physical', 'zip_code_physical', 'county_physical', 'country_physical', 'other_names(1)', 'other_names(2)', 'other_names(3)', 'other_names(4)', 'other_names(5)', 'kit_mfr', 'kit_model', 'mode_s_code_hex', 'unnamed:_38']
+2026-05-04 17:08:15,462 | INFO | [FAA] tail lookup built | rows=531,253 cols=['tail_number', 'mfr_mdl_code', 'year_mfr', 'type_acft', 'mfr', 'model', 'no_seats', 'ac_weight', 'no_eng']
+2026-05-04 17:08:15,471 | INFO | [TIMER] Build modeling table lazy: 5.23s
+2026-05-04 17:08:15,472 | INFO | [TIMER] Build lazy modeling frame: 5.34s
+2026-05-04 17:08:15,472 | INFO | [TIMER] Build lazy modeling frame: 5.34s
+2026-05-04 17:08:15,472 | INFO | [MEM] after building lazy frame | maxrss≈3749.67 MB
+2026-05-04 17:08:15,472 | INFO | [CV] Built 5 fold descriptors
+2026-05-04 17:08:15,472 | INFO | [CV] fold=1 train_years=[2015, 2016, 2017, 2018] val_year=2019
+2026-05-04 17:08:15,472 | INFO | [CV] fold=2 train_years=[2015, 2016, 2017, 2018, 2019] val_year=2020
+2026-05-04 17:08:15,472 | INFO | [CV] fold=3 train_years=[2015, 2016, 2017, 2018, 2019, 2020] val_year=2021
+2026-05-04 17:08:15,472 | INFO | [CV] fold=4 train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021] val_year=2022
+2026-05-04 17:08:15,472 | INFO | [CV] fold=5 train_years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022] val_year=2023
+2026-05-04 17:08:15,472 | INFO | [XGB] Feature sets to run: ['xgb_full_aircraft']
+2026-05-04 17:08:15,472 | INFO | ============================================================
+2026-05-04 17:08:15,472 | INFO | [XGB] Feature set: xgb_full_aircraft
+2026-05-04 17:08:15,472 | INFO | ============================================================
+2026-05-04 17:08:15,472 | INFO | [XGB] 37 features
+2026-05-04 17:08:15,472 | INFO | [XGB:xgb_full_aircraft] CV (diagnostics) — 1 config(s) × 5 folds | sample_fraction=None
+2026-05-04 17:08:32,624 | INFO | [STREAM] cv_fold1_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:08:43,984 | INFO | [XGB STREAM] cv_fold1_cls year=2015 rounds=62 (cumulative)
+2026-05-04 17:09:00,302 | INFO | [STREAM] cv_fold1_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:09:10,487 | INFO | [XGB STREAM] cv_fold1_cls year=2016 rounds=124 (cumulative)
+2026-05-04 17:09:26,092 | INFO | [STREAM] cv_fold1_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:09:36,383 | INFO | [XGB STREAM] cv_fold1_cls year=2017 rounds=186 (cumulative)
+2026-05-04 17:09:51,849 | INFO | [STREAM] cv_fold1_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:10:05,117 | INFO | [XGB STREAM] cv_fold1_cls year=2018 rounds=250 (cumulative)
+2026-05-04 17:10:21,611 | INFO | [STREAM] cv_fold1_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:10:32,048 | INFO | [XGB STREAM] cv_fold1_reg year=2015 rounds=62 (cumulative)
+2026-05-04 17:10:47,507 | INFO | [STREAM] cv_fold1_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:10:57,123 | INFO | [XGB STREAM] cv_fold1_reg year=2016 rounds=124 (cumulative)
+2026-05-04 17:11:13,244 | INFO | [STREAM] cv_fold1_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:11:22,971 | INFO | [XGB STREAM] cv_fold1_reg year=2017 rounds=186 (cumulative)
+2026-05-04 17:11:38,760 | INFO | [STREAM] cv_fold1_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:11:51,765 | INFO | [XGB STREAM] cv_fold1_reg year=2018 rounds=250 (cumulative)
+2026-05-04 17:12:07,618 | INFO | [STREAM] cv_fold1_val year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:12:36,081 | INFO | [STREAM] cv_fold2_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:12:47,180 | INFO | [XGB STREAM] cv_fold2_cls year=2015 rounds=50 (cumulative)
+2026-05-04 17:13:02,880 | INFO | [STREAM] cv_fold2_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:13:14,214 | INFO | [XGB STREAM] cv_fold2_cls year=2016 rounds=100 (cumulative)
+2026-05-04 17:13:30,666 | INFO | [STREAM] cv_fold2_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:13:41,154 | INFO | [XGB STREAM] cv_fold2_cls year=2017 rounds=150 (cumulative)
+2026-05-04 17:13:57,103 | INFO | [STREAM] cv_fold2_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:14:10,212 | INFO | [XGB STREAM] cv_fold2_cls year=2018 rounds=200 (cumulative)
+2026-05-04 17:14:26,289 | INFO | [STREAM] cv_fold2_cls year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:14:39,575 | INFO | [XGB STREAM] cv_fold2_cls year=2019 rounds=250 (cumulative)
+2026-05-04 17:14:55,813 | INFO | [STREAM] cv_fold2_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:15:05,714 | INFO | [XGB STREAM] cv_fold2_reg year=2015 rounds=50 (cumulative)
+2026-05-04 17:15:21,570 | INFO | [STREAM] cv_fold2_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:15:30,526 | INFO | [XGB STREAM] cv_fold2_reg year=2016 rounds=100 (cumulative)
+2026-05-04 17:15:46,244 | INFO | [STREAM] cv_fold2_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:15:56,049 | INFO | [XGB STREAM] cv_fold2_reg year=2017 rounds=150 (cumulative)
+2026-05-04 17:16:11,902 | INFO | [STREAM] cv_fold2_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:16:25,059 | INFO | [XGB STREAM] cv_fold2_reg year=2018 rounds=200 (cumulative)
+2026-05-04 17:16:41,268 | INFO | [STREAM] cv_fold2_reg year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:16:55,580 | INFO | [XGB STREAM] cv_fold2_reg year=2019 rounds=250 (cumulative)
+2026-05-04 17:17:11,471 | INFO | [STREAM] cv_fold2_val year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:17:35,026 | INFO | [STREAM] cv_fold3_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:17:45,356 | INFO | [XGB STREAM] cv_fold3_cls year=2015 rounds=41 (cumulative)
+2026-05-04 17:18:01,021 | INFO | [STREAM] cv_fold3_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:18:10,699 | INFO | [XGB STREAM] cv_fold3_cls year=2016 rounds=82 (cumulative)
+2026-05-04 17:18:26,713 | INFO | [STREAM] cv_fold3_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:18:36,181 | INFO | [XGB STREAM] cv_fold3_cls year=2017 rounds=123 (cumulative)
+2026-05-04 17:18:52,033 | INFO | [STREAM] cv_fold3_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:19:04,134 | INFO | [XGB STREAM] cv_fold3_cls year=2018 rounds=164 (cumulative)
+2026-05-04 17:19:19,549 | INFO | [STREAM] cv_fold3_cls year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:19:31,908 | INFO | [XGB STREAM] cv_fold3_cls year=2019 rounds=205 (cumulative)
+2026-05-04 17:19:47,374 | INFO | [STREAM] cv_fold3_cls year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:19:54,773 | INFO | [XGB STREAM] cv_fold3_cls year=2020 rounds=250 (cumulative)
+2026-05-04 17:20:09,997 | INFO | [STREAM] cv_fold3_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:20:19,695 | INFO | [XGB STREAM] cv_fold3_reg year=2015 rounds=41 (cumulative)
+2026-05-04 17:20:35,588 | INFO | [STREAM] cv_fold3_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:20:44,384 | INFO | [XGB STREAM] cv_fold3_reg year=2016 rounds=82 (cumulative)
+2026-05-04 17:21:00,146 | INFO | [STREAM] cv_fold3_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:21:09,271 | INFO | [XGB STREAM] cv_fold3_reg year=2017 rounds=123 (cumulative)
+2026-05-04 17:21:25,561 | INFO | [STREAM] cv_fold3_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:21:38,116 | INFO | [XGB STREAM] cv_fold3_reg year=2018 rounds=164 (cumulative)
+2026-05-04 17:21:54,361 | INFO | [STREAM] cv_fold3_reg year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:22:07,773 | INFO | [XGB STREAM] cv_fold3_reg year=2019 rounds=205 (cumulative)
+2026-05-04 17:22:23,156 | INFO | [STREAM] cv_fold3_reg year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:22:31,281 | INFO | [XGB STREAM] cv_fold3_reg year=2020 rounds=250 (cumulative)
+2026-05-04 17:22:47,370 | INFO | [STREAM] cv_fold3_val year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:23:13,734 | INFO | [STREAM] cv_fold4_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:23:23,322 | INFO | [XGB STREAM] cv_fold4_cls year=2015 rounds=35 (cumulative)
+2026-05-04 17:23:39,716 | INFO | [STREAM] cv_fold4_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:23:48,694 | INFO | [XGB STREAM] cv_fold4_cls year=2016 rounds=70 (cumulative)
+2026-05-04 17:24:04,508 | INFO | [STREAM] cv_fold4_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:24:13,341 | INFO | [XGB STREAM] cv_fold4_cls year=2017 rounds=105 (cumulative)
+2026-05-04 17:24:29,355 | INFO | [STREAM] cv_fold4_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:24:41,104 | INFO | [XGB STREAM] cv_fold4_cls year=2018 rounds=140 (cumulative)
+2026-05-04 17:24:56,611 | INFO | [STREAM] cv_fold4_cls year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:25:08,717 | INFO | [XGB STREAM] cv_fold4_cls year=2019 rounds=175 (cumulative)
+2026-05-04 17:25:25,008 | INFO | [STREAM] cv_fold4_cls year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:25:32,094 | INFO | [XGB STREAM] cv_fold4_cls year=2020 rounds=210 (cumulative)
+2026-05-04 17:25:48,057 | INFO | [STREAM] cv_fold4_cls year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:25:58,798 | INFO | [XGB STREAM] cv_fold4_cls year=2021 rounds=250 (cumulative)
+2026-05-04 17:26:14,447 | INFO | [STREAM] cv_fold4_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:26:23,796 | INFO | [XGB STREAM] cv_fold4_reg year=2015 rounds=35 (cumulative)
+2026-05-04 17:26:39,833 | INFO | [STREAM] cv_fold4_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:26:48,769 | INFO | [XGB STREAM] cv_fold4_reg year=2016 rounds=70 (cumulative)
+2026-05-04 17:27:04,203 | INFO | [STREAM] cv_fold4_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:27:13,510 | INFO | [XGB STREAM] cv_fold4_reg year=2017 rounds=105 (cumulative)
+2026-05-04 17:27:29,344 | INFO | [STREAM] cv_fold4_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:27:41,100 | INFO | [XGB STREAM] cv_fold4_reg year=2018 rounds=140 (cumulative)
+2026-05-04 17:27:56,935 | INFO | [STREAM] cv_fold4_reg year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:28:08,782 | INFO | [XGB STREAM] cv_fold4_reg year=2019 rounds=175 (cumulative)
+2026-05-04 17:28:24,818 | INFO | [STREAM] cv_fold4_reg year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:28:31,786 | INFO | [XGB STREAM] cv_fold4_reg year=2020 rounds=210 (cumulative)
+2026-05-04 17:28:48,333 | INFO | [STREAM] cv_fold4_reg year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:28:58,970 | INFO | [XGB STREAM] cv_fold4_reg year=2021 rounds=250 (cumulative)
+2026-05-04 17:29:15,041 | INFO | [STREAM] cv_fold4_val year=2022 raw=6,510,190 kept=6,510,190
+2026-05-04 17:29:41,537 | INFO | [STREAM] cv_fold5_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:29:50,917 | INFO | [XGB STREAM] cv_fold5_cls year=2015 rounds=31 (cumulative)
+2026-05-04 17:30:06,519 | INFO | [STREAM] cv_fold5_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:30:15,128 | INFO | [XGB STREAM] cv_fold5_cls year=2016 rounds=62 (cumulative)
+2026-05-04 17:30:30,757 | INFO | [STREAM] cv_fold5_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:30:39,739 | INFO | [XGB STREAM] cv_fold5_cls year=2017 rounds=93 (cumulative)
+2026-05-04 17:30:55,945 | INFO | [STREAM] cv_fold5_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:31:08,030 | INFO | [XGB STREAM] cv_fold5_cls year=2018 rounds=124 (cumulative)
+2026-05-04 17:31:23,848 | INFO | [STREAM] cv_fold5_cls year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:31:36,343 | INFO | [XGB STREAM] cv_fold5_cls year=2019 rounds=155 (cumulative)
+2026-05-04 17:31:52,296 | INFO | [STREAM] cv_fold5_cls year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:31:59,437 | INFO | [XGB STREAM] cv_fold5_cls year=2020 rounds=186 (cumulative)
+2026-05-04 17:32:14,795 | INFO | [STREAM] cv_fold5_cls year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:32:24,450 | INFO | [XGB STREAM] cv_fold5_cls year=2021 rounds=217 (cumulative)
+2026-05-04 17:32:40,076 | INFO | [STREAM] cv_fold5_cls year=2022 raw=6,510,190 kept=6,510,190
+2026-05-04 17:32:51,092 | INFO | [XGB STREAM] cv_fold5_cls year=2022 rounds=250 (cumulative)
+2026-05-04 17:33:06,842 | INFO | [STREAM] cv_fold5_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:33:15,630 | INFO | [XGB STREAM] cv_fold5_reg year=2015 rounds=31 (cumulative)
+2026-05-04 17:33:31,945 | INFO | [STREAM] cv_fold5_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:33:40,343 | INFO | [XGB STREAM] cv_fold5_reg year=2016 rounds=62 (cumulative)
+2026-05-04 17:33:56,161 | INFO | [STREAM] cv_fold5_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:34:04,751 | INFO | [XGB STREAM] cv_fold5_reg year=2017 rounds=93 (cumulative)
+2026-05-04 17:34:21,168 | INFO | [STREAM] cv_fold5_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:34:32,414 | INFO | [XGB STREAM] cv_fold5_reg year=2018 rounds=124 (cumulative)
+2026-05-04 17:34:48,870 | INFO | [STREAM] cv_fold5_reg year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:35:00,558 | INFO | [XGB STREAM] cv_fold5_reg year=2019 rounds=155 (cumulative)
+2026-05-04 17:35:16,226 | INFO | [STREAM] cv_fold5_reg year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:35:23,256 | INFO | [XGB STREAM] cv_fold5_reg year=2020 rounds=186 (cumulative)
+2026-05-04 17:35:39,799 | INFO | [STREAM] cv_fold5_reg year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:35:49,301 | INFO | [XGB STREAM] cv_fold5_reg year=2021 rounds=217 (cumulative)
+2026-05-04 17:36:04,672 | INFO | [STREAM] cv_fold5_reg year=2022 raw=6,510,190 kept=6,510,190
+2026-05-04 17:36:15,874 | INFO | [XGB STREAM] cv_fold5_reg year=2022 rounds=250 (cumulative)
+2026-05-04 17:36:31,644 | INFO | [STREAM] cv_fold5_val year=2023 raw=6,726,670 kept=6,726,670
+2026-05-04 17:36:43,057 | INFO | [TIMER] XGB CV (diagnostics): xgb_full_aircraft: 1707.59s
+2026-05-04 17:36:43,058 | INFO | [TIMER] XGB CV (diagnostics): xgb_full_aircraft: 1707.59s
+2026-05-04 17:36:43,058 | INFO | [XGB:xgb_full_aircraft] CV results:
+  model_family   feature_set_name config_id                                             params  ... cv_mae_max cv_rmse_mean  cv_rmse_min  cv_rmse_max
+0          xgb  xgb_full_aircraft    xgb_01  {'n_estimators': 250, 'max_depth': 4, 'learnin...  ...  19.817369     42.01156    34.808001    47.433473
+
+[1 rows x 27 columns]
+2026-05-04 17:36:43,080 | INFO | [XGB:xgb_full_aircraft] Manual params (tune_xgb=False): {'n_estimators': 250, 'max_depth': 4, 'learning_rate': 0.05, 'subsample': 0.8, 'colsample_bytree': 0.8, 'min_child_weight': 1, 'reg_lambda': 1.0}
+2026-05-04 17:36:43,080 | INFO | [MEM] after XGB CV: xgb_full_aircraft | maxrss≈84114.58 MB
+2026-05-04 17:36:43,193 | INFO | [MEM] after releasing CV results: xgb_full_aircraft | maxrss≈84114.58 MB
+2026-05-04 17:36:43,194 | INFO | [XGB:xgb_full_aircraft] Final refit over years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+2026-05-04 17:36:43,194 | INFO | [XGB FINAL] Training classifier streaming over years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024] feature_set=xgb_full_aircraft
+2026-05-04 17:36:59,162 | INFO | [STREAM] final_train_cls year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:37:08,002 | INFO | [XGB STREAM] final_train_cls year=2015 rounds=25 (cumulative)
+2026-05-04 17:37:23,795 | INFO | [STREAM] final_train_cls year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:37:32,238 | INFO | [XGB STREAM] final_train_cls year=2016 rounds=50 (cumulative)
+2026-05-04 17:37:47,795 | INFO | [STREAM] final_train_cls year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:37:56,162 | INFO | [XGB STREAM] final_train_cls year=2017 rounds=75 (cumulative)
+2026-05-04 17:38:12,824 | INFO | [STREAM] final_train_cls year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:38:23,989 | INFO | [XGB STREAM] final_train_cls year=2018 rounds=100 (cumulative)
+2026-05-04 17:38:39,703 | INFO | [STREAM] final_train_cls year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:38:51,080 | INFO | [XGB STREAM] final_train_cls year=2019 rounds=125 (cumulative)
+2026-05-04 17:39:06,931 | INFO | [STREAM] final_train_cls year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:39:13,444 | INFO | [XGB STREAM] final_train_cls year=2020 rounds=150 (cumulative)
+2026-05-04 17:39:28,828 | INFO | [STREAM] final_train_cls year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:39:38,375 | INFO | [XGB STREAM] final_train_cls year=2021 rounds=175 (cumulative)
+2026-05-04 17:39:53,849 | INFO | [STREAM] final_train_cls year=2022 raw=6,510,190 kept=6,510,190
+2026-05-04 17:40:04,300 | INFO | [XGB STREAM] final_train_cls year=2022 rounds=200 (cumulative)
+2026-05-04 17:40:19,872 | INFO | [STREAM] final_train_cls year=2023 raw=6,726,670 kept=6,726,670
+2026-05-04 17:40:30,842 | INFO | [XGB STREAM] final_train_cls year=2023 rounds=225 (cumulative)
+2026-05-04 17:40:46,326 | INFO | [STREAM] final_train_cls year=2024 raw=6,947,566 kept=6,947,566
+2026-05-04 17:40:57,588 | INFO | [XGB STREAM] final_train_cls year=2024 rounds=250 (cumulative)
+2026-05-04 17:40:57,588 | INFO | [XGB FINAL] Training regressor streaming over years=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024] feature_set=xgb_full_aircraft
+2026-05-04 17:41:13,669 | INFO | [STREAM] final_train_reg year=2015 raw=5,701,577 kept=5,701,577
+2026-05-04 17:41:22,152 | INFO | [XGB STREAM] final_train_reg year=2015 rounds=25 (cumulative)
+2026-05-04 17:41:38,219 | INFO | [STREAM] final_train_reg year=2016 raw=5,531,586 kept=5,531,586
+2026-05-04 17:41:46,477 | INFO | [XGB STREAM] final_train_reg year=2016 rounds=50 (cumulative)
+2026-05-04 17:42:02,154 | INFO | [STREAM] final_train_reg year=2017 raw=5,573,278 kept=5,573,278
+2026-05-04 17:42:10,643 | INFO | [XGB STREAM] final_train_reg year=2017 rounds=75 (cumulative)
+2026-05-04 17:42:26,488 | INFO | [STREAM] final_train_reg year=2018 raw=7,064,598 kept=7,064,598
+2026-05-04 17:42:37,349 | INFO | [XGB STREAM] final_train_reg year=2018 rounds=100 (cumulative)
+2026-05-04 17:42:53,072 | INFO | [STREAM] final_train_reg year=2019 raw=7,262,529 kept=7,262,529
+2026-05-04 17:43:04,445 | INFO | [XGB STREAM] final_train_reg year=2019 rounds=125 (cumulative)
+2026-05-04 17:43:20,164 | INFO | [STREAM] final_train_reg year=2020 raw=4,393,238 kept=4,393,238
+2026-05-04 17:43:26,896 | INFO | [XGB STREAM] final_train_reg year=2020 rounds=150 (cumulative)
+2026-05-04 17:43:43,027 | INFO | [STREAM] final_train_reg year=2021 raw=5,857,029 kept=5,857,029
+2026-05-04 17:43:52,630 | INFO | [XGB STREAM] final_train_reg year=2021 rounds=175 (cumulative)
+2026-05-04 17:44:08,633 | INFO | [STREAM] final_train_reg year=2022 raw=6,510,190 kept=6,510,190
+2026-05-04 17:44:19,249 | INFO | [XGB STREAM] final_train_reg year=2022 rounds=200 (cumulative)
+2026-05-04 17:44:35,199 | INFO | [STREAM] final_train_reg year=2023 raw=6,726,670 kept=6,726,670
+2026-05-04 17:44:46,059 | INFO | [XGB STREAM] final_train_reg year=2023 rounds=225 (cumulative)
+2026-05-04 17:45:02,080 | INFO | [STREAM] final_train_reg year=2024 raw=6,947,566 kept=6,947,566
+2026-05-04 17:45:13,166 | INFO | [XGB STREAM] final_train_reg year=2024 rounds=250 (cumulative)
+2026-05-04 17:45:13,166 | INFO | [XGB FINAL] Predicting on test years=[2025]
+2026-05-04 17:45:29,289 | INFO | [STREAM] final_test_cls year=2025 raw=6,857,845 kept=6,857,845
+2026-05-04 17:45:52,217 | INFO | [STREAM] final_test_reg year=2025 raw=6,857,845 kept=6,857,845
+2026-05-04 17:46:02,568 | INFO | [TIMER] Final XGB refit + test: xgb_full_aircraft: 559.37s
+2026-05-04 17:46:02,568 | INFO | [TIMER] Final XGB refit + test: xgb_full_aircraft: 559.37s
+2026-05-04 17:46:02,568 | INFO | [XGB FINAL:xgb_full_aircraft] Classification={'auc': 0.8302153899063465, 'f1': 0.5305061936712351, 'precision': 0.7867142263809827, 'recall': 0.400180134335475, 'accuracy': 0.8420917941423289}
+2026-05-04 17:46:02,568 | INFO | [XGB FINAL:xgb_full_aircraft] Regression={'mae': 21.093121795439995, 'rmse': 48.35682871501054}
+2026-05-04 17:46:03,014 | INFO | [ARTIFACTS:xgb_full_aircraft] Saved: {'run_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810', 'logs_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/logs', 'models_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models', 'evaluations_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations', 'plots_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/plots', 'tables_dir': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/tables', 'classifier_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/xgb_classifier_xgb_full_aircraft.joblib', 'regressor_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/xgb_regressor_xgb_full_aircraft.joblib', 'metadata_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/models/metadata_xgb_full_aircraft.json', 'summary_json_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/results_summary.json', 'feature_importance_csv_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/feature_importance_xgb_full_aircraft.csv', 'predictions_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/test_predictions_xgb_full_aircraft.parquet', 'cv_fold_cls_metrics_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/cv_fold_cls_metrics_xgb_full_aircraft.csv', 'cv_fold_reg_metrics_path': '/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/cv_fold_reg_metrics_xgb_full_aircraft.csv'}
+2026-05-04 17:46:03,137 | INFO | [MEM] after cleanup: xgb_full_aircraft | maxrss≈84114.58 MB
+2026-05-04 17:46:03,138 | INFO | ================================================
+2026-05-04 17:46:03,139 | INFO | FINAL TEST RESULTS
+  model_family            details  test_auc   test_f1  test_precision  test_recall  test_accuracy   test_mae  test_rmse
+0          xgb  xgb_full_aircraft  0.830215  0.530506        0.786714      0.40018       0.842092  21.093122  48.356829
+2026-05-04 17:46:03,143 | INFO | ================================================
+2026-05-04 17:46:03,144 | INFO | BEST OVERALL MODEL: {'model_family': 'xgb', 'details': 'xgb_full_aircraft', 'test_auc': 0.8302153899063465, 'test_f1': 0.5305061936712351, 'test_precision': 0.7867142263809827, 'test_recall': 0.400180134335475, 'test_accuracy': 0.8420917941423289, 'test_mae': 21.093121795439995, 'test_rmse': 48.35682871501054}
+2026-05-04 17:46:03,144 | INFO | [SAVE] Wrote /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations/results_summary.json
+2026-05-04 17:46:03,144 | INFO | [SAVE] Results summary written to /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810/evaluations
+2026-05-04 17:46:03,144 | INFO | [TIMER] Save results summary: 0.00s
+2026-05-04 17:46:03,144 | INFO | [TIMER] Save results summary: 0.00s
+2026-05-04 17:46:07,613 | INFO | [VIZ] Plots and tables written to /home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260504_170810
+2026-05-04 17:46:07,614 | INFO | [TIMER] Generate visualizations: 4.47s
+2026-05-04 17:46:07,614 | INFO | [TIMER] Generate visualizations: 4.47s
+2026-05-04 17:46:07,740 | INFO | [MEM] before return | maxrss≈84114.58 MB
+2026-05-04 17:46:07,740 | INFO | [TIMER] TOTAL PIPELINE TIME: 2277.61s
+2026-05-04 17:46:07,740 | INFO | [TIMER] TOTAL PIPELINE TIME: 2277.61s
+2026-05-04 17:46:07,858 | INFO | [MEM] final cleanup | maxrss≈84114.58 MB

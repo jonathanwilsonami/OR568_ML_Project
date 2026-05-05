@@ -1,0 +1,25 @@
+{
+  "version": "xgb_train_2015_2023_test_2025_2025_20260504_175231_xgb_schedule",
+  "model_family": "xgb",
+  "feature_set_name": "xgb_schedule",
+  "params": {
+    "n_estimators": 250,
+    "max_depth": 4,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 1,
+    "reg_lambda": 1.0
+  },
+  "feature_names": [
+    "distance",
+    "dep_hour_local",
+    "dep_weekday_local",
+    "dep_month_local",
+    "dep_time_bucket",
+    "is_weekend",
+    "is_holiday",
+    "days_to_nearest_holiday",
+    "crs_elapsed_time"
+  ]
+}

@@ -60,6 +60,9 @@ def save_xgb_artifacts(
     # --- New: per-fold CV metric lists from the best config ---
     fold_cls_metrics: list[dict] | None = None,
     fold_reg_metrics: list[dict] | None = None,
+    # Pre-computed normalised feature importances (ndarray aligned with feature_names).
+    # When classifier is a native xgb.Booster this avoids calling .feature_importances_
+    feature_importances=None,
 ) -> dict[str, str]:
     models_dir = run_paths["models_dir"]
     eval_dir = run_paths["evaluations_dir"]
@@ -72,6 +75,9 @@ def save_xgb_artifacts(
     predictions_path = eval_dir / f"test_predictions_{feature_set_name}.parquet"
 
     # --- Model files ---
+    # classifier and regressor are native xgb.Booster objects.
+    # joblib handles them fine; alternatively booster.save_model() writes
+    # a portable JSON/UBJ file but joblib keeps the same interface as before.
     joblib.dump(classifier, classifier_path)
     joblib.dump(regressor, regressor_path)
 
@@ -89,9 +95,23 @@ def save_xgb_artifacts(
     save_json(results_payload, summary_json_path)
 
     # --- Feature importance CSV ---
+    # classifier is a native xgb.Booster; importances are passed in
+    # directly via the feature_importances kwarg (already normalised).
+    if feature_importances is not None:
+        importance_values = feature_importances
+    else:
+        # Fallback: try sklearn wrapper attribute, then native get_score
+        try:
+            importance_values = classifier.feature_importances_
+        except AttributeError:
+            raw = classifier.get_score(importance_type="gain")
+            arr = [raw.get(f, 0.0) for f in feature_names]
+            total = sum(arr)
+            importance_values = [v / total if total > 0 else 0.0 for v in arr]
+
     feature_importance_df = pd.DataFrame({
         "feature": feature_names,
-        "importance": classifier.feature_importances_,
+        "importance": importance_values,
     }).sort_values("importance", ascending=False)
     feature_importance_df.to_csv(feature_importance_csv_path, index=False)
 

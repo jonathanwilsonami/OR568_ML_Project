@@ -1,0 +1,1100 @@
+{
+  "config": {
+    "train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "validation_years": [
+      2024
+    ],
+    "test_years": [
+      2025
+    ],
+    "use_validation_holdout": true,
+    "cv_enabled": true,
+    "cv_min_train_years": 4,
+    "run_xgb": true,
+    "run_lstm": false,
+    "tune_xgb": false,
+    "tune_lstm": false,
+    "xgb_feature_set_name": "xgb_full_aircraft",
+    "lstm_variant_name": "context_full",
+    "use_gpu": false,
+    "worker_cores": 8,
+    "train_sample_fraction": 0.35,
+    "val_sample_fraction": 0.5,
+    "test_sample_fraction": null
+  },
+  "row_counts": {
+    "train_rows": 19117240,
+    "validation_rows": 3473783,
+    "test_rows": 6857845,
+    "final_train_rows": 22591023
+  },
+  "cv_splits": [
+    {
+      "fold": 1,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018
+      ],
+      "val_year": 2019,
+      "train_rows": 8354862,
+      "val_rows": 2541885
+    },
+    {
+      "fold": 2,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019
+      ],
+      "val_year": 2020,
+      "train_rows": 10896747,
+      "val_rows": 1537633
+    },
+    {
+      "fold": 3,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ],
+      "val_year": 2021,
+      "train_rows": 12434380,
+      "val_rows": 2049960
+    },
+    {
+      "fold": 4,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "val_year": 2022,
+      "train_rows": 14484340,
+      "val_rows": 2278566
+    },
+    {
+      "fold": 5,
+      "train_years": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ],
+      "val_year": 2023,
+      "train_rows": 16762906,
+      "val_rows": 2354334
+    }
+  ],
+  "xgb_cv_results_by_feature_set": {
+    "xgb_schedule": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_schedule",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.6548366208321005,
+          "cv_auc_min": 0.6110531178793002,
+          "cv_auc_max": 0.6776782186183405,
+          "cv_f1_mean": 0.07856971194075224,
+          "cv_f1_min": 0.03165301452188977,
+          "cv_f1_max": 0.11967451464317568,
+          "cv_precision_mean": 0.6814462612894979,
+          "cv_precision_min": 0.5395207931699256,
+          "cv_precision_max": 0.8330391810801271,
+          "cv_recall_mean": 0.0424979135880655,
+          "cv_recall_min": 0.0162241564534871,
+          "cv_recall_max": 0.06730154803867004,
+          "cv_accuracy_mean": 0.8279100935538579,
+          "cv_accuracy_min": 0.7949629079141974,
+          "cv_accuracy_max": 0.9018467815187442,
+          "cv_mae_mean": 23.444077682495116,
+          "cv_mae_min": 20.49933624267578,
+          "cv_mae_max": 25.991079330444336,
+          "cv_rmse_mean": 49.06649131806011,
+          "cv_rmse_min": 39.054916451369316,
+          "cv_rmse_max": 55.71030809225861
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.6495756886576094,
+          "f1": 0.11967451464317568,
+          "precision": 0.5395207931699256,
+          "recall": 0.06730154803867004,
+          "accuracy": 0.8110272566928721,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.6110531178793002,
+          "f1": 0.03165301452188977,
+          "precision": 0.6457242582897034,
+          "recall": 0.0162241564534871,
+          "accuracy": 0.9018467815187442,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.6764153389205726,
+          "f1": 0.04352195922582549,
+          "precision": 0.8330391810801271,
+          "recall": 0.022344676096877427,
+          "accuracy": 0.8313284161642178,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.6594607400846793,
+          "f1": 0.09363865051701727,
+          "precision": 0.6913674560733384,
+          "recall": 0.05022023375992786,
+          "accuracy": 0.7949629079141974,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.6776782186183405,
+          "f1": 0.10436042079585303,
+          "precision": 0.6975796178343949,
+          "recall": 0.05639895359136507,
+          "accuracy": 0.8003851054792581,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 25.991079330444336,
+          "rmse": 50.01896368894127,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 20.8457088470459,
+          "rmse": 39.054916451369316,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 20.49933624267578,
+          "rmse": 47.99013926627922,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 25.08677864074707,
+          "rmse": 52.55812909145216,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 24.7974853515625,
+          "rmse": 55.71030809225861,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    },
+    "xgb_context": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_context",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.686067879497799,
+          "cv_auc_min": 0.6563146223862271,
+          "cv_auc_max": 0.7021030831891868,
+          "cv_f1_mean": 0.10424007298236118,
+          "cv_f1_min": 0.03450290770472189,
+          "cv_f1_max": 0.1897829418357311,
+          "cv_precision_mean": 0.6882640618542638,
+          "cv_precision_min": 0.5655137161356278,
+          "cv_precision_max": 0.8458390177353342,
+          "cv_recall_mean": 0.0584681748378203,
+          "cv_recall_min": 0.01761063455092882,
+          "cv_recall_max": 0.11402441957138637,
+          "cv_accuracy_mean": 0.8292467265153356,
+          "cv_accuracy_min": 0.7973781725034342,
+          "cv_accuracy_max": 0.9021307683469582,
+          "cv_mae_mean": 22.581651306152345,
+          "cv_mae_min": 20.0205020904541,
+          "cv_mae_max": 24.33280372619629,
+          "cv_rmse_mean": 48.433796194933805,
+          "cv_rmse_min": 38.518837023774,
+          "cv_rmse_max": 55.17310958686645
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.6964954338964321,
+          "f1": 0.1897829418357311,
+          "precision": 0.5655137161356278,
+          "recall": 0.11402441957138637,
+          "accuracy": 0.814187643020595,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.6563146223862271,
+          "f1": 0.06028058781899172,
+          "precision": 0.5956396544631839,
+          "recall": 0.03174672776303962,
+          "accuracy": 0.9021307683469582,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.6837028792968762,
+          "f1": 0.03450290770472189,
+          "precision": 0.8458390177353342,
+          "recall": 0.01761063455092882,
+          "accuracy": 0.8307332826006361,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.6917233787202723,
+          "f1": 0.12004930051714718,
+          "precision": 0.7137568935559416,
+          "recall": 0.06553601775743072,
+          "accuracy": 0.7973781725034342,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.7021030831891868,
+          "f1": 0.11658462703521394,
+          "precision": 0.720571027381231,
+          "recall": 0.06342307454631595,
+          "accuracy": 0.8018037661050545,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 24.193599700927734,
+          "rmse": 48.912464661052915,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 20.206754684448242,
+          "rmse": 38.518837023774,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 20.0205020904541,
+          "rmse": 47.654702843738306,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 24.33280372619629,
+          "rmse": 51.90986685923737,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 24.15459632873535,
+          "rmse": 55.17310958686645,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    },
+    "xgb_2hop_propagation": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_2hop_propagation",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.8229119652129532,
+          "cv_auc_min": 0.7909037849304285,
+          "cv_auc_max": 0.8397565554361162,
+          "cv_f1_mean": 0.47521979824034866,
+          "cv_f1_min": 0.39422640570332745,
+          "cv_f1_max": 0.5354499146563749,
+          "cv_precision_mean": 0.7408742089009672,
+          "cv_precision_min": 0.5931718061674008,
+          "cv_precision_max": 0.8052335560191175,
+          "cv_recall_mean": 0.35196042037458375,
+          "cv_recall_min": 0.28872919388740553,
+          "cv_recall_max": 0.4127690859494706,
+          "cv_accuracy_mean": 0.8668944080860521,
+          "cv_accuracy_min": 0.8452767752779895,
+          "cv_accuracy_max": 0.9102926798601311,
+          "cv_mae_mean": 18.651377487182618,
+          "cv_mae_min": 17.443187713623047,
+          "cv_mae_max": 19.793664932250977,
+          "cv_rmse_mean": 43.53592829611314,
+          "cv_rmse_min": 36.089890892178865,
+          "cv_rmse_max": 49.49167879079523
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.8397565554361162,
+          "f1": 0.5354499146563749,
+          "precision": 0.7618963068181818,
+          "recall": 0.4127690859494706,
+          "accuracy": 0.8633047674624458,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.7909037849304285,
+          "f1": 0.39422640570332745,
+          "precision": 0.5931718061674008,
+          "recall": 0.29521387384622133,
+          "accuracy": 0.9102926798601311,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.8175755346677935,
+          "f1": 0.4250500038330464,
+          "precision": 0.8052335560191175,
+          "recall": 0.28872919388740553,
+          "accuracy": 0.8658526670439098,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.8325575277809448,
+          "f1": 0.5107369200166536,
+          "precision": 0.7666550933962919,
+          "recall": 0.38291540942669855,
+          "accuracy": 0.8452767752779895,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.8337664232494829,
+          "f1": 0.5106357469923408,
+          "precision": 0.7774142821038443,
+          "recall": 0.380174538763123,
+          "accuracy": 0.849745150785785,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 18.554752349853516,
+          "rmse": 42.963030869392526,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 18.117145538330078,
+          "rmse": 36.089890892178865,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 17.443187713623047,
+          "rmse": 43.1143201789404,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 19.34813690185547,
+          "rmse": 46.0207207492587,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 19.793664932250977,
+          "rmse": 49.49167879079523,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    },
+    "xgb_full": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_full",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.8246958898958294,
+          "cv_auc_min": 0.7930540016343304,
+          "cv_auc_max": 0.8419708153176412,
+          "cv_f1_mean": 0.47962170149752703,
+          "cv_f1_min": 0.3972834813865441,
+          "cv_f1_max": 0.5364476363066872,
+          "cv_precision_mean": 0.7450898887313903,
+          "cv_precision_min": 0.6054782218230804,
+          "cv_precision_max": 0.7975123375969383,
+          "cv_recall_mean": 0.35523061652746624,
+          "cv_recall_min": 0.2956304400254325,
+          "cv_recall_max": 0.4118758545819334,
+          "cv_accuracy_mean": 0.8678505014158796,
+          "cv_accuracy_min": 0.8464675841063595,
+          "cv_accuracy_max": 0.9113072282235215,
+          "cv_mae_mean": 18.57734909057617,
+          "cv_mae_min": 17.486019134521484,
+          "cv_mae_max": 19.683364868164062,
+          "cv_rmse_mean": 42.479053829377335,
+          "cv_rmse_min": 35.307475098788395,
+          "cv_rmse_max": 47.91013825544913
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.8419708153176412,
+          "f1": 0.5364476363066872,
+          "precision": 0.7690452364457445,
+          "recall": 0.4118758545819334,
+          "accuracy": 0.8641466629074243,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.7930540016343304,
+          "f1": 0.3972834813865441,
+          "precision": 0.6054782218230804,
+          "recall": 0.2956304400254325,
+          "accuracy": 0.9113072282235215,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.8190538533023224,
+          "f1": 0.4358787345012179,
+          "precision": 0.7975123375969383,
+          "recall": 0.29989206385275236,
+          "accuracy": 0.866686829661717,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.8342974765661086,
+          "f1": 0.5144395813863109,
+          "precision": 0.7724134098392542,
+          "recall": 0.38564145250234105,
+          "accuracy": 0.8464675841063595,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.8351033026587446,
+          "f1": 0.5140590739068748,
+          "precision": 0.7810002379519337,
+          "recall": 0.38311327167487175,
+          "accuracy": 0.8506442021803766,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 18.501041412353516,
+          "rmse": 42.03266726235084,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 17.84297752380371,
+          "rmse": 35.307475098788395,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 17.486019134521484,
+          "rmse": 42.10611507557795,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 19.373342514038086,
+          "rmse": 45.03887345472034,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 19.683364868164062,
+          "rmse": 47.91013825544913,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    },
+    "xgb_full_aircraft": {
+      "summary": [
+        {
+          "model_family": "xgb",
+          "feature_set_name": "xgb_full_aircraft",
+          "config_id": "xgb_01",
+          "params": {
+            "n_estimators": 250,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 1,
+            "reg_lambda": 1.0
+          },
+          "cv_auc_mean": 0.8253743018967856,
+          "cv_auc_min": 0.7923669771410675,
+          "cv_auc_max": 0.843151504505783,
+          "cv_f1_mean": 0.47863947144166435,
+          "cv_f1_min": 0.3973367507770265,
+          "cv_f1_max": 0.5374099175622754,
+          "cv_precision_mean": 0.7486471704621676,
+          "cv_precision_min": 0.6054498114562759,
+          "cv_precision_max": 0.8087431693989071,
+          "cv_recall_mean": 0.3537858481562435,
+          "cv_recall_min": 0.29146546990096384,
+          "cv_recall_max": 0.4129820872755756,
+          "cv_accuracy_mean": 0.8680142075564528,
+          "cv_accuracy_min": 0.8469166975096881,
+          "cv_accuracy_max": 0.9113072282235215,
+          "cv_mae_mean": 18.558636474609376,
+          "cv_mae_min": 17.486204147338867,
+          "cv_mae_max": 19.676828384399414,
+          "cv_rmse_mean": 42.459972090228156,
+          "cv_rmse_min": 35.20781461495356,
+          "cv_rmse_max": 47.99310253177013
+        }
+      ],
+      "best_config_fold_cls_metrics": [
+        {
+          "auc": 0.843151504505783,
+          "f1": 0.5374099175622754,
+          "precision": 0.7691470983428242,
+          "recall": 0.4129820872755756,
+          "accuracy": 0.8643079606328641,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "auc": 0.7923669771410675,
+          "f1": 0.3973367507770265,
+          "precision": 0.6054498114562759,
+          "recall": 0.29569621363267634,
+          "accuracy": 0.9113072282235215,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "auc": 0.8208181987455443,
+          "f1": 0.42850183043109086,
+          "precision": 0.8087431693989071,
+          "recall": 0.29146546990096384,
+          "accuracy": 0.8664786955192622,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "auc": 0.8353870222103267,
+          "f1": 0.5149420811836853,
+          "precision": 0.7761150234741784,
+          "recall": 0.38528769118718137,
+          "accuracy": 0.8469166975096881,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "auc": 0.8351478068812063,
+          "f1": 0.5150067772542438,
+          "precision": 0.7837807496386523,
+          "recall": 0.3834977787848202,
+          "accuracy": 0.8510604558969277,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ],
+      "best_config_fold_reg_metrics": [
+        {
+          "mae": 18.50737762451172,
+          "rmse": 41.94394103387431,
+          "fold": 1,
+          "train_years": "[2015, 2016, 2017, 2018]",
+          "val_year": 2019
+        },
+        {
+          "mae": 17.786890029907227,
+          "rmse": 35.20781461495356,
+          "fold": 2,
+          "train_years": "[2015, 2016, 2017, 2018, 2019]",
+          "val_year": 2020
+        },
+        {
+          "mae": 17.486204147338867,
+          "rmse": 42.03527222854784,
+          "fold": 3,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020]",
+          "val_year": 2021
+        },
+        {
+          "mae": 19.33588218688965,
+          "rmse": 45.119730041994934,
+          "fold": 4,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021]",
+          "val_year": 2022
+        },
+        {
+          "mae": 19.676828384399414,
+          "rmse": 47.99310253177013,
+          "fold": 5,
+          "train_years": "[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]",
+          "val_year": 2023
+        }
+      ]
+    }
+  },
+  "best_xgb_rows_by_feature_set": {
+    "xgb_schedule": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_schedule",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    },
+    "xgb_context": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_context",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    },
+    "xgb_2hop_propagation": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_2hop_propagation",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    },
+    "xgb_full": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    },
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "config_id": "manual_01",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      }
+    }
+  },
+  "best_xgb_finals_by_feature_set": {
+    "xgb_schedule": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_schedule",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.6890014043962496,
+        "f1": 0.10305109555830017,
+        "precision": 0.7630333465804401,
+        "recall": 0.055256894193643755,
+        "accuracy": 0.7855572705419851
+      },
+      "test_reg_metrics": {
+        "mae": 26.308435440063477,
+        "rmse": 57.28180194428572
+      }
+    },
+    "xgb_context": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_context",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.6968294553346497,
+        "f1": 0.12602763032326436,
+        "precision": 0.7492200521389804,
+        "recall": 0.06880032756454323,
+        "accuracy": 0.7872683036726552
+      },
+      "test_reg_metrics": {
+        "mae": 25.585481643676758,
+        "rmse": 56.84025166186701
+      }
+    },
+    "xgb_2hop_propagation": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_2hop_propagation",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.8324742332312474,
+        "f1": 0.523033768004177,
+        "precision": 0.787705666674563,
+        "recall": 0.39149130168315066,
+        "accuracy": 0.8408195285836877
+      },
+      "test_reg_metrics": {
+        "mae": 21.039459228515625,
+        "rmse": 50.11787862442404
+      }
+    },
+    "xgb_full": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.834398830873814,
+        "f1": 0.5263643700963934,
+        "precision": 0.7946521267068735,
+        "recall": 0.3935091463633991,
+        "accuracy": 0.842121686914767
+      },
+      "test_reg_metrics": {
+        "mae": 20.953235626220703,
+        "rmse": 48.64568918385138
+      }
+    },
+    "xgb_full_aircraft": {
+      "model_family": "xgb",
+      "feature_set_name": "xgb_full_aircraft",
+      "params": {
+        "n_estimators": 250,
+        "max_depth": 4,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 1,
+        "reg_lambda": 1.0
+      },
+      "test_cls_metrics": {
+        "auc": 0.8340972576105947,
+        "f1": 0.5272062041834732,
+        "precision": 0.7935786753634433,
+        "recall": 0.39471592867622196,
+        "accuracy": 0.8421714109898956
+      },
+      "test_reg_metrics": {
+        "mae": 20.950620651245117,
+        "rmse": 48.68767801235108
+      }
+    }
+  },
+  "artifact_paths_by_feature_set": {
+    "xgb_schedule": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_classifier_xgb_schedule.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_regressor_xgb_schedule.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/metadata_xgb_schedule.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/feature_importance_xgb_schedule.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/test_predictions_xgb_schedule.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_cls_metrics_xgb_schedule.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_reg_metrics_xgb_schedule.csv"
+    },
+    "xgb_context": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_classifier_xgb_context.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_regressor_xgb_context.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/metadata_xgb_context.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/feature_importance_xgb_context.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/test_predictions_xgb_context.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_cls_metrics_xgb_context.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_reg_metrics_xgb_context.csv"
+    },
+    "xgb_2hop_propagation": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_classifier_xgb_2hop_propagation.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_regressor_xgb_2hop_propagation.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/metadata_xgb_2hop_propagation.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/feature_importance_xgb_2hop_propagation.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/test_predictions_xgb_2hop_propagation.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_cls_metrics_xgb_2hop_propagation.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_reg_metrics_xgb_2hop_propagation.csv"
+    },
+    "xgb_full": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_classifier_xgb_full.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_regressor_xgb_full.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/metadata_xgb_full.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/feature_importance_xgb_full.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/test_predictions_xgb_full.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_cls_metrics_xgb_full.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_reg_metrics_xgb_full.csv"
+    },
+    "xgb_full_aircraft": {
+      "run_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208",
+      "logs_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/logs",
+      "models_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models",
+      "evaluations_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations",
+      "plots_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/plots",
+      "tables_dir": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/tables",
+      "classifier_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_classifier_xgb_full_aircraft.joblib",
+      "regressor_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/xgb_regressor_xgb_full_aircraft.joblib",
+      "metadata_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/models/metadata_xgb_full_aircraft.json",
+      "summary_json_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/results_summary.json",
+      "feature_importance_csv_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/feature_importance_xgb_full_aircraft.csv",
+      "predictions_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/test_predictions_xgb_full_aircraft.parquet",
+      "cv_fold_cls_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_cls_metrics_xgb_full_aircraft.csv",
+      "cv_fold_reg_metrics_path": "/home/jon/projects/OR568_ML_Project/ml_pipeline/model_outputs/runs/xgb_train_2015_2023_test_2025_2025_20260503_205208/evaluations/cv_fold_reg_metrics_xgb_full_aircraft.csv"
+    }
+  },
+  "model_version": "xgb_train_2015_2023_test_2025_2025_20260503_205208",
+  "final_test_results": [
+    {
+      "model_family": "xgb",
+      "details": "xgb_full",
+      "test_auc": 0.834398830873814,
+      "test_f1": 0.5263643700963934,
+      "test_precision": 0.7946521267068735,
+      "test_recall": 0.3935091463633991,
+      "test_accuracy": 0.842121686914767,
+      "test_mae": 20.953235626220703,
+      "test_rmse": 48.64568918385138
+    },
+    {
+      "model_family": "xgb",
+      "details": "xgb_full_aircraft",
+      "test_auc": 0.8340972576105947,
+      "test_f1": 0.5272062041834732,
+      "test_precision": 0.7935786753634433,
+      "test_recall": 0.39471592867622196,
+      "test_accuracy": 0.8421714109898956,
+      "test_mae": 20.950620651245117,
+      "test_rmse": 48.68767801235108
+    },
+    {
+      "model_family": "xgb",
+      "details": "xgb_2hop_propagation",
+      "test_auc": 0.8324742332312474,
+      "test_f1": 0.523033768004177,
+      "test_precision": 0.787705666674563,
+      "test_recall": 0.39149130168315066,
+      "test_accuracy": 0.8408195285836877,
+      "test_mae": 21.039459228515625,
+      "test_rmse": 50.11787862442404
+    },
+    {
+      "model_family": "xgb",
+      "details": "xgb_context",
+      "test_auc": 0.6968294553346497,
+      "test_f1": 0.12602763032326436,
+      "test_precision": 0.7492200521389804,
+      "test_recall": 0.06880032756454323,
+      "test_accuracy": 0.7872683036726552,
+      "test_mae": 25.585481643676758,
+      "test_rmse": 56.84025166186701
+    },
+    {
+      "model_family": "xgb",
+      "details": "xgb_schedule",
+      "test_auc": 0.6890014043962496,
+      "test_f1": 0.10305109555830017,
+      "test_precision": 0.7630333465804401,
+      "test_recall": 0.055256894193643755,
+      "test_accuracy": 0.7855572705419851,
+      "test_mae": 26.308435440063477,
+      "test_rmse": 57.28180194428572
+    }
+  ],
+  "best_overall_model": {
+    "model_family": "xgb",
+    "details": "xgb_full",
+    "test_auc": 0.834398830873814,
+    "test_f1": 0.5263643700963934,
+    "test_precision": 0.7946521267068735,
+    "test_recall": 0.3935091463633991,
+    "test_accuracy": 0.842121686914767,
+    "test_mae": 20.953235626220703,
+    "test_rmse": 48.64568918385138
+  }
+}

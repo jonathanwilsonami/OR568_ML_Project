@@ -1,0 +1,10 @@
+feature,importance
+dep_time_bucket,0.31954744
+dep_hour_local,0.17976163
+dep_month_local,0.15702279
+days_to_nearest_holiday,0.14875716
+distance,0.045019988
+is_holiday,0.044924498
+dep_weekday_local,0.041181773
+crs_elapsed_time,0.036542498
+is_weekend,0.027242199
