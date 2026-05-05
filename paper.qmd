@@ -862,105 +862,166 @@ that reduces variance.
 
 ### Cross-Validation Performance
 
+All cross-validation results use the default parameter set
+($n_\text{estimators}=250$, $\text{max\_depth}=4$, $\eta=0.05$) across five
+rolling time folds (validation years 2019–2023).
+
 ```{r}
-#| label: tbl-cv-classification
-#| tbl-cap: "Cross-validation classification performance (xgb_full_aircraft),
-#|   mean and approximate SD across 5 rolling folds."
+#| label: tbl-cv-ablation-cls
+#| tbl-cap: "Cross-validation classification performance across feature sets —
+#|   mean and approximate SD (SD ≈ (max − min) / 4) over 5 rolling folds."
 #| echo: false
 library(knitr)
 
-cv_cls <- data.frame(
-  Metric    = c("AUC", "F1", "Precision", "Recall", "Accuracy"),
-  Mean      = c("0.8243", "0.4772", "0.7494", "0.3522", "0.8680"),
-  Min       = c("0.7899", "0.3926", "0.6049", "0.2903", "0.8464"),
-  Max       = c("0.8435", "0.5396", "0.8120", "0.4144", "0.9114"),
-  Approx_SD = c("0.0134", "0.0368", "0.0518", "0.0310", "0.0163")
+cv_abl_cls <- data.frame(
+  Feature_Set = c(
+    "xgb\\_schedule", "xgb\\_context",
+    "xgb\\_2hop\\_propagation", "xgb\\_full", "xgb\\_full\\_aircraft"
+  ),
+  AUC   = c("0.6491", "0.6791", "0.8195", "0.8215", "0.8222"),
+  F1    = c("0.0706", "0.0855", "0.4700", "0.4758", "0.4766"),
+  Prec  = c("0.7029", "0.7094", "0.7414", "0.7468", "0.7505"),
+  Rec   = c("0.0376", "0.0459", "0.3465", "0.3512", "0.3511"),
+  Acc   = c("0.8284", "0.8295", "0.8663", "0.8675", "0.8680"),
+  AUC_SD  = c("0.0173", "0.0120", "0.0114", "0.0113", "0.0118"),
+  F1_SD   = c("0.0193", "0.0189", "0.0338", "0.0332", "0.0342")
 )
 
-kable(cv_cls,
-      col.names = c("Metric", "Mean", "Min", "Max", "Approx. SD"),
-      align = c("l", "r", "r", "r", "r"))
+kable(cv_abl_cls,
+      col.names = c("Feature Set", "AUC", "F1", "Precision",
+                    "Recall", "Accuracy", "AUC SD", "F1 SD"),
+      align = c("l", rep("r", 7)))
 ```
 
 ```{r}
-#| label: tbl-cv-regression
-#| tbl-cap: "Cross-validation regression performance (xgb_full_aircraft),
-#|   mean and approximate SD across 5 rolling folds."
+#| label: tbl-cv-ablation-reg
+#| tbl-cap: "Cross-validation regression performance across feature sets —
+#|   mean and approximate SD over 5 rolling folds."
 #| echo: false
 library(knitr)
 
-cv_reg <- data.frame(
-  Metric    = c("MAE (minutes)", "RMSE (minutes)"),
-  Mean      = c("18.51", "42.22"),
-  Min       = c("17.52", "34.47"),
-  Max       = c("19.59", "47.37"),
-  Approx_SD = c("0.52", "3.23")
+cv_abl_reg <- data.frame(
+  Feature_Set = c(
+    "xgb\\_schedule", "xgb\\_context",
+    "xgb\\_2hop\\_propagation", "xgb\\_full", "xgb\\_full\\_aircraft"
+  ),
+  MAE_Mean  = c("23.71", "22.80", "18.82", "18.69", "18.73"),
+  MAE_SD    = c("0.96",  "0.98",  "0.59",  "0.54",  "0.55"),
+  RMSE_Mean = c("49.05", "48.53", "43.20", "41.99", "42.02"),
+  RMSE_SD   = c("4.05",  "4.11",  "3.13",  "3.05",  "3.12")
 )
 
-kable(cv_reg,
-      col.names = c("Metric", "Mean", "Min", "Max", "Approx. SD"),
+kable(cv_abl_reg,
+      col.names = c("Feature Set",
+                    "MAE Mean", "MAE SD",
+                    "RMSE Mean", "RMSE SD"),
       align = c("l", "r", "r", "r", "r"))
 ```
 
 ::: {.callout-note}
-Standard deviations are approximated as $\text{SD} \approx (\text{max} - \text{min})
-/ 4$. These are conservative lower bounds on true variability.
+Standard deviations are approximated as $\text{SD} \approx (\text{max} - \text{min}) / 4$.
 :::
 
-The AUC exhibited the lowest variability across folds (SD = 0.012), confirming that
-rank-order discrimination was stable across a decade of operations including the
-COVID-19 disruption period. Larger variability in F1 and precision reflects genuine
-annual heterogeneity in the delay-event distribution rather than model instability.
+The schedule-only and context baselines (AUC ≈ 0.649 and 0.679) confirm that
+static schedule features and weather alone cannot reliably discriminate delayed
+from on-time flights. The step change occurs when 2-hop delay propagation features
+are added: AUC rises to 0.820 and F1 to 0.470, demonstrating that prior-leg
+performance is the dominant signal. Adding the full operational feature set
+(`xgb_full`) yields a further modest gain (AUC 0.822, F1 0.476), and incorporating
+FAA aircraft registry features (`xgb_full_aircraft`) achieves the best CV
+performance (AUC 0.822, F1 0.477) with the lowest regression error
+(MAE 18.73 min). AUC variability is low across all propagation-aware models
+(SD ≈ 0.011–0.012), confirming stable rank-order discrimination across a decade
+of operations including the COVID-19 disruption year (fold 2, val 2020).
 
 ### Final Holdout Results (2025)
 
+The two panels below separate the pre-tuning multi-model comparison from the
+tuned final model. The pre-tuning run used
+$n_\text{estimators}=250$, $\text{max\_depth}=4$; the tuned run used the
+best parameters identified in a prior experiment
+($n_\text{estimators}=300$, $\text{max\_depth}=6$, all other hyperparameters
+unchanged), trained on the full 2015–2024 dataset.
+
 ```{r}
-#| label: tbl-final-classification
-#| tbl-cap: "Final holdout classification performance on unseen 2025 flight operations."
+#| label: tbl-final-ablation
+#| tbl-cap: "Final 2025 holdout performance across feature sets
+#|   (pre-tuning parameters: n\\_estimators = 250, max\\_depth = 4,
+#|   trained on 2015–2024)."
+#| echo: false
+library(knitr)
+
+final_abl <- data.frame(
+  Feature_Set = c(
+    "xgb\\_schedule", "xgb\\_context",
+    "xgb\\_2hop\\_propagation", "xgb\\_full", "xgb\\_full\\_aircraft"
+  ),
+  AUC   = c("0.6849", "0.6906", "0.8287", "0.8302", "0.8308"),
+  F1    = c("0.1014", "0.1038", "0.5267", "0.5293", "0.5321"),
+  Prec  = c("0.7559", "0.7672", "0.7830", "0.7850", "0.7849"),
+  Rec   = c("0.0544", "0.0556", "0.3968", "0.3993", "0.4025"),
+  Acc   = c("0.7853", "0.7857", "0.8410", "0.8417", "0.8422"),
+  MAE   = c("26.45", "25.87", "21.25", "21.11", "21.12"),
+  RMSE  = c("57.37", "56.96", "49.65", "48.40", "48.43")
+)
+
+kable(final_abl,
+      col.names = c("Feature Set", "AUC", "F1", "Precision",
+                    "Recall", "Accuracy", "MAE", "RMSE"),
+      align = c("l", rep("r", 7)))
+```
+
+```{r}
+#| label: tbl-final-tuned-cls
+#| tbl-cap: "Final holdout classification performance — tuned
+#|   xgb\\_full\\_aircraft on unseen 2025 flight operations
+#|   (n\\_estimators = 300, max\\_depth = 6, trained on 2015–2024)."
 #| echo: false
 library(knitr)
 
 final_cls <- data.frame(
   Metric = c("AUC", "F1", "Precision", "Recall", "Accuracy"),
-  Value  = c("0.8452", "0.5562", "0.8029", "0.4254", "0.8486")
+  Value  = c("0.8402", "0.5542", "0.7938", "0.4257", "0.8473")
 )
 
 kable(final_cls, col.names = c("Metric", "Value"), align = c("l", "r"))
 ```
 
 ```{r}
-#| label: tbl-final-regression
-#| tbl-cap: "Final holdout regression performance on unseen 2025 flight operations."
+#| label: tbl-final-tuned-reg
+#| tbl-cap: "Final holdout regression performance — tuned
+#|   xgb\\_full\\_aircraft on unseen 2025 flight operations."
 #| echo: false
 library(knitr)
 
 final_reg <- data.frame(
   Metric = c("MAE (minutes)", "RMSE (minutes)"),
-  Value  = c("20.14", "46.17")
+  Value  = c("20.32", "46.03")
 )
 
 kable(final_reg, col.names = c("Metric", "Value"), align = c("l", "r"))
 ```
 
 $$
-\text{AUC} = 0.8452, \quad F_1 = 0.5562, \quad \text{MAE} = 20.14\ \text{min},
-\quad \text{RMSE} = 46.17\ \text{min}
+\text{AUC} = 0.8402, \quad F_1 = 0.5542, \quad \text{MAE} = 20.32\ \text{min},
+\quad \text{RMSE} = 46.03\ \text{min}
 $$
 
-**Discrimination (AUC = 0.845).** The model correctly ranks a randomly selected
-delayed flight above a randomly selected on-time flight 84.5% of the time — a
-meaningful improvement over the cross-validation mean of 0.836, reflecting the benefit
-of the expanded 2015–2024 refit dataset.
+**Discrimination (AUC = 0.840).** The model correctly ranks a randomly selected
+delayed flight above a randomly selected on-time flight 84.0% of the time — a
+meaningful improvement over the pre-tuning holdout AUC of 0.831 for the same
+feature set, and consistent with the CV mean of 0.822, reflecting the benefit of
+the expanded 2015–2024 refit dataset and tuned depth.
 
-**Precision (80.3%).** When the model predicts a delay, it is correct more than four
-times out of five — making it practically useful for triggering downstream operational
-actions where false alarms carry real cost.
+**Precision (79.4%).** When the model predicts a delay, it is correct approximately
+four times out of five, making it practically useful for triggering downstream
+operational actions where false alarms carry real cost.
 
-**Recall (42.5%).** The model recovers approximately 42.5% of all true delay events at
-the default 0.5 threshold, reflecting class imbalance in the dataset. The threshold
-can be lowered to improve recall for use cases requiring higher sensitivity.
+**Recall (42.6%).** The model recovers approximately 42.6% of all true delay events
+at the default 0.5 threshold, reflecting class imbalance in the dataset. The
+threshold can be lowered to improve recall for use cases requiring higher sensitivity.
 
-**Regression error (MAE = 20.1 min, RMSE = 46.2 min).** A 20-minute MAE is
+**Regression error (MAE = 20.3 min, RMSE = 46.0 min).** A 20-minute MAE is
 reasonable given that delay magnitude is influenced by late-breaking weather, ATC
 decisions, and mechanical events not fully observable pre-departure. The higher RMSE
 reflects difficulty predicting severe tail delays ($> 2$ hours).
@@ -970,24 +1031,47 @@ reflects difficulty predicting severe tail delays ($> 2$ hours).
 #| fig-cap: "ROC curves for model variants on the 2025 holdout set — before tuning."
 #| echo: false
 #| out-width: "100%"
-knitr::include_graphics("images/paper/roc-final.png")
+knitr::include_graphics("images/paper/roc_curves_all_models.png")
 ```
 
-```{r}
-#| label: fig-regression-metrics-compare
-#| fig-cap: "Regression metrics for model variants on the 2025 holdout set — before tuning."
-#| echo: false
-#| out-width: "100%"
-knitr::include_graphics("images/paper/regression-metrics-overlay.png")
-```
+### Prediction Diagnostics
 
 ```{r}
-#| label: fig-actual-v-pred-model-compare
-#| fig-cap: "Actual versus predicted delay for xgb_full_aircraft on the 2025 holdout set."
+#| label: fig-actual-vs-predicted-scatter
+#| fig-cap: "Actual versus predicted arrival delay for 10,000 randomly sampled
+#|   flights from the 2025 holdout set. The dashed red line represents perfect
+#|   prediction ($\\hat{y} = y$); points clustering along this line indicate
+#|   accurate estimates, while vertical spread reflects prediction error."
 #| echo: false
 #| out-width: "100%"
-knitr::include_graphics("images/paper/actuals-v-projects-final.png")
+knitr::include_graphics("images/paper/actuals-v-predicted-final.png")
 ```
+
+Figure @fig-actual-vs-predicted-scatter presents a scatter plot of actual versus
+predicted arrival delay for 10,000 randomly sampled flights from the 2025 holdout
+set. The dashed red line represents perfect prediction ($\hat{y} = y$); points
+clustering along this line indicate accurate estimates, while vertical spread
+reflects prediction error. The model performs well in the on-time and moderate-delay
+range but underestimates severe delays, consistent with the elevated RMSE relative
+to MAE.
+
+```{r}
+#| label: fig-delay-distribution
+#| fig-cap: "Kernel density estimates of the actual and predicted arrival delay
+#|   distributions across all 6,857,845 flights in the 2025 holdout set. Dashed
+#|   vertical lines mark the mean of each distribution."
+#| echo: false
+#| out-width: "100%"
+knitr::include_graphics("images/paper/delay-distribution-comparison.png")
+```
+
+Figure @fig-delay-distribution overlays kernel density estimates of the actual
+and predicted delay distributions across all 6,857,845 flights in the 2025 holdout
+set. The close alignment of the two curves near the mode confirms the model captures
+the central tendency of the delay distribution accurately, while the narrowing of
+the predicted distribution's right tail reflects the tendency of gradient boosting
+to shrink extreme predictions toward the mean — a known limitation that explains
+the gap between MAE (20.3 min) and RMSE (46.0 min).
 
 ### Operational Impact
 
@@ -996,7 +1080,8 @@ The 2025 holdout set contained **6,857,845 flight records**, of which approximat
 
 ```{r}
 #| label: tbl-operational-impact
-#| tbl-cap: "Approximate annual operational outcomes at the default threshold (0.50)."
+#| tbl-cap: "Approximate annual operational outcomes at the default threshold (0.50),
+#|   based on the tuned xgb\\_full\\_aircraft model."
 #| echo: false
 library(knitr)
 
@@ -1008,8 +1093,8 @@ ops <- data.frame(
     "Missed delays — False Negatives", "Correct non-alerts — True Negatives"
   ),
   Count = c(
-    "6,857,845", "~1,604,736", "~851,468",
-    "~681,613", "~166,951", "~923,123", "~5,086,158"
+    "6,857,845", "~1,604,736", "~861,831",
+    "~683,215", "~178,616", "~921,521", "~5,074,493"
   ),
   Note = c(
     "", "23.4% base delay rate", "",
@@ -1025,15 +1110,20 @@ kable(ops,
 ```
 
 ::: {.callout-note}
-Counts are derived from reported precision (0.803) and recall (0.425). Verify against
-confusion matrix outputs for exact figures.
+Counts are derived from reported precision (0.794) and recall (0.426).
+True Positives = recall × 1,604,736 ≈ 683,215.
+Total predicted positive = TP / precision ≈ 683,215 / 0.794 ≈ 860,472.
+False Positives = predicted positive − TP ≈ 177,257.
+False Negatives = true delays − TP ≈ 921,521.
+True Negatives = total − TP − FP − FN ≈ 5,075,953.
+Verify against confusion matrix outputs for exact figures.
 :::
 
-At this scale, the model issues approximately **2,330 delay alerts per day**, of which
-over 80% are correct. A mean absolute error of 20.1 minutes means delay magnitude
-estimates are typically within one connection window of the true delay, making them
-operationally useful for rebooking triage at airports with 30-minute minimum connection
-times.
+At this scale, the model issues approximately **2,360 delay alerts per day**, of which
+approximately 79% are correct. A mean absolute error of 20.3 minutes means delay
+magnitude estimates are typically within one connection window of the true delay,
+making them operationally useful for rebooking triage at airports with 30-minute
+minimum connection times.
 
 ## Baselines
 
@@ -1141,6 +1231,8 @@ This study demonstrates how machine learning methods can be applied to understan
 Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches.....etc.
 
 ---
+
+Due to memory constraints, XGBoost models were trained using XGBoost's native incremental API, distributing boosting rounds across years sequentially. Each year's data was loaded, used for training, and immediately discarded before loading the next year, keeping peak RAM proportional to a single year of data (~7M flights).
 
 # Appendex 
 
