@@ -257,7 +257,8 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#cross-validation-performance" id="toc-cross-validation-performance" class="nav-link" data-scroll-target="#cross-validation-performance"><span class="header-section-number">5.1.1</span> Cross-Validation Performance</a></li>
   <li><a href="#final-holdout-results-2025" id="toc-final-holdout-results-2025" class="nav-link" data-scroll-target="#final-holdout-results-2025"><span class="header-section-number">5.1.2</span> Final Holdout Results (2025)</a></li>
-  <li><a href="#operational-impact" id="toc-operational-impact" class="nav-link" data-scroll-target="#operational-impact"><span class="header-section-number">5.1.3</span> Operational Impact</a></li>
+  <li><a href="#prediction-diagnostics" id="toc-prediction-diagnostics" class="nav-link" data-scroll-target="#prediction-diagnostics"><span class="header-section-number">5.1.3</span> Prediction Diagnostics</a></li>
+  <li><a href="#operational-impact" id="toc-operational-impact" class="nav-link" data-scroll-target="#operational-impact"><span class="header-section-number">5.1.4</span> Operational Impact</a></li>
   </ul></li>
   <li><a href="#baselines" id="toc-baselines" class="nav-link" data-scroll-target="#baselines"><span class="header-section-number">5.2</span> Baselines</a></li>
   <li><a href="#feature-analysis" id="toc-feature-analysis" class="nav-link" data-scroll-target="#feature-analysis"><span class="header-section-number">5.3</span> Feature Analysis</a>
@@ -1258,59 +1259,88 @@ Table&nbsp;7: Selected XGBoost hyperparameter configuration.
 <h2 data-number="5.1" class="anchored" data-anchor-id="model-performance"><span class="header-section-number">5.1</span> Model Performance</h2>
 <section id="cross-validation-performance" class="level3" data-number="5.1.1">
 <h3 data-number="5.1.1" class="anchored" data-anchor-id="cross-validation-performance"><span class="header-section-number">5.1.1</span> Cross-Validation Performance</h3>
+<p>All cross-validation results use the default parameter set (<span class="math inline">\(n_\text{estimators}=250\)</span>, <span class="math inline">\(\text{max\_depth}=4\)</span>, <span class="math inline">\(\eta=0.05\)</span>) across five rolling time folds (validation years 2019–2023).</p>
 <div class="cell">
-<div id="tbl-cv-classification" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<div id="tbl-cv-ablation-cls" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;8: Cross-validation classification performance (xgb_full_aircraft), mean and approximate SD across 5 rolling folds.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-ablation-cls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: Cross-validation classification performance across feature sets — mean and approximate SD (SD ≈ (max − min) / 4) over 5 rolling folds.
 </figcaption>
-<div aria-describedby="tbl-cv-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div aria-describedby="tbl-cv-ablation-cls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 29%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">Metric</th>
-<th style="text-align: right;">Mean</th>
-<th style="text-align: right;">Min</th>
-<th style="text-align: right;">Max</th>
-<th style="text-align: right;">Approx. SD</th>
+<th style="text-align: left;">Feature Set</th>
+<th style="text-align: right;">AUC</th>
+<th style="text-align: right;">F1</th>
+<th style="text-align: right;">Precision</th>
+<th style="text-align: right;">Recall</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">AUC SD</th>
+<th style="text-align: right;">F1 SD</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">AUC</td>
-<td style="text-align: right;">0.8243</td>
-<td style="text-align: right;">0.7899</td>
-<td style="text-align: right;">0.8435</td>
-<td style="text-align: right;">0.0134</td>
+<td style="text-align: left;">xgb_schedule</td>
+<td style="text-align: right;">0.6491</td>
+<td style="text-align: right;">0.0706</td>
+<td style="text-align: right;">0.7029</td>
+<td style="text-align: right;">0.0376</td>
+<td style="text-align: right;">0.8284</td>
+<td style="text-align: right;">0.0173</td>
+<td style="text-align: right;">0.0193</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">F1</td>
-<td style="text-align: right;">0.4772</td>
-<td style="text-align: right;">0.3926</td>
-<td style="text-align: right;">0.5396</td>
-<td style="text-align: right;">0.0368</td>
+<td style="text-align: left;">xgb_context</td>
+<td style="text-align: right;">0.6791</td>
+<td style="text-align: right;">0.0855</td>
+<td style="text-align: right;">0.7094</td>
+<td style="text-align: right;">0.0459</td>
+<td style="text-align: right;">0.8295</td>
+<td style="text-align: right;">0.0120</td>
+<td style="text-align: right;">0.0189</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Precision</td>
-<td style="text-align: right;">0.7494</td>
-<td style="text-align: right;">0.6049</td>
-<td style="text-align: right;">0.8120</td>
-<td style="text-align: right;">0.0518</td>
+<td style="text-align: left;">xgb_2hop_propagation</td>
+<td style="text-align: right;">0.8195</td>
+<td style="text-align: right;">0.4700</td>
+<td style="text-align: right;">0.7414</td>
+<td style="text-align: right;">0.3465</td>
+<td style="text-align: right;">0.8663</td>
+<td style="text-align: right;">0.0114</td>
+<td style="text-align: right;">0.0338</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Recall</td>
-<td style="text-align: right;">0.3522</td>
-<td style="text-align: right;">0.2903</td>
-<td style="text-align: right;">0.4144</td>
-<td style="text-align: right;">0.0310</td>
+<td style="text-align: left;">xgb_full</td>
+<td style="text-align: right;">0.8215</td>
+<td style="text-align: right;">0.4758</td>
+<td style="text-align: right;">0.7468</td>
+<td style="text-align: right;">0.3512</td>
+<td style="text-align: right;">0.8675</td>
+<td style="text-align: right;">0.0113</td>
+<td style="text-align: right;">0.0332</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Accuracy</td>
+<td style="text-align: left;">xgb_full_aircraft</td>
+<td style="text-align: right;">0.8222</td>
+<td style="text-align: right;">0.4766</td>
+<td style="text-align: right;">0.7505</td>
+<td style="text-align: right;">0.3511</td>
 <td style="text-align: right;">0.8680</td>
-<td style="text-align: right;">0.8464</td>
-<td style="text-align: right;">0.9114</td>
-<td style="text-align: right;">0.0163</td>
+<td style="text-align: right;">0.0118</td>
+<td style="text-align: right;">0.0342</td>
 </tr>
 </tbody>
 </table>
@@ -1320,37 +1350,58 @@ Table&nbsp;8: Cross-validation classification performance (xgb_full_aircraft), m
 </div>
 </div>
 <div class="cell">
-<div id="tbl-cv-regression" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<div id="tbl-cv-ablation-reg" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;9: Cross-validation regression performance (xgb_full_aircraft), mean and approximate SD across 5 rolling folds.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cv-ablation-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: Cross-validation regression performance across feature sets — mean and approximate SD over 5 rolling folds.
 </figcaption>
-<div aria-describedby="tbl-cv-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div aria-describedby="tbl-cv-ablation-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
-<th style="text-align: left;">Metric</th>
-<th style="text-align: right;">Mean</th>
-<th style="text-align: right;">Min</th>
-<th style="text-align: right;">Max</th>
-<th style="text-align: right;">Approx. SD</th>
+<th style="text-align: left;">Feature Set</th>
+<th style="text-align: right;">MAE Mean</th>
+<th style="text-align: right;">MAE SD</th>
+<th style="text-align: right;">RMSE Mean</th>
+<th style="text-align: right;">RMSE SD</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">MAE (minutes)</td>
-<td style="text-align: right;">18.51</td>
-<td style="text-align: right;">17.52</td>
-<td style="text-align: right;">19.59</td>
-<td style="text-align: right;">0.52</td>
+<td style="text-align: left;">xgb_schedule</td>
+<td style="text-align: right;">23.71</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">49.05</td>
+<td style="text-align: right;">4.05</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">RMSE (minutes)</td>
-<td style="text-align: right;">42.22</td>
-<td style="text-align: right;">34.47</td>
-<td style="text-align: right;">47.37</td>
-<td style="text-align: right;">3.23</td>
+<td style="text-align: left;">xgb_context</td>
+<td style="text-align: right;">22.80</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">48.53</td>
+<td style="text-align: right;">4.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">xgb_2hop_propagation</td>
+<td style="text-align: right;">18.82</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">43.20</td>
+<td style="text-align: right;">3.13</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">xgb_full</td>
+<td style="text-align: right;">18.69</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">41.99</td>
+<td style="text-align: right;">3.05</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">xgb_full_aircraft</td>
+<td style="text-align: right;">18.73</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">42.02</td>
+<td style="text-align: right;">3.12</td>
 </tr>
 </tbody>
 </table>
@@ -1369,21 +1420,110 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Standard deviations are approximated as <span class="math inline">\(\text{SD} \approx (\text{max} - \text{min})
-/ 4\)</span>. These are conservative lower bounds on true variability.</p>
+<p>Standard deviations are approximated as <span class="math inline">\(\text{SD} \approx (\text{max} - \text{min}) / 4\)</span>.</p>
 </div>
 </div>
-<p>The AUC exhibited the lowest variability across folds (SD = 0.012), confirming that rank-order discrimination was stable across a decade of operations including the COVID-19 disruption period. Larger variability in F1 and precision reflects genuine annual heterogeneity in the delay-event distribution rather than model instability.</p>
+<p>The schedule-only and context baselines (AUC ≈ 0.649 and 0.679) confirm that static schedule features and weather alone cannot reliably discriminate delayed from on-time flights. The step change occurs when 2-hop delay propagation features are added: AUC rises to 0.820 and F1 to 0.470, demonstrating that prior-leg performance is the dominant signal. Adding the full operational feature set (<code>xgb_full</code>) yields a further modest gain (AUC 0.822, F1 0.476), and incorporating FAA aircraft registry features (<code>xgb_full_aircraft</code>) achieves the best CV performance (AUC 0.822, F1 0.477) with the lowest regression error (MAE 18.73 min). AUC variability is low across all propagation-aware models (SD ≈ 0.011–0.012), confirming stable rank-order discrimination across a decade of operations including the COVID-19 disruption year (fold 2, val 2020).</p>
 </section>
 <section id="final-holdout-results-2025" class="level3" data-number="5.1.2">
 <h3 data-number="5.1.2" class="anchored" data-anchor-id="final-holdout-results-2025"><span class="header-section-number">5.1.2</span> Final Holdout Results (2025)</h3>
+<p>The two panels below separate the pre-tuning multi-model comparison from the tuned final model. The pre-tuning run used <span class="math inline">\(n_\text{estimators}=250\)</span>, <span class="math inline">\(\text{max\_depth}=4\)</span>; the tuned run used the best parameters identified in a prior experiment (<span class="math inline">\(n_\text{estimators}=300\)</span>, <span class="math inline">\(\text{max\_depth}=6\)</span>, all other hyperparameters unchanged), trained on the full 2015–2024 dataset.</p>
 <div class="cell">
-<div id="tbl-final-classification" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<div id="tbl-final-ablation" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;10: Final holdout classification performance on unseen 2025 flight operations.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-ablation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: Final 2025 holdout performance across feature sets (pre-tuning parameters: n_estimators = 250, max_depth = 4, trained on 2015–2024).
 </figcaption>
-<div aria-describedby="tbl-final-classification-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div aria-describedby="tbl-final-ablation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Set</th>
+<th style="text-align: right;">AUC</th>
+<th style="text-align: right;">F1</th>
+<th style="text-align: right;">Precision</th>
+<th style="text-align: right;">Recall</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">MAE</th>
+<th style="text-align: right;">RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">xgb_schedule</td>
+<td style="text-align: right;">0.6849</td>
+<td style="text-align: right;">0.1014</td>
+<td style="text-align: right;">0.7559</td>
+<td style="text-align: right;">0.0544</td>
+<td style="text-align: right;">0.7853</td>
+<td style="text-align: right;">26.45</td>
+<td style="text-align: right;">57.37</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">xgb_context</td>
+<td style="text-align: right;">0.6906</td>
+<td style="text-align: right;">0.1038</td>
+<td style="text-align: right;">0.7672</td>
+<td style="text-align: right;">0.0556</td>
+<td style="text-align: right;">0.7857</td>
+<td style="text-align: right;">25.87</td>
+<td style="text-align: right;">56.96</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">xgb_2hop_propagation</td>
+<td style="text-align: right;">0.8287</td>
+<td style="text-align: right;">0.5267</td>
+<td style="text-align: right;">0.7830</td>
+<td style="text-align: right;">0.3968</td>
+<td style="text-align: right;">0.8410</td>
+<td style="text-align: right;">21.25</td>
+<td style="text-align: right;">49.65</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">xgb_full</td>
+<td style="text-align: right;">0.8302</td>
+<td style="text-align: right;">0.5293</td>
+<td style="text-align: right;">0.7850</td>
+<td style="text-align: right;">0.3993</td>
+<td style="text-align: right;">0.8417</td>
+<td style="text-align: right;">21.11</td>
+<td style="text-align: right;">48.40</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">xgb_full_aircraft</td>
+<td style="text-align: right;">0.8308</td>
+<td style="text-align: right;">0.5321</td>
+<td style="text-align: right;">0.7849</td>
+<td style="text-align: right;">0.4025</td>
+<td style="text-align: right;">0.8422</td>
+<td style="text-align: right;">21.12</td>
+<td style="text-align: right;">48.43</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div id="tbl-final-tuned-cls" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-tuned-cls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11: Final holdout classification performance — tuned xgb_full_aircraft on unseen 2025 flight operations (n_estimators = 300, max_depth = 6, trained on 2015–2024).
+</figcaption>
+<div aria-describedby="tbl-final-tuned-cls-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top table table-sm table-striped small">
 <thead>
@@ -1395,23 +1535,23 @@ Table&nbsp;10: Final holdout classification performance on unseen 2025 flight op
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">AUC</td>
-<td style="text-align: right;">0.8452</td>
+<td style="text-align: right;">0.8402</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">F1</td>
-<td style="text-align: right;">0.5562</td>
+<td style="text-align: right;">0.5542</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Precision</td>
-<td style="text-align: right;">0.8029</td>
+<td style="text-align: right;">0.7938</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Recall</td>
-<td style="text-align: right;">0.4254</td>
+<td style="text-align: right;">0.4257</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Accuracy</td>
-<td style="text-align: right;">0.8486</td>
+<td style="text-align: right;">0.8473</td>
 </tr>
 </tbody>
 </table>
@@ -1421,12 +1561,12 @@ Table&nbsp;10: Final holdout classification performance on unseen 2025 flight op
 </div>
 </div>
 <div class="cell">
-<div id="tbl-final-regression" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<div id="tbl-final-tuned-reg" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;11: Final holdout regression performance on unseen 2025 flight operations.
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-final-tuned-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;12: Final holdout regression performance — tuned xgb_full_aircraft on unseen 2025 flight operations.
 </figcaption>
-<div aria-describedby="tbl-final-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div aria-describedby="tbl-final-tuned-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top table table-sm table-striped small">
 <thead>
@@ -1438,11 +1578,11 @@ Table&nbsp;11: Final holdout regression performance on unseen 2025 flight operat
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">MAE (minutes)</td>
-<td style="text-align: right;">20.14</td>
+<td style="text-align: right;">20.32</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">RMSE (minutes)</td>
-<td style="text-align: right;">46.17</td>
+<td style="text-align: right;">46.03</td>
 </tr>
 </tbody>
 </table>
@@ -1452,19 +1592,19 @@ Table&nbsp;11: Final holdout regression performance on unseen 2025 flight operat
 </div>
 </div>
 <p><span class="math display">\[
-\text{AUC} = 0.8452, \quad F_1 = 0.5562, \quad \text{MAE} = 20.14\ \text{min},
-\quad \text{RMSE} = 46.17\ \text{min}
+\text{AUC} = 0.8402, \quad F_1 = 0.5542, \quad \text{MAE} = 20.32\ \text{min},
+\quad \text{RMSE} = 46.03\ \text{min}
 \]</span></p>
-<p><strong>Discrimination (AUC = 0.845).</strong> The model correctly ranks a randomly selected delayed flight above a randomly selected on-time flight 84.5% of the time — a meaningful improvement over the cross-validation mean of 0.836, reflecting the benefit of the expanded 2015–2024 refit dataset.</p>
-<p><strong>Precision (80.3%).</strong> When the model predicts a delay, it is correct more than four times out of five — making it practically useful for triggering downstream operational actions where false alarms carry real cost.</p>
-<p><strong>Recall (42.5%).</strong> The model recovers approximately 42.5% of all true delay events at the default 0.5 threshold, reflecting class imbalance in the dataset. The threshold can be lowered to improve recall for use cases requiring higher sensitivity.</p>
-<p><strong>Regression error (MAE = 20.1 min, RMSE = 46.2 min).</strong> A 20-minute MAE is reasonable given that delay magnitude is influenced by late-breaking weather, ATC decisions, and mechanical events not fully observable pre-departure. The higher RMSE reflects difficulty predicting severe tail delays (<span class="math inline">\(&gt; 2\)</span> hours).</p>
+<p><strong>Discrimination (AUC = 0.840).</strong> The model correctly ranks a randomly selected delayed flight above a randomly selected on-time flight 84.0% of the time — a meaningful improvement over the pre-tuning holdout AUC of 0.831 for the same feature set, and consistent with the CV mean of 0.822, reflecting the benefit of the expanded 2015–2024 refit dataset and tuned depth.</p>
+<p><strong>Precision (79.4%).</strong> When the model predicts a delay, it is correct approximately four times out of five, making it practically useful for triggering downstream operational actions where false alarms carry real cost.</p>
+<p><strong>Recall (42.6%).</strong> The model recovers approximately 42.6% of all true delay events at the default 0.5 threshold, reflecting class imbalance in the dataset. The threshold can be lowered to improve recall for use cases requiring higher sensitivity.</p>
+<p><strong>Regression error (MAE = 20.3 min, RMSE = 46.0 min).</strong> A 20-minute MAE is reasonable given that delay magnitude is influenced by late-breaking weather, ATC decisions, and mechanical events not fully observable pre-departure. The higher RMSE reflects difficulty predicting severe tail delays (<span class="math inline">\(&gt; 2\)</span> hours).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-auc-model-compare" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-auc-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/paper/roc-final.png" class="img-fluid figure-img" style="width:100.0%">
+<img src="images/paper/roc_curves_all_models.png" class="img-fluid figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-auc-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5: ROC curves for model variants on the 2025 holdout set — before tuning.
@@ -1473,43 +1613,48 @@ Figure&nbsp;5: ROC curves for model variants on the 2025 holdout set — before 
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output-display">
-<div id="fig-regression-metrics-compare" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-regression-metrics-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/paper/regression-metrics-overlay.png" class="img-fluid figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-regression-metrics-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Regression metrics for model variants on the 2025 holdout set — before tuning.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output-display">
-<div id="fig-actual-v-pred-model-compare" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-actual-v-pred-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/paper/actuals-v-projects-final.png" class="img-fluid figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-actual-v-pred-model-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Actual versus predicted delay for xgb_full_aircraft on the 2025 holdout set.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
 </section>
-<section id="operational-impact" class="level3" data-number="5.1.3">
-<h3 data-number="5.1.3" class="anchored" data-anchor-id="operational-impact"><span class="header-section-number">5.1.3</span> Operational Impact</h3>
+<section id="prediction-diagnostics" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="prediction-diagnostics"><span class="header-section-number">5.1.3</span> Prediction Diagnostics</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-actual-vs-predicted-scatter" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-actual-vs-predicted-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/paper/actuals-v-predicted-final.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-actual-vs-predicted-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Actual versus predicted arrival delay for 10,000 randomly sampled flights from the 2025 holdout set. The dashed red line represents perfect prediction (<span class="math inline">\(\hat{y} = y\)</span>); points clustering along this line indicate accurate estimates, while vertical spread reflects prediction error.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure <a href="#fig-actual-vs-predicted-scatter" class="quarto-xref">Figure&nbsp;6</a> presents a scatter plot of actual versus predicted arrival delay for 10,000 randomly sampled flights from the 2025 holdout set. The dashed red line represents perfect prediction (<span class="math inline">\(\hat{y} = y\)</span>); points clustering along this line indicate accurate estimates, while vertical spread reflects prediction error. The model performs well in the on-time and moderate-delay range but underestimates severe delays, consistent with the elevated RMSE relative to MAE.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-delay-distribution" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-delay-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/paper/delay-distribution-comparison.png" class="img-fluid figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-delay-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Kernel density estimates of the actual and predicted arrival delay distributions across all 6,857,845 flights in the 2025 holdout set. Dashed vertical lines mark the mean of each distribution.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure <a href="#fig-delay-distribution" class="quarto-xref">Figure&nbsp;7</a> overlays kernel density estimates of the actual and predicted delay distributions across all 6,857,845 flights in the 2025 holdout set. The close alignment of the two curves near the mode confirms the model captures the central tendency of the delay distribution accurately, while the narrowing of the predicted distribution’s right tail reflects the tendency of gradient boosting to shrink extreme predictions toward the mean — a known limitation that explains the gap between MAE (20.3 min) and RMSE (46.0 min).</p>
+</section>
+<section id="operational-impact" class="level3" data-number="5.1.4">
+<h3 data-number="5.1.4" class="anchored" data-anchor-id="operational-impact"><span class="header-section-number">5.1.4</span> Operational Impact</h3>
 <p>The 2025 holdout set contained <strong>6,857,845 flight records</strong>, of which approximately <strong>23.4%</strong> were delayed, yielding roughly <strong>1,604,736 true delay events</strong>.</p>
 <div class="cell">
 <div id="tbl-operational-impact" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-operational-impact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;12: Approximate annual operational outcomes at the default threshold (0.50).
+Table&nbsp;13: Approximate annual operational outcomes at the default threshold (0.50), based on the tuned xgb_full_aircraft model.
 </figcaption>
 <div aria-describedby="tbl-operational-impact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -1539,27 +1684,27 @@ Table&nbsp;12: Approximate annual operational outcomes at the default threshold 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Delay alerts issued (predicted positive)</td>
-<td style="text-align: right;">~851,468</td>
+<td style="text-align: right;">~861,831</td>
 <td style="text-align: left;"></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Correct alerts — True Positives</td>
-<td style="text-align: right;">~681,613</td>
+<td style="text-align: right;">~683,215</td>
 <td style="text-align: left;">Recall × true delay events</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">False alerts — False Positives</td>
-<td style="text-align: right;">~166,951</td>
+<td style="text-align: right;">~178,616</td>
 <td style="text-align: left;">Flagged but flight was on time</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">Missed delays — False Negatives</td>
-<td style="text-align: right;">~923,123</td>
+<td style="text-align: right;">~921,521</td>
 <td style="text-align: left;">Delayed flights the model did not flag</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Correct non-alerts — True Negatives</td>
-<td style="text-align: right;">~5,086,158</td>
+<td style="text-align: right;">~5,074,493</td>
 <td style="text-align: left;">On-time flights correctly left unflagged</td>
 </tr>
 </tbody>
@@ -1579,10 +1724,10 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Counts are derived from reported precision (0.803) and recall (0.425). Verify against confusion matrix outputs for exact figures.</p>
+<p>Counts are derived from reported precision (0.794) and recall (0.426). True Positives = recall × 1,604,736 ≈ 683,215. Total predicted positive = TP / precision ≈ 683,215 / 0.794 ≈ 860,472. False Positives = predicted positive − TP ≈ 177,257. False Negatives = true delays − TP ≈ 921,521. True Negatives = total − TP − FP − FN ≈ 5,075,953. Verify against confusion matrix outputs for exact figures.</p>
 </div>
 </div>
-<p>At this scale, the model issues approximately <strong>2,330 delay alerts per day</strong>, of which over 80% are correct. A mean absolute error of 20.1 minutes means delay magnitude estimates are typically within one connection window of the true delay, making them operationally useful for rebooking triage at airports with 30-minute minimum connection times.</p>
+<p>At this scale, the model issues approximately <strong>2,360 delay alerts per day</strong>, of which approximately 79% are correct. A mean absolute error of 20.3 minutes means delay magnitude estimates are typically within one connection window of the true delay, making them operationally useful for rebooking triage at airports with 30-minute minimum connection times.</p>
 </section>
 </section>
 <section id="baselines" class="level2" data-number="5.2">
@@ -1599,7 +1744,7 @@ Note
 <div id="tbl-features1" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-features1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;13: Top predictive features by XGBoost gain-based importance score.
+Table&nbsp;14: Top predictive features by XGBoost gain-based importance score.
 </figcaption>
 <div aria-describedby="tbl-features1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -1732,6 +1877,7 @@ Table&nbsp;13: Top predictive features by XGBoost gain-based importance score.
 <p>This study demonstrates how machine learning methods can be applied to understand delay dynamics…</p>
 <p>Future work could extend this framework to larger airline networks and incorporate time-series modeling approaches…..etc.</p>
 <hr>
+<p>Due to memory constraints, XGBoost models were trained using XGBoost’s native incremental API, distributing boosting rounds across years sequentially. Each year’s data was loaded, used for training, and immediately discarded before loading the next year, keeping peak RAM proportional to a single year of data (~7M flights).</p>
 </section>
 <section id="appendex" class="level1" data-number="8">
 <h1 data-number="8"><span class="header-section-number">8</span> Appendex</h1>
