@@ -27,11 +27,11 @@ website:
           - href: ml_workflow/workflow-intro.qmd
             text: "ML Worflow Overview"
 
-          - href: ml_workflow/bwi-ny.qmd
-            text: "BWI–NY Market Pair"
+          - href: ml_workflow/phase-1-baseline.qmd
+            text: "Phase 1: Baseline"
 
-          - href: ml_workflow/us-network.qmd
-            text: "U.S. Domestic Network"
+          - href: ml_workflow/phase-2.qmd
+            text: "Phase 2"
       - href: aero-flux.qmd
         text: "Aero Flux"
 

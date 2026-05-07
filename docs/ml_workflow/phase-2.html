@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-05-06">
+
+<title>Phase 2: XGBoost with Weather &amp; Propagation Features – Flight Delay Prediction: Temporal &amp; Network Perspectives</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-8b9b450fba28b21070ed4f8d6716e9d1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Flight Delay Prediction: Temporal &amp; Network Perspectives</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../paper.html"> 
+<span class="menu-text">Paper</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-ml-workflow" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">ML Workflow</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-ml-workflow">    
+        <li>
+    <a class="dropdown-item" href="../ml_workflow/workflow-intro.html">
+ <span class="dropdown-text">ML Worflow Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../ml_workflow/phase-1-baseline.html">
+ <span class="dropdown-text">Phase 1: Baseline</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../ml_workflow/phase-2.html">
+ <span class="dropdown-text">Phase 2</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../aero-flux.html"> 
+<span class="menu-text">Aero Flux</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#data-loading" id="toc-data-loading" class="nav-link" data-scroll-target="#data-loading">Data Loading</a></li>
+  <li><a href="#feature-engineering" id="toc-feature-engineering" class="nav-link" data-scroll-target="#feature-engineering">Feature Engineering</a></li>
+  <li><a href="#feature-sets" id="toc-feature-sets" class="nav-link" data-scroll-target="#feature-sets">Feature Sets</a></li>
+  <li><a href="#train-cv-holdout-split" id="toc-train-cv-holdout-split" class="nav-link" data-scroll-target="#train-cv-holdout-split">Train / CV / Holdout Split</a></li>
+  <li><a href="#helper-functions" id="toc-helper-functions" class="nav-link" data-scroll-target="#helper-functions">Helper Functions</a></li>
+  <li><a href="#expanding-window-cross-validation" id="toc-expanding-window-cross-validation" class="nav-link" data-scroll-target="#expanding-window-cross-validation">Expanding Window Cross-Validation</a></li>
+  <li><a href="#final-training-jannov-december-holdout" id="toc-final-training-jannov-december-holdout" class="nav-link" data-scroll-target="#final-training-jannov-december-holdout">Final Training: Jan–Nov → December Holdout</a></li>
+  <li><a href="#final-holdout-results" id="toc-final-holdout-results" class="nav-link" data-scroll-target="#final-holdout-results">Final Holdout Results</a></li>
+  <li><a href="#visualizations" id="toc-visualizations" class="nav-link" data-scroll-target="#visualizations">Visualizations</a>
+  <ul class="collapse">
+  <li><a href="#cv-summary" id="toc-cv-summary" class="nav-link" data-scroll-target="#cv-summary">CV Summary</a></li>
+  <li><a href="#december-holdout" id="toc-december-holdout" class="nav-link" data-scroll-target="#december-holdout">December Holdout</a></li>
+  <li><a href="#roc-curves" id="toc-roc-curves" class="nav-link" data-scroll-target="#roc-curves">ROC Curves</a></li>
+  <li><a href="#actual-vs-predicted" id="toc-actual-vs-predicted" class="nav-link" data-scroll-target="#actual-vs-predicted">Actual vs Predicted</a></li>
+  </ul></li>
+  <li><a href="#feature-importance" id="toc-feature-importance" class="nav-link" data-scroll-target="#feature-importance">Feature Importance</a></li>
+  <li><a href="#pipeline-timing" id="toc-pipeline-timing" class="nav-link" data-scroll-target="#pipeline-timing">Pipeline Timing</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Phase 2: XGBoost with Weather &amp; Propagation Features</h1>
+<p class="subtitle lead">Schedule, weather, and aircraft rotation features on 2019 U.S. domestic flights</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 6, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1 unnumbered">
+<h1 class="unnumbered">Overview</h1>
+<p>This phase extends the Phase 1 baseline with three progressively richer XGBoost feature sets:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xgb_schedule</code></td>
+<td>Schedule / calendar only</td>
+</tr>
+<tr class="even">
+<td><code>xgb_weather_traffic</code></td>
+<td>Schedule + weather + route traffic</td>
+</tr>
+<tr class="odd">
+<td><code>xgb_full_propagation</code></td>
+<td>All above + aircraft rotation / delay propagation</td>
+</tr>
+</tbody>
+</table>
+<p>Evaluation follows the same expanding-window monthly CV and December holdout as Phase 1.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This code does not run the ml-pipeline. The ml-pipeline was used to train the 10 year model and uses a much larger data set. If you would like to run that model see the <code>ml_pipeline</code> directory in the code base. Read the <code>README</code> to learn how to run the ml-pipeline. See the <code>config.py</code> if you wish to toggle the various pipeline parameters.</p>
+<p>Variables and numbers in this code will not match with what is in the paper. However, the same process was followed for build the model what was discussed in the paper just a much smaller scale. The purpose of this page is to demonstrate the methodology.</p>
+</div>
+</div>
+</section>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<div id="imports" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> importlib</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>matplotlib.rcParams[<span class="st">'figure.dpi'</span>] <span class="op">=</span> <span class="dv">120</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> (</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    roc_auc_score, f1_score, precision_score, recall_score,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    accuracy_score, mean_absolute_error, mean_squared_error, roc_curve,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> xgboost <span class="im">import</span> XGBClassifier, XGBRegressor</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> timer_log(label, start_time):</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    elapsed <span class="op">=</span> time.perf_counter() <span class="op">-</span> start_time</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"[TIMER] </span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>elapsed<span class="sc">:.2f}</span><span class="ss">s"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="data-loading" class="level1">
+<h1>Data Loading</h1>
+<div id="load-data" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_rows(<span class="dv">1000</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_cols(<span class="dv">100</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>pl.Config.set_tbl_width_chars(<span class="dv">200</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Quarto sets cwd to execute-dir (project root).</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The shared-notebooks tree lives one level up from the project root.</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust SHARED_NOTEBOOKS_PATH if your layout differs.</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>SHARED_NOTEBOOKS_PATH <span class="op">=</span> Path(<span class="va">__file__</span>).resolve().parent.parent <span class="op">/</span> <span class="st">"shared-notebooks"</span> <span class="op">\</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"__file__"</span> <span class="kw">in</span> <span class="bu">dir</span>() <span class="cf">else</span> Path.cwd().parent <span class="op">/</span> <span class="st">"shared-notebooks"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Fallback: walk upward looking for shared-notebooks (works when __file__ is unavailable)</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> SHARED_NOTEBOOKS_PATH.exists():</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    _cur <span class="op">=</span> Path.cwd()</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> _cur <span class="op">!=</span> _cur.parent:</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (_cur <span class="op">/</span> <span class="st">"shared-notebooks"</span>).exists():</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>            SHARED_NOTEBOOKS_PATH <span class="op">=</span> _cur <span class="op">/</span> <span class="st">"shared-notebooks"</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        _cur <span class="op">=</span> _cur.parent</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> SHARED_NOTEBOOKS_PATH.exists():</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">RuntimeError</span>(</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Could not locate shared-notebooks. cwd=</span><span class="sc">{</span>Path<span class="sc">.</span>cwd()<span class="sc">}</span><span class="ss">. "</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Set SHARED_NOTEBOOKS_PATH manually or check your project layout."</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>utils_path <span class="op">=</span> SHARED_NOTEBOOKS_PATH <span class="op">/</span> <span class="st">"common_utils"</span> <span class="op">/</span> <span class="st">"python"</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">str</span>(utils_path) <span class="kw">not</span> <span class="kw">in</span> sys.path:</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    sys.path.append(<span class="bu">str</span>(utils_path))</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> load_flight_data</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>importlib.<span class="bu">reload</span>(load_flight_data)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>lf <span class="op">=</span> load_flight_data.load_flight_data(file_name<span class="op">=</span><span class="st">"flights_canonical_2019.parquet"</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"Load data"</span>, t0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[TIMER] Load data: 0.05s</code></pre>
+</div>
+</div>
+</section>
+<section id="feature-engineering" class="level1">
+<h1>Feature Engineering</h1>
+<p>Features are grouped into:</p>
+<ul>
+<li><strong>Calendar / schedule</strong> — departure hour, weekday, month, holiday proximity, schedule block</li>
+<li><strong>Weather</strong> — temperature, wind speed/direction, ceiling height at origin and destination</li>
+<li><strong>Traffic</strong> — route frequency, airport flight volumes</li>
+<li><strong>Rotation / propagation</strong> — turnaround time, cumulative aircraft delay, 1- and 2-hop lag features</li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Leakage guard:</strong> Raw <code>cum_arr_delay_aircraft_day</code> is <em>not</em> used as a feature because it can include the current flight’s own arrival delay. The model uses <code>prior_cum_arr_delay_aircraft_day</code>, shifted by one flight within each <code>(tail_number, flight_date)</code> group.</p>
+</div>
+</div>
+<div id="feature-engineering" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>RAW_FEATURES <span class="op">=</span> [</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"flight_id"</span>, <span class="st">"tail_number"</span>, <span class="st">"reporting_airline"</span>, <span class="st">"origin"</span>, <span class="st">"dest"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"route_key"</span>, <span class="st">"distance"</span>, <span class="st">"flight_date"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_hour_local"</span>, <span class="st">"dep_weekday_local"</span>, <span class="st">"dep_month_local"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_ts_sched_utc"</span>, <span class="st">"dep_ts_actual_utc"</span>, <span class="st">"arr_ts_sched_utc"</span>, <span class="st">"arr_ts_actual_utc"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_temp_c"</span>, <span class="st">"dep_wind_speed_m_s"</span>, <span class="st">"dep_wind_dir_deg"</span>, <span class="st">"dep_ceiling_height_m"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"arr_temp_c"</span>, <span class="st">"arr_wind_speed_m_s"</span>, <span class="st">"arr_wind_dir_deg"</span>, <span class="st">"arr_ceiling_height_m"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_flight_id_same_tail"</span>, <span class="st">"next_flight_id_same_tail"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_origin"</span>, <span class="st">"prev_dest"</span>, <span class="st">"next_origin"</span>, <span class="st">"next_dest"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_arr_ts_actual_utc"</span>, <span class="st">"next_dep_ts_actual_utc"</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_delay"</span>, <span class="st">"dep_del15"</span>, <span class="st">"arr_delay"</span>, <span class="st">"arr_del15"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_arr_delay"</span>, <span class="st">"prev_dep_delay"</span>, <span class="st">"next_arr_delay"</span>, <span class="st">"next_dep_delay"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_arr_del15"</span>, <span class="st">"prev_dep_del15"</span>, <span class="st">"next_dep_del15"</span>, <span class="st">"next_arr_del15"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev_arr_late_15"</span>, <span class="st">"prev_dep_late_15"</span>, <span class="st">"next_arr_late_15"</span>, <span class="st">"next_dep_late_15"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"turnaround_minutes"</span>, <span class="st">"next_turnaround_minutes"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"rotation_continuity_flag"</span>, <span class="st">"next_rotation_continuity_flag"</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"aircraft_leg_number_day"</span>, <span class="st">"cum_dep_delay_aircraft_day"</span>, <span class="st">"cum_arr_delay_aircraft_day"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"is_cancelled"</span>, <span class="st">"is_diverted"</span>, <span class="st">"crs_elapsed_time"</span>, <span class="st">"dep_time_blk"</span>, <span class="st">"arr_time_blk"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>US_HOLIDAYS_2019 <span class="op">=</span> [</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"2019-01-01"</span>, <span class="st">"2019-01-21"</span>, <span class="st">"2019-02-18"</span>, <span class="st">"2019-05-27"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"2019-07-04"</span>, <span class="st">"2019-09-02"</span>, <span class="st">"2019-10-14"</span>, <span class="st">"2019-11-11"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"2019-11-28"</span>, <span class="st">"2019-12-25"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>ml_lf <span class="op">=</span> (</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    lf.select(RAW_FEATURES)</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"is_cancelled"</span>) <span class="op">==</span> <span class="dv">0</span>) <span class="op">&amp;</span> (pl.col(<span class="st">"is_diverted"</span>) <span class="op">==</span> <span class="dv">0</span>) <span class="op">&amp;</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_del15"</span>).is_not_null() <span class="op">&amp;</span> pl.col(<span class="st">"tail_number"</span>).is_not_null() <span class="op">&amp;</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_ts_actual_utc"</span>).is_not_null() <span class="op">&amp;</span> pl.col(<span class="st">"arr_ts_actual_utc"</span>).is_not_null()</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>lf_features <span class="op">=</span> (</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    ml_lf</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    .with_columns([</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"flight_date"</span>).cast(pl.Date),</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_ts_actual_utc"</span>).cast(pl.Datetime),</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_ts_actual_utc"</span>).cast(pl.Datetime),</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_month_local"</span>).cast(pl.Int8),</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    .with_columns([</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>        pl.when(pl.col(<span class="st">"dep_hour_local"</span>) <span class="op">&lt;</span> <span class="dv">6</span>).then(<span class="dv">1</span>)</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"dep_hour_local"</span>) <span class="op">&lt;</span> <span class="dv">11</span>).then(<span class="dv">2</span>)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"dep_hour_local"</span>) <span class="op">&lt;</span> <span class="dv">14</span>).then(<span class="dv">3</span>)</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"dep_hour_local"</span>) <span class="op">&lt;</span> <span class="dv">18</span>).then(<span class="dv">4</span>)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"dep_hour_local"</span>) <span class="op">&lt;</span> <span class="dv">21</span>).then(<span class="dv">5</span>)</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>        .otherwise(<span class="dv">6</span>).alias(<span class="st">"dep_time_bucket"</span>),</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_weekday_local"</span>).is_in([<span class="dv">6</span>, <span class="dv">7</span>]).cast(pl.Int8).alias(<span class="st">"is_weekend"</span>),</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"flight_date"</span>).cast(pl.Utf8).is_in(US_HOLIDAYS_2019).cast(pl.Int8).alias(<span class="st">"is_holiday"</span>),</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>        pl.min_horizontal([</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>            (pl.col(<span class="st">"flight_date"</span>).cast(pl.Date) <span class="op">-</span> pl.lit(h).<span class="bu">str</span>.strptime(pl.Date))</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>            .<span class="bu">abs</span>().dt.total_days()</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> h <span class="kw">in</span> US_HOLIDAYS_2019</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>        ]).alias(<span class="st">"days_to_nearest_holiday"</span>),</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>        pl.<span class="bu">len</span>().over(<span class="st">"route_key"</span>).alias(<span class="st">"route_frequency"</span>),</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>        pl.<span class="bu">len</span>().over(<span class="st">"origin"</span>).alias(<span class="st">"origin_flight_volume"</span>),</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>        pl.<span class="bu">len</span>().over(<span class="st">"dest"</span>).alias(<span class="st">"dest_flight_volume"</span>),</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"prev_arr_delay"</span>) <span class="op">&gt;</span> <span class="dv">15</span>).cast(pl.Int8).alias(<span class="st">"prev_arr_delayed_flag"</span>),</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"prev_arr_delay"</span>) <span class="op">+</span> pl.col(<span class="st">"prev_dep_delay"</span>)).alias(<span class="st">"prev_total_delay"</span>),</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"turnaround_minutes"</span>) <span class="op">&lt;</span> <span class="dv">60</span>).cast(pl.Int8).alias(<span class="st">"tight_turnaround_flag"</span>),</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>        (</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"aircraft_leg_number_day"</span>) <span class="op">/</span></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>            pl.<span class="bu">max</span>(<span class="st">"aircraft_leg_number_day"</span>).over([<span class="st">"tail_number"</span>, <span class="st">"flight_date"</span>])</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>        ).alias(<span class="st">"relative_leg_position"</span>),</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>usa_2hop_lf <span class="op">=</span> (</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>    lf_features</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>    .sort([<span class="st">"tail_number"</span>, <span class="st">"dep_ts_actual_utc"</span>])</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>    .with_columns([</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"cum_dep_delay_aircraft_day"</span>).shift(<span class="dv">1</span>).over([<span class="st">"tail_number"</span>, <span class="st">"flight_date"</span>]).fill_null(<span class="dv">0</span>).alias(<span class="st">"prior_cum_dep_delay_aircraft_day"</span>),</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"cum_arr_delay_aircraft_day"</span>).shift(<span class="dv">1</span>).over([<span class="st">"tail_number"</span>, <span class="st">"flight_date"</span>]).fill_null(<span class="dv">0</span>).alias(<span class="st">"prior_cum_arr_delay_aircraft_day"</span>),</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 1 hop back</span></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"flight_id"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev1_flight_id"</span>),</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_delay"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev1_arr_delay"</span>),</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_delay"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev1_dep_delay"</span>),</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_del15"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev1_arr_del15"</span>),</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_del15"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev1_dep_del15"</span>),</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2 hops back</span></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"flight_id"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev2_flight_id"</span>),</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_delay"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev2_arr_delay"</span>),</span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_delay"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev2_dep_delay"</span>),</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"arr_del15"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev2_arr_del15"</span>),</span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"dep_del15"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>).alias(<span class="st">"prev2_dep_del15"</span>),</span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>        <span class="co"># timing gaps</span></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"dep_ts_actual_utc"</span>) <span class="op">-</span> pl.col(<span class="st">"arr_ts_actual_utc"</span>).shift(<span class="dv">1</span>).over(<span class="st">"tail_number"</span>))</span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>            .dt.total_minutes().alias(<span class="st">"prev1_turnaround_minutes"</span>),</span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"dep_ts_actual_utc"</span>) <span class="op">-</span> pl.col(<span class="st">"arr_ts_actual_utc"</span>).shift(<span class="dv">2</span>).over(<span class="st">"tail_number"</span>))</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>            .dt.total_minutes().alias(<span class="st">"time_since_prev2_arrival_minutes"</span>),</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(</span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"prev1_flight_id"</span>).is_not_null() <span class="op">&amp;</span> pl.col(<span class="st">"prev2_flight_id"</span>).is_not_null() <span class="op">&amp;</span></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"prev1_turnaround_minutes"</span>).is_not_null() <span class="op">&amp;</span></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"time_since_prev2_arrival_minutes"</span>).is_not_null() <span class="op">&amp;</span></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"prev1_turnaround_minutes"</span>).is_between(<span class="dv">0</span>, <span class="dv">12</span> <span class="op">*</span> <span class="dv">60</span>) <span class="op">&amp;</span></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"time_since_prev2_arrival_minutes"</span>).is_between(<span class="dv">0</span>, <span class="dv">24</span> <span class="op">*</span> <span class="dv">60</span>)</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>flights <span class="op">=</span> usa_2hop_lf.collect()</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Rows in final modeling table:"</span>, flights.height)</span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(flights.select([<span class="st">"flight_id"</span>, <span class="st">"tail_number"</span>, <span class="st">"origin"</span>, <span class="st">"dest"</span>, <span class="st">"arr_delay"</span>, <span class="st">"arr_del15"</span>]).head())</span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"Feature engineering + collect"</span>, t0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows in final modeling table: 6594553
+shape: (5, 6)
+┌─────────────────────────────────┬─────────────┬────────┬──────┬───────────┬───────────┐
+│ flight_id                       ┆ tail_number ┆ origin ┆ dest ┆ arr_delay ┆ arr_del15 │
+│ ---                             ┆ ---         ┆ ---    ┆ ---  ┆ ---       ┆ ---       │
+│ str                             ┆ str         ┆ str    ┆ str  ┆ f64       ┆ f64       │
+╞═════════════════════════════════╪═════════════╪════════╪══════╪═══════════╪═══════════╡
+│ 2019-01-02_G4_891_215NV_FWA_PI… ┆ 215NV       ┆ FWA    ┆ PIE  ┆ -5.0      ┆ 0.0       │
+│ 2019-01-02_G4_1203_215NV_PIE_A… ┆ 215NV       ┆ PIE    ┆ AVL  ┆ -8.0      ┆ 0.0       │
+│ 2019-01-02_G4_1206_215NV_AVL_P… ┆ 215NV       ┆ AVL    ┆ PGD  ┆ -6.0      ┆ 0.0       │
+│ 2019-01-02_G4_1207_215NV_PGD_A… ┆ 215NV       ┆ PGD    ┆ AVL  ┆ -9.0      ┆ 0.0       │
+│ 2019-01-03_G4_1297_215NV_FLL_A… ┆ 215NV       ┆ FLL    ┆ AVL  ┆ -11.0     ┆ 0.0       │
+└─────────────────────────────────┴─────────────┴────────┴──────┴───────────┴───────────┘
+[TIMER] Feature engineering + collect: 8.52s</code></pre>
+</div>
+</div>
+</section>
+<section id="feature-sets" class="level1">
+<h1>Feature Sets</h1>
+<div id="feature-sets" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>xgb_schedule_features <span class="op">=</span> [</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"distance"</span>, <span class="st">"dep_hour_local"</span>, <span class="st">"dep_weekday_local"</span>, <span class="st">"dep_month_local"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_time_bucket"</span>, <span class="st">"is_weekend"</span>, <span class="st">"is_holiday"</span>, <span class="st">"days_to_nearest_holiday"</span>, <span class="st">"crs_elapsed_time"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>xgb_weather_traffic_features <span class="op">=</span> xgb_schedule_features <span class="op">+</span> [</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"dep_temp_c"</span>, <span class="st">"dep_wind_speed_m_s"</span>, <span class="st">"dep_wind_dir_deg"</span>, <span class="st">"dep_ceiling_height_m"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"arr_temp_c"</span>, <span class="st">"arr_wind_speed_m_s"</span>, <span class="st">"arr_wind_dir_deg"</span>, <span class="st">"arr_ceiling_height_m"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"route_frequency"</span>, <span class="st">"origin_flight_volume"</span>, <span class="st">"dest_flight_volume"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>xgb_full_features <span class="op">=</span> xgb_weather_traffic_features <span class="op">+</span> [</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"turnaround_minutes"</span>, <span class="st">"tight_turnaround_flag"</span>, <span class="st">"rotation_continuity_flag"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"aircraft_leg_number_day"</span>, <span class="st">"relative_leg_position"</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prior_cum_dep_delay_aircraft_day"</span>, <span class="st">"prior_cum_arr_delay_aircraft_day"</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev1_arr_delay"</span>, <span class="st">"prev1_dep_delay"</span>, <span class="st">"prev1_arr_del15"</span>, <span class="st">"prev1_dep_del15"</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev2_arr_delay"</span>, <span class="st">"prev2_dep_delay"</span>, <span class="st">"prev2_arr_del15"</span>, <span class="st">"prev2_dep_del15"</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"prev1_turnaround_minutes"</span>, <span class="st">"time_since_prev2_arrival_minutes"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>TARGET_CLASS <span class="op">=</span> <span class="st">"arr_del15"</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>TARGET_REG   <span class="op">=</span> <span class="st">"arr_delay"</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>xgb_feature_sets <span class="op">=</span> {</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"xgb_schedule"</span>:         xgb_schedule_features,</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"xgb_weather_traffic"</span>:  xgb_weather_traffic_features,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"xgb_full_propagation"</span>: xgb_full_features,</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="train-cv-holdout-split" class="level1">
+<h1>Train / CV / Holdout Split</h1>
+<p>January through November are used for model development. <strong>December is held out</strong> and never seen during training or cross-validation.</p>
+<div id="split-data" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>flights <span class="op">=</span> flights.with_columns([</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dep_ts_actual_utc"</span>).cast(pl.Datetime),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"flight_date"</span>).cast(pl.Date),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dep_month_local"</span>).cast(pl.Int8),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>train_cv_df <span class="op">=</span> flights.<span class="bu">filter</span>(pl.col(<span class="st">"dep_month_local"</span>) <span class="op">&lt;</span> <span class="dv">12</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>holdout_df  <span class="op">=</span> flights.<span class="bu">filter</span>(pl.col(<span class="st">"dep_month_local"</span>) <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Train/CV rows Jan–Nov:"</span>, train_cv_df.height)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Final holdout rows Dec:"</span>, holdout_df.height)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"Split"</span>, t0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Train/CV rows Jan–Nov: 6032040
+Final holdout rows Dec: 562513
+[TIMER] Split: 0.50s</code></pre>
+</div>
+</div>
+</section>
+<section id="helper-functions" class="level1">
+<h1>Helper Functions</h1>
+<div id="helpers" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> safe_fill_and_to_pandas(df_pl: pl.DataFrame, cols: <span class="bu">list</span>[<span class="bu">str</span>]) <span class="op">-&gt;</span> pd.DataFrame:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> df_pl.select(cols).to_pandas()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> out.columns:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> out[c].dtype.kind <span class="kw">in</span> <span class="st">"biufc"</span>:</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>            out[c] <span class="op">=</span> out[c].fillna(out[c].median())</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            out[c] <span class="op">=</span> out[c].fillna(<span class="st">"missing"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> classification_metrics(y_true, y_prob, threshold<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    y_pred <span class="op">=</span> (y_prob <span class="op">&gt;=</span> threshold).astype(<span class="bu">int</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">"auc"</span>:       roc_auc_score(y_true, y_prob),</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"f1"</span>:        f1_score(y_true, y_pred, zero_division<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"precision"</span>: precision_score(y_true, y_pred, zero_division<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"recall"</span>:    recall_score(y_true, y_pred, zero_division<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">"accuracy"</span>:  accuracy_score(y_true, y_pred),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> regression_metrics(y_true, y_pred):</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mae"</span>:  mean_absolute_error(y_true, y_pred),</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"rmse"</span>: np.sqrt(mean_squared_error(y_true, y_pred)),</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_eval_table(results_dict):</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> [{<span class="st">"model"</span>: k, <span class="op">**</span>v} <span class="cf">for</span> k, v <span class="kw">in</span> results_dict.items()]</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(rows).sort_values(<span class="st">"model"</span>).reset_index(drop<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="expanding-window-cross-validation" class="level1">
+<h1>Expanding Window Cross-Validation</h1>
+<p>Five folds, each adding one month to the training window:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Fold</th>
+<th>Train</th>
+<th>Validate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Jan – Jun</td>
+<td>Jul</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Jan – Jul</td>
+<td>Aug</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Jan – Aug</td>
+<td>Sep</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Jan – Sep</td>
+<td>Oct</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Jan – Oct</td>
+<td>Nov</td>
+</tr>
+</tbody>
+</table>
+<div id="run-cv" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> month_time_cv_splits(df_pl):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        (m, df_pl.<span class="bu">filter</span>(pl.col(<span class="st">"dep_month_local"</span>) <span class="op">&lt;</span> m), df_pl.<span class="bu">filter</span>(pl.col(<span class="st">"dep_month_local"</span>) <span class="op">==</span> m))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> m <span class="kw">in</span> [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> df_pl.<span class="bu">filter</span>(pl.col(<span class="st">"dep_month_local"</span>) <span class="op">&lt;</span> m).height <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_xgb_month_cv(df_pl, feature_sets):</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    cv_rows_cls, cv_rows_reg <span class="op">=</span> [], []</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name, cols <span class="kw">in</span> feature_sets.items():</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Running CV for </span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> val_month, train_fold, val_fold <span class="kw">in</span> month_time_cv_splits(df_pl):</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>            t_fold <span class="op">=</span> time.perf_counter()</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>            X_train <span class="op">=</span> safe_fill_and_to_pandas(train_fold, cols)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            X_val   <span class="op">=</span> safe_fill_and_to_pandas(val_fold,   cols)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>            y_train_cls <span class="op">=</span> train_fold[TARGET_CLASS].to_pandas().astype(<span class="bu">int</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>            y_val_cls   <span class="op">=</span> val_fold[TARGET_CLASS].to_pandas().astype(<span class="bu">int</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            y_train_reg <span class="op">=</span> train_fold[TARGET_REG].to_pandas().astype(<span class="bu">float</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>            y_val_reg   <span class="op">=</span> val_fold[TARGET_REG].to_pandas().astype(<span class="bu">float</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            clf <span class="op">=</span> XGBClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">6</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>                                subsample<span class="op">=</span><span class="fl">0.8</span>, colsample_bytree<span class="op">=</span><span class="fl">0.8</span>, eval_metric<span class="op">=</span><span class="st">"logloss"</span>,</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>                                random_state<span class="op">=</span><span class="dv">42</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, device<span class="op">=</span><span class="st">"cpu"</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>            clf.fit(X_train, y_train_cls)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>            y_prob <span class="op">=</span> clf.predict_proba(X_val)[:, <span class="dv">1</span>]</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> classification_metrics(y_val_cls, y_prob)</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>            m.update({<span class="st">"model"</span>: model_name, <span class="st">"validation_month"</span>: val_month,</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"train_rows"</span>: train_fold.height, <span class="st">"validation_rows"</span>: val_fold.height})</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>            cv_rows_cls.append(m)</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>            reg <span class="op">=</span> XGBRegressor(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">6</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>                               subsample<span class="op">=</span><span class="fl">0.8</span>, colsample_bytree<span class="op">=</span><span class="fl">0.8</span>,</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>                               random_state<span class="op">=</span><span class="dv">42</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, device<span class="op">=</span><span class="st">"cpu"</span>)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            reg.fit(X_train, y_train_reg)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>            y_pred_reg <span class="op">=</span> reg.predict(X_val)</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>            r <span class="op">=</span> regression_metrics(y_val_reg, y_pred_reg)</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>            r.update({<span class="st">"model"</span>: model_name, <span class="st">"validation_month"</span>: val_month,</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"train_rows"</span>: train_fold.height, <span class="st">"validation_rows"</span>: val_fold.height})</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>            cv_rows_reg.append(r)</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>            timer_log(<span class="ss">f"  CV </span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss"> month </span><span class="sc">{</span>val_month<span class="sc">}</span><span class="ss">"</span>, t_fold)</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.DataFrame(cv_rows_cls), pd.DataFrame(cv_rows_reg)</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>xgb_cls_cv_table, xgb_reg_cv_table <span class="op">=</span> run_xgb_month_cv(train_cv_df, xgb_feature_sets)</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>cls_cv_mean_table <span class="op">=</span> (</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>    xgb_cls_cv_table.groupby(<span class="st">"model"</span>)[[<span class="st">"auc"</span>,<span class="st">"f1"</span>,<span class="st">"precision"</span>,<span class="st">"recall"</span>,<span class="st">"accuracy"</span>]]</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>    .mean().sort_values(<span class="st">"auc"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>reg_cv_mean_table <span class="op">=</span> (</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>    xgb_reg_cv_table.groupby(<span class="st">"model"</span>)[[<span class="st">"mae"</span>,<span class="st">"rmse"</span>]]</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>    .mean().sort_values(<span class="st">"mae"</span>, ascending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Classification CV Mean Results"</span>)</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cls_cv_mean_table)</span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Regression CV Mean Results"</span>)</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(reg_cv_mean_table)</span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"Month-based CV block"</span>, t0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Running CV for xgb_schedule
+[TIMER]   CV xgb_schedule month 7: 187.00s
+[TIMER]   CV xgb_schedule month 8: 179.63s
+[TIMER]   CV xgb_schedule month 9: 179.12s
+[TIMER]   CV xgb_schedule month 10: 160.63s
+[TIMER]   CV xgb_schedule month 11: 29.26s
+
+Running CV for xgb_weather_traffic
+[TIMER]   CV xgb_weather_traffic month 7: 19.18s
+[TIMER]   CV xgb_weather_traffic month 8: 23.39s
+[TIMER]   CV xgb_weather_traffic month 9: 28.03s
+[TIMER]   CV xgb_weather_traffic month 10: 31.90s
+[TIMER]   CV xgb_weather_traffic month 11: 36.27s
+
+Running CV for xgb_full_propagation
+[TIMER]   CV xgb_full_propagation month 7: 23.99s
+[TIMER]   CV xgb_full_propagation month 8: 29.64s
+[TIMER]   CV xgb_full_propagation month 9: 34.38s
+[TIMER]   CV xgb_full_propagation month 10: 41.96s
+[TIMER]   CV xgb_full_propagation month 11: 44.49s
+
+Classification CV Mean Results
+                           auc        f1  precision    recall  accuracy
+model                                                                  
+xgb_full_propagation  0.859863  0.573332   0.769503  0.458805  0.886574
+xgb_weather_traffic   0.715396  0.188655   0.639621  0.112749  0.839107
+xgb_schedule          0.666370  0.111148   0.664314  0.062374  0.836118
+
+Regression CV Mean Results
+                            mae       rmse
+model                                     
+xgb_full_propagation  15.726139  31.105641
+xgb_weather_traffic   20.935744  38.747776
+xgb_schedule          21.394736  39.836722
+[TIMER] Month-based CV block: 1057.09s</code></pre>
+</div>
+</div>
+</section>
+<section id="final-training-jannov-december-holdout" class="level1">
+<h1>Final Training: Jan–Nov → December Holdout</h1>
+<div id="final-training" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_xgb_models(train_df, test_df, feature_sets):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    cls_results, reg_results, cls_preds, reg_preds, fitted_models <span class="op">=</span> {}, {}, {}, {}, {}</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    y_train_cls <span class="op">=</span> train_df[TARGET_CLASS].to_pandas().astype(<span class="bu">int</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    y_test_cls  <span class="op">=</span> test_df[TARGET_CLASS].to_pandas().astype(<span class="bu">int</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    y_train_reg <span class="op">=</span> train_df[TARGET_REG].to_pandas().astype(<span class="bu">float</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    y_test_reg  <span class="op">=</span> test_df[TARGET_REG].to_pandas().astype(<span class="bu">float</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> model_name, cols <span class="kw">in</span> feature_sets.items():</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        t_model <span class="op">=</span> time.perf_counter()</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        X_train <span class="op">=</span> safe_fill_and_to_pandas(train_df, cols)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        X_test  <span class="op">=</span> safe_fill_and_to_pandas(test_df,  cols)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        clf <span class="op">=</span> XGBClassifier(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">6</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                            subsample<span class="op">=</span><span class="fl">0.8</span>, colsample_bytree<span class="op">=</span><span class="fl">0.8</span>, eval_metric<span class="op">=</span><span class="st">"logloss"</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                            random_state<span class="op">=</span><span class="dv">42</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, device<span class="op">=</span><span class="st">"cpu"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        clf.fit(X_train, y_train_cls)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        y_prob <span class="op">=</span> clf.predict_proba(X_test)[:, <span class="dv">1</span>]</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        reg <span class="op">=</span> XGBRegressor(n_estimators<span class="op">=</span><span class="dv">300</span>, max_depth<span class="op">=</span><span class="dv">6</span>, learning_rate<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>                           subsample<span class="op">=</span><span class="fl">0.8</span>, colsample_bytree<span class="op">=</span><span class="fl">0.8</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                           random_state<span class="op">=</span><span class="dv">42</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>, device<span class="op">=</span><span class="st">"cpu"</span>)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        reg.fit(X_train, y_train_reg)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>        y_pred_reg <span class="op">=</span> reg.predict(X_test)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>        cls_results[model_name]   <span class="op">=</span> classification_metrics(y_test_cls, y_prob)</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>        reg_results[model_name]   <span class="op">=</span> regression_metrics(y_test_reg, y_pred_reg)</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>        cls_preds[model_name]     <span class="op">=</span> y_prob</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>        reg_preds[model_name]     <span class="op">=</span> y_pred_reg</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        fitted_models[model_name] <span class="op">=</span> {<span class="st">"classifier"</span>: clf, <span class="st">"regressor"</span>: reg, <span class="st">"features"</span>: cols}</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Done: </span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        timer_log(<span class="ss">f"  Final XGB </span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss">"</span>, t_model)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cls_results, reg_results, cls_preds, reg_preds, fitted_models</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>xgb_cls_results, xgb_reg_results, xgb_cls_preds, xgb_reg_preds, xgb_models <span class="op">=</span> train_xgb_models(</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    train_cv_df, holdout_df, xgb_feature_sets,</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"Final XGBoost block"</span>, t0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Done: xgb_schedule
+[TIMER]   Final XGB xgb_schedule: 32.12s
+Done: xgb_weather_traffic
+[TIMER]   Final XGB xgb_weather_traffic: 40.30s
+Done: xgb_full_propagation
+[TIMER]   Final XGB xgb_full_propagation: 48.46s
+[TIMER] Final XGBoost block: 120.89s</code></pre>
+</div>
+</div>
+</section>
+<section id="final-holdout-results" class="level1">
+<h1>Final Holdout Results</h1>
+<div id="holdout-results" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>cls_table <span class="op">=</span> build_eval_table(xgb_cls_results).sort_values(<span class="st">"auc"</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>reg_table <span class="op">=</span> build_eval_table(xgb_reg_results).sort_values(<span class="st">"mae"</span>, ascending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Final December Holdout — Classification"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cls_table.to_string(index<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Final December Holdout — Regression"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(reg_table.to_string(index<span class="op">=</span><span class="va">False</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Final December Holdout — Classification
+               model      auc       f1  precision   recall  accuracy
+xgb_full_propagation 0.856345 0.566183   0.821926 0.431822  0.866752
+ xgb_weather_traffic 0.704430 0.129951   0.765832 0.070999  0.808563
+        xgb_schedule 0.630371 0.063940   0.799830 0.033301  0.803665
+
+Final December Holdout — Regression
+               model       mae      rmse
+xgb_full_propagation 16.715222 34.244726
+ xgb_weather_traffic 21.219616 43.069902
+        xgb_schedule 21.721280 44.773405</code></pre>
+</div>
+</div>
+</section>
+<section id="visualizations" class="level1">
+<h1>Visualizations</h1>
+<section id="cv-summary" class="level2">
+<h2 class="anchored" data-anchor-id="cv-summary">CV Summary</h2>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_metric_bars(df, metric, title, sort_ascending<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    plot_df <span class="op">=</span> df.sort_values(metric, ascending<span class="op">=</span>sort_ascending).copy()</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">4</span>))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    ax.bar(plot_df[<span class="st">"model"</span>], plot_df[metric])</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    ax.set_xticklabels(plot_df[<span class="st">"model"</span>], rotation<span class="op">=</span><span class="dv">30</span>, ha<span class="op">=</span><span class="st">"right"</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    ax.set_title(title)<span class="op">;</span> ax.set_ylabel(metric.upper())</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    fig.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(cls_cv_mean_table.reset_index(), <span class="st">"auc"</span>,  <span class="st">"CV Mean AUC"</span>,  <span class="va">False</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(cls_cv_mean_table.reset_index(), <span class="st">"f1"</span>,   <span class="st">"CV Mean F1"</span>,   <span class="va">False</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(reg_cv_mean_table.reset_index(), <span class="st">"mae"</span>,  <span class="st">"CV Mean MAE"</span>,  <span class="va">True</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(reg_cv_mean_table.reset_index(), <span class="st">"rmse"</span>, <span class="st">"CV Mean RMSE"</span>, <span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="fig-cv-bars" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cv-bars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-cv-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-cv-bars-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-cv-bars-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-cv-bars-output-1.png" data-ref-parent="fig-cv-bars" width="708" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-cv-bars-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Mean AUC (higher is better)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-cv-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-cv-bars-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-cv-bars-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-cv-bars-output-2.png" data-ref-parent="fig-cv-bars" width="708" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-cv-bars-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) Mean F1 (higher is better)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-cv-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-cv-bars-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-cv-bars-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-cv-bars-output-3.png" data-ref-parent="fig-cv-bars" width="709" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-cv-bars-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c) Mean MAE — minutes (lower is better)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-cv-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-cv-bars-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-cv-bars-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-cv-bars-output-4.png" data-ref-parent="fig-cv-bars" width="702" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-cv-bars-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d) Mean RMSE — minutes (lower is better)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cv-bars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Cross-validation mean metrics across the three feature sets
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="december-holdout" class="level2">
+<h2 class="anchored" data-anchor-id="december-holdout">December Holdout</h2>
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(cls_table, <span class="st">"auc"</span>,  <span class="st">"Holdout AUC"</span>,  <span class="va">False</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(cls_table, <span class="st">"f1"</span>,   <span class="st">"Holdout F1"</span>,   <span class="va">False</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(reg_table, <span class="st">"mae"</span>,  <span class="st">"Holdout MAE"</span>,  <span class="va">True</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>plot_metric_bars(reg_table, <span class="st">"rmse"</span>, <span class="st">"Holdout RMSE"</span>, <span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="fig-holdout-bars" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-holdout-bars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-holdout-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-holdout-bars-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-holdout-bars-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-holdout-bars-output-1.png" data-ref-parent="fig-holdout-bars" width="708" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-holdout-bars-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) AUC (higher is better)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-holdout-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-holdout-bars-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-holdout-bars-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-holdout-bars-output-2.png" data-ref-parent="fig-holdout-bars" width="708" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-holdout-bars-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) F1 (higher is better)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-holdout-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-holdout-bars-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-holdout-bars-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-holdout-bars-output-3.png" data-ref-parent="fig-holdout-bars" width="702" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-holdout-bars-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c) MAE — minutes (lower is better)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-holdout-bars" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-holdout-bars-4" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-holdout-bars-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-holdout-bars-output-4.png" data-ref-parent="fig-holdout-bars" width="702" height="469" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-holdout-bars-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d) RMSE — minutes (lower is better)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-holdout-bars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: December holdout metrics across the three feature sets
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="roc-curves" class="level2">
+<h2 class="anchored" data-anchor-id="roc-curves">ROC Curves</h2>
+<div id="cell-fig-roc" class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>y_test_cls <span class="op">=</span> holdout_df[TARGET_CLASS].to_pandas().astype(<span class="bu">int</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">6</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_name <span class="kw">in</span> cls_table[<span class="st">"model"</span>].tolist():</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    y_prob <span class="op">=</span> xgb_cls_preds[model_name]</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    fpr, tpr, _ <span class="op">=</span> roc_curve(y_test_cls, y_prob)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    ax.plot(fpr, tpr, label<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>model_name<span class="sc">}</span><span class="ss">  AUC=</span><span class="sc">{</span>roc_auc_score(y_test_cls, y_prob)<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>ax.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>], linestyle<span class="op">=</span><span class="st">"--"</span>, color<span class="op">=</span><span class="st">"grey"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"False Positive Rate"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"True Positive Rate"</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"ROC Curves: December Holdout"</span>)<span class="op">;</span> ax.legend()</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-roc" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-roc-output-1.png" width="829" height="711" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: ROC curves for all classification models on the December holdout
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="actual-vs-predicted" class="level2">
+<h2 class="anchored" data-anchor-id="actual-vs-predicted">Actual vs Predicted</h2>
+<div id="cell-fig-actual-vs-pred" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>best_reg_model <span class="op">=</span> reg_table.iloc[<span class="dv">0</span>][<span class="st">"model"</span>]</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>y_test_reg     <span class="op">=</span> holdout_df[TARGET_REG].to_pandas().astype(<span class="bu">float</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>best_pred_reg  <span class="op">=</span> xgb_reg_preds[best_reg_model]</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>idx <span class="op">=</span> np.random.RandomState(<span class="dv">42</span>).choice(<span class="bu">len</span>(y_test_reg), size<span class="op">=</span><span class="bu">min</span>(<span class="dv">5000</span>, <span class="bu">len</span>(y_test_reg)), replace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>actual_sample <span class="op">=</span> y_test_reg.iloc[idx].to_numpy()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>pred_sample   <span class="op">=</span> np.array(best_pred_reg)[idx]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>min_val <span class="op">=</span> <span class="bu">min</span>(actual_sample.<span class="bu">min</span>(), pred_sample.<span class="bu">min</span>())</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>max_val <span class="op">=</span> <span class="bu">max</span>(actual_sample.<span class="bu">max</span>(), pred_sample.<span class="bu">max</span>())</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>slope, intercept <span class="op">=</span> np.polyfit(actual_sample, pred_sample, <span class="dv">1</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>trend_x <span class="op">=</span> np.linspace(min_val, max_val, <span class="dv">100</span>)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">6</span>))</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>ax.scatter(actual_sample, pred_sample, alpha<span class="op">=</span><span class="fl">0.3</span>, s<span class="op">=</span><span class="dv">8</span>, label<span class="op">=</span><span class="st">"Predictions"</span>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>ax.plot([min_val, max_val], [min_val, max_val], linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Perfect prediction"</span>)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>ax.plot(trend_x, slope<span class="op">*</span>trend_x <span class="op">+</span> intercept, linewidth<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="ss">f"Fitted trend: y=</span><span class="sc">{</span>slope<span class="sc">:.2f}</span><span class="ss">x+</span><span class="sc">{</span>intercept<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Actual Arrival Delay (min)"</span>)<span class="op">;</span> ax.set_ylabel(<span class="st">"Predicted Arrival Delay (min)"</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="ss">f"Actual vs Predicted — </span><span class="sc">{</span>best_reg_model<span class="sc">}</span><span class="ss">"</span>)<span class="op">;</span> ax.legend()</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-actual-vs-pred" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-actual-vs-pred-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-actual-vs-pred-output-1.png" width="829" height="711" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-actual-vs-pred-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Actual vs predicted arrival delay on the December holdout (5 000-flight sample)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="feature-importance" class="level1">
+<h1>Feature Importance</h1>
+<div id="cell-fig-feature-importance" class="cell" data-execution_count="15">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>best_name     <span class="op">=</span> cls_table.iloc[<span class="dv">0</span>][<span class="st">"model"</span>]</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>best_xgb      <span class="op">=</span> xgb_models[best_name][<span class="st">"classifier"</span>]</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>best_features <span class="op">=</span> xgb_models[best_name][<span class="st">"features"</span>]</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>importance_df <span class="op">=</span> (</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    pd.DataFrame({<span class="st">"feature"</span>: best_features, <span class="st">"importance"</span>: best_xgb.feature_importances_})</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    .sort_values(<span class="st">"importance"</span>, ascending<span class="op">=</span><span class="va">False</span>).head(<span class="dv">20</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>ax.barh(importance_df[<span class="st">"feature"</span>][::<span class="op">-</span><span class="dv">1</span>], importance_df[<span class="st">"importance"</span>][::<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="ss">f"Top 20 Feature Importances — </span><span class="sc">{</span>best_name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>fig.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-feature-importance" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-feature-importance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="phase-2_files/figure-html/fig-feature-importance-output-1.png" width="947" height="709" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-feature-importance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Top 20 feature importances for the best XGBoost classifier
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="pipeline-timing" class="level1">
+<h1>Pipeline Timing</h1>
+<div id="timing" class="cell" data-execution_count="16">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>timer_log(<span class="st">"TOTAL PIPELINE TIME"</span>, GLOBAL_START)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[TIMER] TOTAL PIPELINE TIME: 1189.20s</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jonathanwilsonami\.github\.io\/OR568_ML_Project\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

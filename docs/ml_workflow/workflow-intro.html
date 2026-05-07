@@ -151,12 +151,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">ML Worflow Overview</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../ml_workflow/bwi-ny.html">
- <span class="dropdown-text">BWI–NY Market Pair</span></a>
+    <a class="dropdown-item" href="../ml_workflow/phase-1-baseline.html">
+ <span class="dropdown-text">Phase 1: Baseline</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../ml_workflow/us-network.html">
- <span class="dropdown-text">U.S. Domestic Network</span></a>
+    <a class="dropdown-item" href="../ml_workflow/phase-2.html">
+ <span class="dropdown-text">Phase 2</span></a>
   </li>  
     </ul>
   </li>
@@ -182,12 +182,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#purpose-of-this-page" id="toc-purpose-of-this-page" class="nav-link active" data-scroll-target="#purpose-of-this-page">Purpose of This Page</a>
   <ul class="collapse">
-  <li><a href="#main-pages" id="toc-main-pages" class="nav-link" data-scroll-target="#main-pages">Main Pages:</a></li>
-  </ul></li>
-  <li><a href="#project-overview" id="toc-project-overview" class="nav-link" data-scroll-target="#project-overview">Project Overview</a>
+  <li><a href="#project-phases" id="toc-project-phases" class="nav-link" data-scroll-target="#project-phases">Project Phases</a>
   <ul class="collapse">
-  <li><a href="#phase-1-data-pipeline-and-predictive-modeling" id="toc-phase-1-data-pipeline-and-predictive-modeling" class="nav-link" data-scroll-target="#phase-1-data-pipeline-and-predictive-modeling">Phase 1: Data Pipeline and Predictive Modeling</a></li>
-  <li><a href="#phase-2-propagation-network-effects-and-system-thinking" id="toc-phase-2-propagation-network-effects-and-system-thinking" class="nav-link" data-scroll-target="#phase-2-propagation-network-effects-and-system-thinking">Phase 2: Propagation, Network Effects, and System Thinking</a></li>
+  <li><a href="#phase-1-baseline-2019-study" id="toc-phase-1-baseline-2019-study" class="nav-link" data-scroll-target="#phase-1-baseline-2019-study"><strong>Phase 1 — Baseline (2019 Study)</strong></a></li>
+  <li><a href="#phase-2-multi-year-system-modeling-20152025" id="toc-phase-2-multi-year-system-modeling-20152025" class="nav-link" data-scroll-target="#phase-2-multi-year-system-modeling-20152025"><strong>Phase 2 — Multi-Year &amp; System Modeling (2015–2025)</strong></a></li>
+  <li><a href="#note-on-compute" id="toc-note-on-compute" class="nav-link" data-scroll-target="#note-on-compute">Note on Compute</a></li>
+  </ul></li>
+  <li><a href="#main-pages" id="toc-main-pages" class="nav-link" data-scroll-target="#main-pages">Main Pages</a></li>
+  <li><a href="#toward-a-online-model-and-digital-twin" id="toc-toward-a-online-model-and-digital-twin" class="nav-link" data-scroll-target="#toward-a-online-model-and-digital-twin">Toward a Online Model and Digital Twin</a></li>
   </ul></li>
   <li><a href="#setups-and-pulling-code" id="toc-setups-and-pulling-code" class="nav-link" data-scroll-target="#setups-and-pulling-code">Setups and Pulling Code</a>
   <ul class="collapse">
@@ -231,36 +233,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="purpose-of-this-page" class="level1">
 <h1>Purpose of This Page</h1>
-<p>This page serves as the central entry point for understanding the machine learning workflow used throughout the project. It provides the setup, data pipeline, and reproducible code needed to run the models from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines.</p>
-<p>The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team. The subpages under <strong>ML Workflow</strong> demonstrate how this workflow is applied to specific analyses, including focused market pair studies and full network-scale modeling.</p>
-<section id="main-pages" class="level2">
-<h2 class="anchored" data-anchor-id="main-pages">Main Pages:</h2>
+<p>This page is a walk through for the machine learning workflow used in this project. It provides a <strong>reproducible, curated pipeline</strong> from data ingestion → feature engineering → model training → evaluation.</p>
 <ul>
-<li><strong>Workflow Overview</strong> — Pipeline overview, setups, and execution (for both Python and R based environments)<br>
-</li>
-<li><strong>BWI–NY Market Pair</strong> — Focused corridor analysis and delay behavior<br>
-</li>
-<li><strong>U.S. Domestic Network</strong> — Nationwide analysis and network-level patterns<br>
-</li>
-<li><strong>Shared Notebooks</strong> — Exploratory analysis and rapid prototyping (excluded for now but found in code base)</li>
+<li>Designed for <strong>reproducibility across machines</strong></li>
+<li>Distinct from <code>shared-notebooks</code>, which are used for <strong>exploration and prototyping</strong></li>
+<li>Subpages show how the workflow is applied to specific analyses</li>
 </ul>
+<hr>
+<section id="project-phases" class="level2">
+<h2 class="anchored" data-anchor-id="project-phases">Project Phases</h2>
+<section id="phase-1-baseline-2019-study" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-baseline-2019-study"><strong>Phase 1 — Baseline (2019 Study)</strong></h3>
+<ul>
+<li>Built the <strong>data pipeline and feature engineering framework</strong></li>
+<li>Developed baseline models (linear + tree-based)</li>
+<li>Validated that delay prediction is feasible</li>
+</ul>
+<blockquote class="blockquote">
+<p>Focus: <em>Establish a working ML pipeline</em></p>
+</blockquote>
+<hr>
+</section>
+<section id="phase-2-multi-year-system-modeling-20152025" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-multi-year-system-modeling-20152025"><strong>Phase 2 — Multi-Year &amp; System Modeling (2015–2025)</strong></h3>
+<ul>
+<li>Scaled to <strong>~70M+ flights</strong></li>
+<li>Introduced <strong>propagation-aware features (2-hop aircraft rotation)</strong></li>
+<li>Applied <strong>time-aware validation and production-style evaluation</strong></li>
+</ul>
+<blockquote class="blockquote">
+<p>Focus: <em>Model delay propagation and system behavior at scale</em></p>
+</blockquote>
+<hr>
+</section>
+<section id="note-on-compute" class="level3">
+<h3 class="anchored" data-anchor-id="note-on-compute">Note on Compute</h3>
+<ul>
+<li>Full 10-year pipeline requires <strong>significant resources</strong></li>
+<li>This walk through uses a <strong>2019 version</strong> for reproducibility and demonstration of the process</li>
+<li>Same methods, smaller scale</li>
+</ul>
+<p>See the <strong>README</strong> for running full pipelines.</p>
 <hr>
 </section>
 </section>
-<section id="project-overview" class="level1">
-<h1>Project Overview</h1>
-<p>This project was developed in two distinct but connected phases. The first phase focused on building a strong foundation in data engineering and predictive modeling, while the second phase expanded into system-level thinking — exploring how delays propagate through a network and how this framework can evolve into a broader digital twin.</p>
-<section id="phase-1-data-pipeline-and-predictive-modeling" class="level2">
-<h2 class="anchored" data-anchor-id="phase-1-data-pipeline-and-predictive-modeling">Phase 1: Data Pipeline and Predictive Modeling</h2>
-<p>The first phase of the project focused on building a robust and reproducible machine learning workflow. This included sourcing and integrating data from the Bureau of Transportation Statistics (BTS) and NOAA weather datasets, constructing a scalable data pipeline, and engineering features suitable for predictive modeling.</p>
-<p>Key efforts in this phase included data cleaning, temporal alignment of weather and flight records, and the creation of features such as time-of-day, route characteristics, and initial delay indicators. Multiple machine learning models were trained and evaluated using structured train-test splits and cross-validation to predict arrival delays and delay probabilities.</p>
-<p>This phase established the core technical foundation of the project: a repeatable workflow that can ingest data, transform it, and produce predictive insights in a consistent and scalable manner.</p>
+<section id="main-pages" class="level2">
+<h2 class="anchored" data-anchor-id="main-pages">Main Pages</h2>
+<ul>
+<li><strong>Workflow Overview</strong> — Setup, pipeline, execution<br>
+</li>
+<li><strong>Phase 1: 2019 Study</strong> — Baseline modeling<br>
+</li>
+<li><strong>Phase 2: Multi-Year Study</strong> — Scaled modeling<br>
+</li>
+<li><strong>Shared Notebooks</strong> — Exploratory work (codebase only)</li>
+</ul>
+<hr>
 </section>
-<section id="phase-2-propagation-network-effects-and-system-thinking" class="level2">
-<h2 class="anchored" data-anchor-id="phase-2-propagation-network-effects-and-system-thinking">Phase 2: Propagation, Network Effects, and System Thinking</h2>
-<p>The second phase expanded the project beyond isolated predictions into a system-level understanding of flight delays. Instead of treating each flight independently, delays were modeled as events that propagate through aircraft rotations, airport congestion, and temporal dependencies.</p>
-<p>New features were introduced to capture these effects, including prior flight delays, turnaround time, and multi-hop propagation relationships. This allowed the model to better represent how disruptions spread across the network rather than occurring in isolation.</p>
-<p>This phase also lays the groundwork for future extensions into digital twin systems, real-time data integration, and broader applications across domains such as drone coordination, construction systems, and intelligent infrastructure.</p>
+<section id="toward-a-online-model-and-digital-twin" class="level2">
+<h2 class="anchored" data-anchor-id="toward-a-online-model-and-digital-twin">Toward a Online Model and Digital Twin</h2>
+<p>This framework extends beyond prediction into a <strong>real-time, system-level model</strong>.</p>
+<p>Next steps: - Real-time data ingestion<br>
+- Continuous inference<br>
+- Forward simulation<br>
+- Full digital twin system</p>
 <hr>
 </section>
 </section>
@@ -268,7 +304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Setups and Pulling Code</h1>
 <section id="project-setup-and-environment" class="level2">
 <h2 class="anchored" data-anchor-id="project-setup-and-environment">Project Setup and Environment</h2>
-<p>To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</p>
+<p>To run the code on this site, you will need both the project environment and Quarto set up correctly. See <code>README</code> in the repo for more details. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</p>
 <p><strong>Step 1: Clone the project</strong></p>
 <p>Start by cloning the repository to your local machine and moving into the project directory.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>repo-url<span class="op">&gt;</span></span>
@@ -829,129 +865,153 @@ Figure&nbsp;1: Overview of the flight delay data pipeline, from raw data sources
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Purpose of This Page</span></span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>This page serves as the central entry point for understanding the machine learning workflow used throughout the project. It provides the setup, data pipeline, and reproducible code needed to run the models from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines.</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>This page is a walk through for the machine learning workflow used in this project. It provides a **reproducible, curated pipeline** from data ingestion → feature engineering → model training → evaluation.</span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team. The subpages under **ML Workflow** demonstrate how this workflow is applied to specific analyses, including focused market pair studies and full network-scale modeling.</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main Pages:</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Designed for **reproducibility across machines**</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Distinct from <span class="in">`shared-notebooks`</span>, which are used for **exploration and prototyping**</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subpages show how the workflow is applied to specific analyses</span>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Workflow Overview** —  Pipeline overview, setups, and execution (for both Python and R based environments)  </span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**BWI–NY Market Pair** — Focused corridor analysis and delay behavior  </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**U.S. Domestic Network** — Nationwide analysis and network-level patterns  </span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Shared Notebooks** — Exploratory analysis and rapid prototyping (excluded for now but found in code base)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu"># Project Overview</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Phases</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">### **Phase 1 — Baseline (2019 Study)**</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Built the **data pipeline and feature engineering framework**</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Developed baseline models (linear + tree-based)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Validated that delay prediction is feasible</span>
 <span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>This project was developed in two distinct but connected phases. The first phase focused on building a strong foundation in data engineering and predictive modeling, while the second phase expanded into system-level thinking — exploring how delays propagate through a network and how this framework can evolve into a broader digital twin.</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Focus: *Establish a working ML pipeline*</span></span>
 <span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Phase 1: Data Pipeline and Predictive Modeling</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>The first phase of the project focused on building a robust and reproducible machine learning workflow. This included sourcing and integrating data from the Bureau of Transportation Statistics (BTS) and NOAA weather datasets, constructing a scalable data pipeline, and engineering features suitable for predictive modeling.</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>Key efforts in this phase included data cleaning, temporal alignment of weather and flight records, and the creation of features such as time-of-day, route characteristics, and initial delay indicators. Multiple machine learning models were trained and evaluated using structured train-test splits and cross-validation to predict arrival delays and delay probabilities.</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>This phase established the core technical foundation of the project: a repeatable workflow that can ingest data, transform it, and produce predictive insights in a consistent and scalable manner.</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="fu">## Phase 2: Propagation, Network Effects, and System Thinking</span></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>The second phase expanded the project beyond isolated predictions into a system-level understanding of flight delays. Instead of treating each flight independently, delays were modeled as events that propagate through aircraft rotations, airport congestion, and temporal dependencies.</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>New features were introduced to capture these effects, including prior flight delays, turnaround time, and multi-hop propagation relationships. This allowed the model to better represent how disruptions spread across the network rather than occurring in isolation.</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>This phase also lays the groundwork for future extensions into digital twin systems, real-time data integration, and broader applications across domains such as drone coordination, construction systems, and intelligent infrastructure.</span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="fu"># Setups and Pulling Code </span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Setup and Environment</span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>**Step 1: Clone the project**</span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>Start by cloning the repository to your local machine and moving into the project directory.</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">### **Phase 2 — Multi-Year &amp; System Modeling (2015–2025)**</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scaled to **~70M+ flights**</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Introduced **propagation-aware features (2-hop aircraft rotation)**</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Applied **time-aware validation and production-style evaluation**</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Focus: *Model delay propagation and system behavior at scale*</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="fu">### Note on Compute</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Full 10-year pipeline requires **significant resources**</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This walk through uses a **2019 version** for reproducibility and demonstration of the process </span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Same methods, smaller scale</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>See the **README** for running full pipelines.</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main Pages</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Workflow Overview** — Setup, pipeline, execution  </span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Phase 1: 2019 Study** — Baseline modeling  </span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Phase 2: Multi-Year Study** — Scaled modeling  </span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Shared Notebooks** — Exploratory work (codebase only)</span>
 <span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>repo-url<span class="op">&gt;</span></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>repo-folder<span class="op">&gt;</span></span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>**Step 2: Create the Conda environment**</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.</span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">-f</span> environment.yml</span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate or568_ml_project</span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="fu">## Toward a Online Model and Digital Twin</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>This framework extends beyond prediction into a **real-time, system-level model**.</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>Next steps:</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Real-time data ingestion  </span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Continuous inference  </span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Forward simulation  </span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Full digital twin system  </span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>**Step 3: Run the ML Pipeline**</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="fu"># Setups and Pulling Code </span></span>
 <span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>You have three options for running the pipeline:</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Setup and Environment</span></span>
 <span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 1 (Recommended):** Run the target notebook in RStudio or Jupyter with an R kernel. Make sure to have the Conda environment activated before launching your IDE.</span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 2:** Use <span class="in">`quarto render path/to/notebook.qmd`</span> to render a specific notebook into HTML. This will execute the code and generate the output in a reproducible way.</span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 3 (Not recommended):** Render the entire site using Quarto. This will execute all notebooks and generate all HTML pages.</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>To run the code on this site, you will need both the project environment and Quarto set up correctly. See <span class="in">`README`</span> in the repo for more details. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>**Step 1: Clone the project**</span>
 <span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>Start by cloning the repository to your local machine and moving into the project directory.</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>repo-url<span class="op">&gt;</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>repo-folder<span class="op">&gt;</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="fu"># Data Pipeline</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>**Step 2: Create the Conda environment**</span>
 <span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>This project uses a Conda environment to keep package versions consistent across the team. Build the environment from the provided environment file.</span>
 <span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-pipeline</span></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Overview of the flight delay data pipeline, from raw data sources through ingestion, cleaning, temporal alignment, feature engineering, and final output."</span></span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: "A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output."</span></span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="co">#| out-width: "100%"</span></span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(<span class="st">"images/common_site/data-pipeline.png"</span>)</span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="fu">## Running the Data Pipeline </span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">-f</span> environment.yml</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate or568_ml_project</span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>**Step 3: Run the ML Pipeline**</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>You have three options for running the pipeline:</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 1 (Recommended):** Run the target notebook in RStudio or Jupyter with an R kernel. Make sure to have the Conda environment activated before launching your IDE.</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 2:** Use <span class="in">`quarto render path/to/notebook.qmd`</span> to render a specific notebook into HTML. This will execute the code and generate the output in a reproducible way.</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Option 3 (Not recommended):** Render the entire site using Quarto. This will execute all notebooks and generate all HTML pages.</span>
 <span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning}</span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="fu">### Big Data Warning</span></span>
-<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>The flight dataset is quite large (over 7 million records for a single year). Running <span class="in">`pipeline_main.py`</span> to build it on a laptop with 32 GB of RAM crashed. To overcome this, a tower desktop machine with 96 GB of RAM was used to run the data pipeline. If you want to run the data pipeline yourself, it is recommended you use a machine with at least 64 GB of RAM, but ideally 96–128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 high-memory instances to run the pipeline without issue.</span>
-<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>If you are interested in generating the original data, you can run the data pipeline with the following command (assumes you followed the project setup above and are in the <span class="in">`data_pipeline`</span> directory):</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash}</span></span>
-<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false </span></span>
-<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> run_canonical_years.py <span class="at">--year</span> 2019</span>
-<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Loading and Cleaning</span></span>
-<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>The following setup pulls the data from S3 using the <span class="in">`load_flight_data()`</span> function defined in <span class="in">`shared-notebooks/common_utils/r/utils.r`</span>. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps.</span>
-<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a><span class="fu">### S3 Access Note</span></span>
-<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>A policy is currently set up in the S3 bucket to allow public read access, so no credentials are needed to load the data. **This will not remain the case indefinitely** and will only be available for the duration of the project. To browse available files, navigate to the URL referenced in <span class="in">`load_flight_data()`</span> in a browser — the file names are listed in the XML output under <span class="in">`Contents/Key`</span>.</span>
-<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>If you want to regenerate the exact data used in this project, see <span class="in">`pipeline_main.py`</span> and <span class="in">`run_canonical_years.py`</span> in the <span class="in">`data_pipeline`</span> directory as the entry points for the data pipeline.</span>
-<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lazy Loading and Memory Efficiency</span></span>
-<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>This project uses lazy-loaded data via Apache Arrow. Lazy loading means that when you open a dataset, no data is actually read into memory — instead you get a query object that represents the data. Operations like <span class="in">`filter()`</span> and <span class="in">`select()`</span> are pushed down to the data source and only execute when you explicitly call <span class="in">`collect()`</span>, at which point only the rows and columns you actually need are pulled into memory. This makes working with large datasets fast and memory efficient.</span>
-<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>The setup below loads all required packages via <span class="in">`load_project_packages()`</span>, defined in <span class="in">`utils.r`</span>, which installs any missing packages and attaches them to the session. Flight data is loaded from the project's data source and cached locally as a Parquet file at <span class="in">`data/flights_raw.parquet`</span> on first run — subsequent renders skip the 30–40 second load and read directly from the local cache instead. To refresh the data, delete <span class="in">`data/flights_raw.parquet`</span> and re-render.</span>
-<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>For anyone extending this project, it is strongly recommended to stick with Arrow in R or switch to Polars in Python rather than pandas. Pandas loads everything into memory eagerly, which becomes a bottleneck quickly on datasets of this size. Arrow and Polars are both built around the same columnar memory format, are significantly faster, and support the same lazy evaluation pattern used here — filter and select on the lazy frame first, then collect only what you need.</span>
-<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a>In the Medallion architecture nomenclature, this raw S3 data is considered our **bronze** layer — the unprocessed data that feeds into the feature engineering pipeline downstream.</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="fu"># Data Pipeline</span></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a>The pipeline integrates three independent data streams — Bureau of Transportation Statistics (BTS) on-time performance records, NOAA Global Surface Hourly weather observations, and airport reference dimensions — into a single analytical dataset suitable for delay prediction modelling. @fig-pipeline provides a schematic overview of each stage. The sections below describe each stage in turn.</span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-pipeline</span></span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Overview of the flight delay data pipeline, from raw data sources through ingestion, cleaning, temporal alignment, feature engineering, and final output."</span></span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-alt: "A flowchart showing seven stages of the flight delay pipeline: data sources, ingestion, cleaning and normalisation, timestamp alignment and join, feature engineering, postprocessing, and output."</span></span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a><span class="co">#| out-width: "100%"</span></span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(<span class="st">"images/common_site/data-pipeline.png"</span>)</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a><span class="fu">## Running the Data Pipeline </span></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning}</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="fu">### Big Data Warning</span></span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>The flight dataset is quite large (over 7 million records for a single year). Running <span class="in">`pipeline_main.py`</span> to build it on a laptop with 32 GB of RAM crashed. To overcome this, a tower desktop machine with 96 GB of RAM was used to run the data pipeline. If you want to run the data pipeline yourself, it is recommended you use a machine with at least 64 GB of RAM, but ideally 96–128 GB or more. Alternatively, you can use cloud computing resources such as AWS EC2 high-memory instances to run the pipeline without issue.</span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>If you are interested in generating the original data, you can run the data pipeline with the following command (assumes you followed the project setup above and are in the <span class="in">`data_pipeline`</span> directory):</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash}</span></span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false </span></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> run_canonical_years.py <span class="at">--year</span> 2019</span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Loading and Cleaning</span></span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>The following setup pulls the data from S3 using the <span class="in">`load_flight_data()`</span> function defined in <span class="in">`shared-notebooks/common_utils/r/utils.r`</span>. This function abstracts away the details of connecting to S3 and loading the Parquet file, allowing us to focus on the data processing and modeling steps.</span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a><span class="fu">### S3 Access Note</span></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a>A policy is currently set up in the S3 bucket to allow public read access, so no credentials are needed to load the data. **This will not remain the case indefinitely** and will only be available for the duration of the project. To browse available files, navigate to the URL referenced in <span class="in">`load_flight_data()`</span> in a browser — the file names are listed in the XML output under <span class="in">`Contents/Key`</span>.</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>If you want to regenerate the exact data used in this project, see <span class="in">`pipeline_main.py`</span> and <span class="in">`run_canonical_years.py`</span> in the <span class="in">`data_pipeline`</span> directory as the entry points for the data pipeline.</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lazy Loading and Memory Efficiency</span></span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>This project uses lazy-loaded data via Apache Arrow. Lazy loading means that when you open a dataset, no data is actually read into memory — instead you get a query object that represents the data. Operations like <span class="in">`filter()`</span> and <span class="in">`select()`</span> are pushed down to the data source and only execute when you explicitly call <span class="in">`collect()`</span>, at which point only the rows and columns you actually need are pulled into memory. This makes working with large datasets fast and memory efficient.</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a>The setup below loads all required packages via <span class="in">`load_project_packages()`</span>, defined in <span class="in">`utils.r`</span>, which installs any missing packages and attaches them to the session. Flight data is loaded from the project's data source and cached locally as a Parquet file at <span class="in">`data/flights_raw.parquet`</span> on first run — subsequent renders skip the 30–40 second load and read directly from the local cache instead. To refresh the data, delete <span class="in">`data/flights_raw.parquet`</span> and re-render.</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a>For anyone extending this project, it is strongly recommended to stick with Arrow in R or switch to Polars in Python rather than pandas. Pandas loads everything into memory eagerly, which becomes a bottleneck quickly on datasets of this size. Arrow and Polars are both built around the same columnar memory format, are significantly faster, and support the same lazy evaluation pattern used here — filter and select on the lazy frame first, then collect only what you need.</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>In the Medallion architecture nomenclature, this raw S3 data is considered our **bronze** layer — the unprocessed data that feeds into the feature engineering pipeline downstream.</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

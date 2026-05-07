@@ -1,0 +1,806 @@
+---
+title: "Phase 1: Baseline"
+subtitle: "Logistic Regression, Random Forest, and XGBoost on 2019 U.S. Domestic Flights"
+date: today
+format:
+  html:
+    theme: cyborg
+    css: ../styles.css
+    toc: true
+    include-in-header:
+      - text: |
+          <link rel="stylesheet"
+                href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+  message: false
+bibliography: ../references.bib
+csl: https://www.zotero.org/styles/ieee
+link-citations: true
+---
+
+```{python}
+#| label: global-start
+#| include: false
+import time
+GLOBAL_START = time.time()
+```
+
+# Overview {.unnumbered}
+
+This phase establishes a reproducible baseline for 2019 U.S. domestic flight delay prediction using three model families across two tasks:
+
+1. **Classification** — predict whether a flight arrives 15+ minutes late (`arrdel15`).
+2. **Regression** — predict arrival delay in minutes (`arrdelay`).
+
+Models compared: Logistic Regression, Random Forest, and XGBoost. Validation follows an expanding-window monthly CV scheme with December held out as the final test set.
+
+# Setup
+
+```{python}
+#| label: imports
+import os
+import time
+import pickle
+import warnings
+from datetime import date
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pyarrow.dataset as ds
+import pyarrow.parquet as pq
+import pyarrow.compute as pc
+import matplotlib.pyplot as plt
+
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import (
+    roc_auc_score, accuracy_score, confusion_matrix,
+    mean_absolute_error, root_mean_squared_error, roc_curve
+)
+import xgboost as xgb
+
+warnings.filterwarnings("ignore")
+np.random.seed(42)
+
+N_JOBS = -1
+RANDOM_STATE = 42
+
+COLORS = {
+    "Logistic Regression": "steelblue",
+    "Linear Regression":   "steelblue",
+    "Random Forest":       "forestgreen",
+    "XGBoost":             "firebrick",
+}
+
+plt.rcParams.update({
+    "figure.facecolor":  "white",
+    "axes.facecolor":    "white",
+    "axes.grid":         True,
+    "grid.alpha":        0.3,
+    "font.size":         12,
+    "axes.titlesize":    14,
+    "axes.titleweight":  "bold",
+})
+
+def calc_mae(actual, predicted):
+    return mean_absolute_error(actual, predicted)
+
+def calc_rmse(actual, predicted):
+    return root_mean_squared_error(actual, predicted)
+
+def safe_display(df, caption=None):
+    styler = df.style.hide(axis="index")
+    if caption:
+        styler = styler.set_caption(caption)
+    display(styler)
+
+def resolve_feature_names(model, fallback_cols):
+    """Return feature names from a fitted sklearn model, falling back gracefully."""
+    if hasattr(model, "feature_names_in_"):
+        return list(model.feature_names_in_)
+    n = len(model.feature_importances_)
+    if len(fallback_cols) == n:
+        return list(fallback_cols)
+    return [f"feature_{i}" for i in range(n)]
+
+print("All libraries loaded.")
+```
+
+# Data Loading
+
+Place the canonical parquet file at `data/flights_canonical_2019.parquet` or set the `FLIGHTS_2019_PARQUET` environment variable.
+
+```{python}
+#| label: load-raw-data
+DATA_PATH = Path(os.environ.get("FLIGHTS_2019_PARQUET", "data/flights_canonical_2019.parquet"))
+RAW_CACHE  = Path("data/flights_raw_2019_aligned.parquet")
+RAW_CACHE.parent.mkdir(parents=True, exist_ok=True)
+
+if not DATA_PATH.exists() and not RAW_CACHE.exists():
+    raise FileNotFoundError(
+        f"Could not find data file. Set FLIGHTS_2019_PARQUET or place the file at {DATA_PATH}"
+    )
+
+if RAW_CACHE.exists():
+    flights_raw = ds.dataset(RAW_CACHE, format="parquet")
+    print(f"Opened cached lazy dataset: {RAW_CACHE}")
+else:
+    print(f"Creating raw cache from: {DATA_PATH}")
+    source = ds.dataset(DATA_PATH, format="parquet")
+    pq.write_table(source.to_table(), RAW_CACHE)
+    flights_raw = ds.dataset(RAW_CACHE, format="parquet")
+    print(f"Cache written to: {RAW_CACHE}")
+```
+
+```{python}
+#| label: load-data
+available_cols_original = flights_raw.schema.names
+colmap         = {c.lower(): c for c in available_cols_original}
+available_cols = list(colmap.keys())
+
+KEEP_COLS_RAW = [
+    "cancelled", "diverted",
+    "depdelay", "dep_delay", "arrdelay", "arr_delay",
+    "arrdel15", "arr_del15",
+    "flightdate", "flight_date", "fl_date",
+    "year", "month", "quarter",
+    "dayofmonth", "dayof_month", "day_of_month",
+    "dayofweek", "day_of_week",
+    "crsdeptime", "crs_dep_time",
+    "reporting_airline", "origin", "dest", "distance", "tail_number",
+]
+
+select_cols_lower = [c for c in KEEP_COLS_RAW if c in available_cols]
+select_cols       = [colmap[c] for c in select_cols_lower]
+
+skipped = [c for c in KEEP_COLS_RAW if c not in available_cols]
+if skipped:
+    print(f"Columns not found in source and skipped: {skipped}")
+
+CANCELLED_COL = colmap.get("cancelled") or colmap.get("is_cancelled")
+DIVERTED_COL  = colmap.get("diverted")  or colmap.get("is_diverted")
+DEP_DELAY_SRC = colmap.get("depdelay")  or colmap.get("dep_delay")
+ARR_DELAY_SRC = colmap.get("arrdelay")  or colmap.get("arr_delay")
+
+if DEP_DELAY_SRC is None or ARR_DELAY_SRC is None:
+    raise ValueError(f"Could not find delay columns. Available: {available_cols_original}")
+
+filter_expr = pc.is_valid(pc.field(DEP_DELAY_SRC)) & pc.is_valid(pc.field(ARR_DELAY_SRC))
+if CANCELLED_COL is not None:
+    filter_expr = filter_expr & (pc.field(CANCELLED_COL) == 0)
+if DIVERTED_COL is not None:
+    filter_expr = filter_expr & (pc.field(DIVERTED_COL) == 0)
+
+table = flights_raw.to_table(columns=select_cols, filter=filter_expr)
+raw   = table.to_pandas()
+raw.columns = [c.lower() for c in raw.columns]
+
+print(f"Loaded {len(raw):,} rows, {len(raw.columns)} columns "
+      f"down from {len(available_cols_original)} source columns")
+```
+
+```{python}
+#| label: initial-cleaning
+ALIASES = {
+    "dep_delay": "depdelay", "arr_delay": "arrdelay", "arr_del15": "arrdel15",
+    "fl_date": "flight_date", "dayof_month": "dayofmonth", "day_of_month": "dayofmonth",
+    "day_of_week": "dayofweek", "crs_dep_time": "crsdeptime",
+}
+for old, new in ALIASES.items():
+    if old in raw.columns and new not in raw.columns:
+        raw = raw.rename(columns={old: new})
+
+df = raw.copy()
+
+if "flight_date" in df.columns:
+    df["flight_date"] = pd.to_datetime(df["flight_date"]).dt.date
+elif "flightdate" in df.columns:
+    df["flight_date"] = pd.to_datetime(df["flightdate"]).dt.date
+elif {"year", "month", "dayofmonth"}.issubset(df.columns):
+    df["flight_date"] = pd.to_datetime(
+        df[["year", "month"]].assign(day=df["dayofmonth"])
+    ).dt.date
+else:
+    raise ValueError(f"Cannot determine flight date. Available: {list(df.columns)}")
+
+required = ["cancelled", "diverted", "depdelay", "arrdelay", "month", "quarter",
+            "dayofmonth", "dayofweek", "crsdeptime", "origin", "dest", "distance", "tail_number"]
+missing = [c for c in required if c not in df.columns]
+if missing:
+    raise ValueError(f"Missing required columns: {missing}")
+
+if "arrdel15" not in df.columns:
+    df["arrdel15"] = (df["arrdelay"] > 15).astype(int)
+
+df = df[(df["cancelled"] == 0) & (df["diverted"] == 0)]
+df = df[df["depdelay"].notna() & df["arrdelay"].notna()].copy()
+
+print(f"After cleaning: {len(df):,} flights")
+print(f"Arrival delay > 15 min rate: {df['arrdel15'].mean()*100:.1f}%")
+```
+
+# Feature Engineering
+
+Features intentionally mirror those in the R baseline notebook across five groups: time/calendar, holiday proximity, route traffic, lag/history, and encoded categoricals.
+
+::: {.callout-important}
+## Cache note
+This file uses `data/flights_engineered_r_aligned.parquet`. Delete it to force regeneration. Do **not** reuse `data/flights_engineered.parquet` — it may contain incorrectly aliased lag features.
+:::
+
+```{python}
+#| label: feature-engineering
+FEATURE_CACHE = Path("data/flights_engineered_r_aligned.parquet")
+TARGET_CLS = "arrdel15"
+TARGET_REG = "arrdelay"
+
+if FEATURE_CACHE.exists():
+    print(f"Loading engineered features from cache: {FEATURE_CACHE}")
+    df = pd.read_parquet(FEATURE_CACHE)
+    FEATURE_COLS = [c for c in df.columns if c not in [TARGET_CLS, TARGET_REG, "flight_date", "month"]]
+    print(f"Loaded from cache: {len(df):,} rows, {len(FEATURE_COLS)} features")
+
+else:
+    print("No aligned cache found — running feature engineering...")
+
+    df["dep_hour"] = (df["crsdeptime"] // 100).clip(upper=23)
+    conditions = [
+        (df["dep_hour"] >= 5)  & (df["dep_hour"] < 8),
+        (df["dep_hour"] >= 8)  & (df["dep_hour"] < 11),
+        (df["dep_hour"] >= 11) & (df["dep_hour"] < 14),
+        (df["dep_hour"] >= 14) & (df["dep_hour"] < 17),
+        (df["dep_hour"] >= 17) & (df["dep_hour"] < 20),
+        (df["dep_hour"] >= 20) | (df["dep_hour"] < 5),
+    ]
+    choices = ["early_morning", "morning", "midday", "afternoon", "evening", "night"]
+    df["time_bucket"] = np.select(conditions, choices, default="other")
+    df["is_weekend"]  = df["dayofweek"].isin([6, 7]).astype(int)
+
+    us_holidays_2019 = pd.to_datetime([
+        "2019-01-01", "2019-01-21", "2019-02-18", "2019-05-27",
+        "2019-07-04", "2019-09-02", "2019-10-14", "2019-11-11",
+        "2019-11-28", "2019-12-25",
+    ]).date
+    holiday_set  = set(us_holidays_2019)
+    holiday_list = list(us_holidays_2019)
+    days_to_holiday_map = {
+        d: min(abs((d - h).days) for h in holiday_list)
+        for d in pd.Series(df["flight_date"].unique())
+    }
+    df["is_holiday"]      = df["flight_date"].isin(holiday_set).astype(int)
+    df["days_to_holiday"] = df["flight_date"].map(days_to_holiday_map)
+    df["near_holiday"]    = (df["days_to_holiday"] <= 3).astype(int)
+
+    route_freq = df.groupby(["origin", "dest"], observed=True).size().rename("route_frequency").reset_index()
+    origin_vol = df.groupby("origin", observed=True).size().rename("origin_volume").reset_index()
+    dest_vol   = df.groupby("dest",   observed=True).size().rename("dest_volume").reset_index()
+    df = df.merge(route_freq, on=["origin", "dest"], how="left") \
+           .merge(origin_vol, on="origin", how="left") \
+           .merge(dest_vol,   on="dest",   how="left")
+
+    df = df.sort_values(["tail_number", "flight_date", "crsdeptime"], kind="mergesort").copy()
+    g_tail = df.groupby("tail_number", sort=False, observed=True)
+
+    df["prev1_arr_delay"]   = g_tail["arrdelay"].shift(1)
+    df["prev2_arr_delay"]   = g_tail["arrdelay"].shift(2)
+    df["prev1_dep_delay"]   = g_tail["depdelay"].shift(1)
+    df["prev1_late"]        = g_tail["arrdel15"].shift(1)
+    df["cum_delay_shifted"] = g_tail["arrdelay"].cumsum().groupby(df["tail_number"], sort=False).shift(1)
+    df["daily_leg"]         = g_tail.cumcount() + 1
+    df["relative_leg"]      = df["daily_leg"] / g_tail["tail_number"].transform("size")
+
+    for c in ["prev1_arr_delay", "prev2_arr_delay", "prev1_dep_delay", "prev1_late", "cum_delay_shifted"]:
+        df[c] = df[c].fillna(0)
+
+    FEATURE_COLS = [
+        "dep_hour", "dayofweek", "dayofmonth", "month", "quarter",
+        "is_weekend", "is_holiday", "near_holiday", "days_to_holiday",
+        "distance", "route_frequency", "origin_volume", "dest_volume",
+        "prev1_arr_delay", "prev2_arr_delay", "prev1_dep_delay",
+        "prev1_late", "cum_delay_shifted", "daily_leg", "relative_leg",
+    ]
+
+    bucket_map = {"early_morning": 1, "morning": 2, "midday": 3,
+                  "afternoon": 4, "evening": 5, "night": 6, "other": 0}
+    df["time_bucket_num"] = df["time_bucket"].map(bucket_map).fillna(0).astype(int)
+    FEATURE_COLS.append("time_bucket_num")
+
+    if "reporting_airline" in df.columns:
+        df["carrier_code"] = pd.Categorical(
+            df["reporting_airline"],
+            categories=sorted(df["reporting_airline"].dropna().unique())
+        ).codes + 1
+        FEATURE_COLS.append("carrier_code")
+
+    df["origin_code"] = pd.Categorical(df["origin"], categories=sorted(df["origin"].dropna().unique())).codes + 1
+    df["dest_code"]   = pd.Categorical(df["dest"],   categories=sorted(df["dest"].dropna().unique())).codes + 1
+    FEATURE_COLS += ["origin_code", "dest_code"]
+
+    keep_cols = list(dict.fromkeys(FEATURE_COLS + [TARGET_CLS, TARGET_REG, "month", "flight_date"]))
+    df = df[keep_cols].dropna().copy()
+    df.to_parquet(FEATURE_CACHE, index=False)
+    print(f"Final dataset: {len(df):,} rows, {len(FEATURE_COLS)} features")
+```
+
+```{python}
+#| label: feature-summary
+feature_summary = pd.DataFrame({
+    "Category": ["Time/Calendar", "Route/Traffic", "Lag/History", "Turnaround", "Encoded Categoricals"],
+    "Features": [
+        "dep_hour, dayofweek, dayofmonth, month, quarter, time_bucket_num, is_weekend, is_holiday, near_holiday, days_to_holiday",
+        "distance, route_frequency, origin_volume, dest_volume",
+        "prev1_arr_delay, prev2_arr_delay, prev1_dep_delay, prev1_late, cum_delay_shifted",
+        "daily_leg, relative_leg",
+        "carrier_code, origin_code, dest_code",
+    ],
+})
+safe_display(feature_summary, "Engineered Feature Groups")
+```
+
+# Train / Validation / Holdout Split
+
+January through November are used for model development. **December is held out** and never seen during training or cross-validation.
+
+```{python}
+#| label: split-data
+train_cv_df = df[df["month"] <= 11].copy()
+holdout_df  = df[df["month"] == 12].copy()
+print(f"Train/CV set: {len(train_cv_df):,} rows (Jan–Nov)")
+print(f"Holdout set:  {len(holdout_df):,} rows (Dec)")
+```
+
+# Expanding Window Cross-Validation
+
+Five folds, each adding one month to the training window:
+
+| Fold | Train | Validate |
+|------|-------|----------|
+| 1 | Jan – Jun | Jul |
+| 2 | Jan – Jul | Aug |
+| 3 | Jan – Aug | Sep |
+| 4 | Jan – Sep | Oct |
+| 5 | Jan – Oct | Nov |
+
+```{python}
+#| label: define-cv-folds
+CV_FOLDS = [
+    {"train_end": 6,  "val": 7},
+    {"train_end": 7,  "val": 8},
+    {"train_end": 8,  "val": 9},
+    {"train_end": 9,  "val": 10},
+    {"train_end": 10, "val": 11},
+]
+print(f"{len(CV_FOLDS)} CV folds defined.")
+```
+
+```{python}
+#| label: model-helpers
+def sample_idx(n, sample_size, rng):
+    return rng.choice(n, min(sample_size, n), replace=False)
+
+def fit_logistic_unregularized(X, y):
+    # R glm(..., family=binomial) is unregularized — match that here
+    try:
+        model = LogisticRegression(penalty=None, solver="lbfgs", max_iter=1000,
+                                   n_jobs=N_JOBS, random_state=RANDOM_STATE)
+    except TypeError:
+        model = LogisticRegression(penalty="none", solver="lbfgs", max_iter=1000,
+                                   n_jobs=N_JOBS, random_state=RANDOM_STATE)
+    model.fit(X, y)
+    return model
+
+def cls_row(fold_id, model_name, prob, pred, y_true, elapsed):
+    cm = confusion_matrix(y_true, pred, labels=[0, 1])
+    tn, fp, fn, tp = cm.ravel()
+    precision = tp / (tp + fp) if (tp + fp) else 0
+    recall    = tp / (tp + fn) if (tp + fn) else 0
+    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
+    return {
+        "Fold": fold_id, "Model": model_name, "Task": "Classification",
+        "AUC": roc_auc_score(y_true, prob), "F1": f1,
+        "Precision": precision, "Recall": recall,
+        "Accuracy": accuracy_score(y_true, pred),
+        "MAE": np.nan, "RMSE": np.nan, "Time": elapsed,
+    }
+
+def reg_row(fold_id, model_name, pred, y_true, elapsed):
+    return {
+        "Fold": fold_id, "Model": model_name, "Task": "Regression",
+        "AUC": np.nan, "F1": np.nan, "Precision": np.nan, "Recall": np.nan, "Accuracy": np.nan,
+        "MAE": calc_mae(y_true, pred), "RMSE": calc_rmse(y_true, pred), "Time": elapsed,
+    }
+```
+
+```{python}
+#| label: run-cv
+RF_CV_SAMPLE  = 30_000;  RF_CV_TREES   = 100
+XGB_CV_ROUNDS = 100;     XGB_CV_SAMPLE = 50_000
+LR_CV_SAMPLE  = 100_000
+CV_CACHE = Path("data/cv_results_r_aligned.pkl")
+
+if CV_CACHE.exists():
+    print(f"Loading CV results from cache: {CV_CACHE}")
+    with open(CV_CACHE, "rb") as f:
+        cv_all = pickle.load(f)
+    print(f"CV results loaded ({len(cv_all)} rows)")
+else:
+    rng = np.random.default_rng(RANDOM_STATE)
+    cv_results = []
+
+    for fold_id, fold in enumerate(CV_FOLDS, start=1):
+        print(f"\n--- Fold {fold_id}: Train 1–{fold['train_end']}, Validate {fold['val']} ---")
+        tr = train_cv_df[train_cv_df["month"] <= fold["train_end"]]
+        va = train_cv_df[train_cv_df["month"] == fold["val"]]
+
+        tr_X = tr[FEATURE_COLS].to_numpy(dtype=np.float32)
+        va_X = va[FEATURE_COLS].to_numpy(dtype=np.float32)
+        tr_y_cls = tr[TARGET_CLS].to_numpy(dtype=int);   va_y_cls = va[TARGET_CLS].to_numpy(dtype=int)
+        tr_y_reg = tr[TARGET_REG].to_numpy(dtype=float); va_y_reg = va[TARGET_REG].to_numpy(dtype=float)
+
+        rf_idx  = sample_idx(len(tr_X), RF_CV_SAMPLE,  rng)
+        xgb_idx = sample_idx(len(tr_X), XGB_CV_SAMPLE, rng)
+        lr_idx  = sample_idx(len(tr_X), LR_CV_SAMPLE,  rng)
+
+        print("  Logistic Regression...", end="", flush=True); t0 = time.time()
+        lr_fit = fit_logistic_unregularized(tr_X[lr_idx], tr_y_cls[lr_idx])
+        lr_prob = lr_fit.predict_proba(va_X)[:, 1]; lr_pred = (lr_prob > 0.5).astype(int)
+        lr_time = time.time() - t0; print(f" done ({lr_time:.1f}s)")
+
+        print("  RF Classification...", end="", flush=True); t0 = time.time()
+        rf_cls_fit = RandomForestClassifier(n_estimators=RF_CV_TREES, max_features="sqrt",
+                                            bootstrap=True, n_jobs=N_JOBS, random_state=RANDOM_STATE)
+        rf_cls_fit.fit(tr_X[rf_idx], tr_y_cls[rf_idx])
+        rf_prob = rf_cls_fit.predict_proba(va_X)[:, 1]; rf_pred = rf_cls_fit.predict(va_X)
+        rf_cls_time = time.time() - t0; print(f" done ({rf_cls_time:.1f}s)")
+
+        print("  XGBoost Classification...", end="", flush=True); t0 = time.time()
+        xgb_cls_fit = xgb.XGBClassifier(
+            objective="binary:logistic", eval_metric="auc",
+            n_estimators=XGB_CV_ROUNDS, learning_rate=0.1, max_depth=6,
+            subsample=0.8, colsample_bytree=0.8, tree_method="hist",
+            n_jobs=N_JOBS, random_state=RANDOM_STATE, verbosity=0)
+        xgb_cls_fit.fit(tr_X[xgb_idx], tr_y_cls[xgb_idx])
+        xgb_cls_prob = xgb_cls_fit.predict_proba(va_X)[:, 1]
+        xgb_cls_pred = (xgb_cls_prob > 0.5).astype(int)
+        xgb_cls_time = time.time() - t0; print(f" done ({xgb_cls_time:.1f}s)")
+
+        print("  Linear Regression...", end="", flush=True); t0 = time.time()
+        lm_fit = LinearRegression(n_jobs=N_JOBS)
+        lm_fit.fit(tr_X[lr_idx], tr_y_reg[lr_idx]); lm_pred = lm_fit.predict(va_X)
+        lm_time = time.time() - t0; print(f" done ({lm_time:.1f}s)")
+
+        print("  RF Regression...", end="", flush=True); t0 = time.time()
+        rf_reg_fit = RandomForestRegressor(
+            n_estimators=RF_CV_TREES, max_features=max(1, len(FEATURE_COLS) // 3),
+            bootstrap=True, n_jobs=N_JOBS, random_state=RANDOM_STATE)
+        rf_reg_fit.fit(tr_X[rf_idx], tr_y_reg[rf_idx]); rf_reg_pred = rf_reg_fit.predict(va_X)
+        rf_reg_time = time.time() - t0; print(f" done ({rf_reg_time:.1f}s)")
+
+        print("  XGBoost Regression...", end="", flush=True); t0 = time.time()
+        xgb_reg_fit = xgb.XGBRegressor(
+            objective="reg:squarederror", n_estimators=XGB_CV_ROUNDS,
+            learning_rate=0.1, max_depth=6, subsample=0.8, colsample_bytree=0.8,
+            tree_method="hist", n_jobs=N_JOBS, random_state=RANDOM_STATE, verbosity=0)
+        xgb_reg_fit.fit(tr_X[xgb_idx], tr_y_reg[xgb_idx]); xgb_reg_pred = xgb_reg_fit.predict(va_X)
+        xgb_reg_time = time.time() - t0; print(f" done ({xgb_reg_time:.1f}s)")
+
+        cv_results += [
+            cls_row(fold_id, "Logistic Regression", lr_prob,      lr_pred,      va_y_cls, lr_time),
+            cls_row(fold_id, "Random Forest",       rf_prob,      rf_pred,      va_y_cls, rf_cls_time),
+            cls_row(fold_id, "XGBoost",             xgb_cls_prob, xgb_cls_pred, va_y_cls, xgb_cls_time),
+            reg_row(fold_id, "Linear Regression",   lm_pred,      va_y_reg,     lm_time),
+            reg_row(fold_id, "Random Forest",       rf_reg_pred,  va_y_reg,     rf_reg_time),
+            reg_row(fold_id, "XGBoost",             xgb_reg_pred, va_y_reg,     xgb_reg_time),
+        ]
+
+    cv_all = pd.DataFrame(cv_results)
+    with open(CV_CACHE, "wb") as f:
+        pickle.dump(cv_all, f)
+    print(f"\nCV complete. Cache written to {CV_CACHE}")
+
+print(f"CV results ready: {len(cv_all)} rows")
+```
+
+# Cross-Validation Results
+
+```{python}
+#| label: cv-summary
+cv_cls_mean = (
+    cv_all[cv_all["Task"] == "Classification"]
+    .groupby("Model", as_index=False)[["AUC", "F1", "Precision", "Recall", "Accuracy"]]
+    .mean().round(4)
+)
+cv_reg_mean = (
+    cv_all[cv_all["Task"] == "Regression"]
+    .groupby("Model", as_index=False)[["MAE", "RMSE"]]
+    .mean().round(2)
+)
+safe_display(cv_cls_mean, "Classification — Mean CV Performance")
+safe_display(cv_reg_mean, "Regression — Mean CV Performance")
+```
+
+```{python}
+#| label: plot-cv-cls-mean
+#| fig-cap: "Mean cross-validation classification metrics across five expanding folds"
+fig, ax = plt.subplots(figsize=(10, 5))
+metrics = ["AUC", "F1", "Precision", "Recall", "Accuracy"]
+x = np.arange(len(metrics)); width = 0.25
+for j, model in enumerate(cv_cls_mean["Model"].tolist()):
+    vals = cv_cls_mean.loc[cv_cls_mean["Model"] == model, metrics].values[0]
+    bars = ax.bar(x + j*width - width, vals, width, label=model, color=COLORS.get(model, "gray"), alpha=0.85)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                f"{v:.3f}", ha="center", va="bottom", fontsize=8)
+ax.set_xticks(x); ax.set_xticklabels(metrics); ax.set_ylim(0, 1.15)
+ax.set_title("Classification — Mean CV Performance"); ax.set_ylabel("Score")
+ax.legend(loc="upper right"); plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: plot-cv-reg-mean
+#| fig-cap: "Mean cross-validation regression metrics across five expanding folds"
+fig, ax = plt.subplots(figsize=(8, 4))
+metrics = ["MAE", "RMSE"]; x = np.arange(len(metrics)); width = 0.25
+for j, model in enumerate(cv_reg_mean["Model"].tolist()):
+    vals = cv_reg_mean.loc[cv_reg_mean["Model"] == model, metrics].values[0]
+    bars = ax.bar(x + j*width - width, vals, width, label=model, color=COLORS.get(model, "gray"), alpha=0.85)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+                f"{v:.1f}", ha="center", va="bottom", fontsize=9)
+ax.set_xticks(x); ax.set_xticklabels(metrics)
+ax.set_title("Regression — Mean CV Performance"); ax.set_ylabel("Minutes; lower is better")
+ax.legend(loc="upper right"); plt.tight_layout(); plt.show()
+```
+
+# Final Holdout Evaluation: December
+
+```{python}
+#| label: holdout-train
+RF_FINAL_SAMPLE  = 50_000;  RF_FINAL_TREES   = 200
+XGB_FINAL_ROUNDS = 200;     XGB_FINAL_SAMPLE = 80_000
+LR_FINAL_SAMPLE  = 200_000
+HOLDOUT_CACHE = Path("data/holdout_models_r_aligned.pkl")
+
+if HOLDOUT_CACHE.exists():
+    print(f"Loading holdout models/predictions from cache: {HOLDOUT_CACHE}")
+    with open(HOLDOUT_CACHE, "rb") as f:
+        hm = pickle.load(f)
+    globals().update(hm)
+    # Reconcile FEATURE_COLS against the cached model — caches may have been built separately
+    FEATURE_COLS = resolve_feature_names(final_rf_cls, FEATURE_COLS)
+    print(f"Holdout cache loaded. Using {len(FEATURE_COLS)} features.")
+else:
+    print("Training final models on full Jan–Nov data...")
+    rng = np.random.default_rng(RANDOM_STATE)
+    tr_X     = train_cv_df[FEATURE_COLS].to_numpy(dtype=np.float32)
+    ho_X     = holdout_df[FEATURE_COLS].to_numpy(dtype=np.float32)
+    tr_y_cls = train_cv_df[TARGET_CLS].to_numpy(dtype=int);   ho_y_cls = holdout_df[TARGET_CLS].to_numpy(dtype=int)
+    tr_y_reg = train_cv_df[TARGET_REG].to_numpy(dtype=float); ho_y_reg = holdout_df[TARGET_REG].to_numpy(dtype=float)
+    rf_idx  = sample_idx(len(tr_X), RF_FINAL_SAMPLE,  rng)
+    xgb_idx = sample_idx(len(tr_X), XGB_FINAL_SAMPLE, rng)
+    lr_idx  = sample_idx(len(tr_X), LR_FINAL_SAMPLE,  rng)
+
+    print("  Logistic Regression...", end="", flush=True); t0 = time.time()
+    final_lr = fit_logistic_unregularized(tr_X[lr_idx], tr_y_cls[lr_idx])
+    ho_lr_prob = final_lr.predict_proba(ho_X)[:, 1]; ho_lr_pred = (ho_lr_prob > 0.5).astype(int)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    print("  RF Classification...", end="", flush=True); t0 = time.time()
+    final_rf_cls = RandomForestClassifier(n_estimators=RF_FINAL_TREES, max_features="sqrt",
+                                          bootstrap=True, n_jobs=N_JOBS, random_state=RANDOM_STATE)
+    final_rf_cls.fit(tr_X[rf_idx], tr_y_cls[rf_idx])
+    ho_rf_prob = final_rf_cls.predict_proba(ho_X)[:, 1]; ho_rf_pred = final_rf_cls.predict(ho_X)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    print("  XGBoost Classification...", end="", flush=True); t0 = time.time()
+    final_xgb_cls = xgb.XGBClassifier(
+        objective="binary:logistic", eval_metric="auc",
+        n_estimators=XGB_FINAL_ROUNDS, learning_rate=0.1, max_depth=6,
+        subsample=0.8, colsample_bytree=0.8, tree_method="hist",
+        n_jobs=N_JOBS, random_state=RANDOM_STATE, verbosity=0)
+    final_xgb_cls.fit(tr_X[xgb_idx], tr_y_cls[xgb_idx])
+    ho_xgb_prob = final_xgb_cls.predict_proba(ho_X)[:, 1]; ho_xgb_pred = (ho_xgb_prob > 0.5).astype(int)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    print("  Linear Regression...", end="", flush=True); t0 = time.time()
+    final_lm = LinearRegression(n_jobs=N_JOBS)
+    final_lm.fit(tr_X[lr_idx], tr_y_reg[lr_idx]); ho_lm_pred = final_lm.predict(ho_X)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    print("  RF Regression...", end="", flush=True); t0 = time.time()
+    final_rf_reg = RandomForestRegressor(
+        n_estimators=RF_FINAL_TREES, max_features=max(1, len(FEATURE_COLS) // 3),
+        bootstrap=True, n_jobs=N_JOBS, random_state=RANDOM_STATE)
+    final_rf_reg.fit(tr_X[rf_idx], tr_y_reg[rf_idx]); ho_rf_reg_pred = final_rf_reg.predict(ho_X)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    print("  XGBoost Regression...", end="", flush=True); t0 = time.time()
+    final_xgb_reg = xgb.XGBRegressor(
+        objective="reg:squarederror", n_estimators=XGB_FINAL_ROUNDS,
+        learning_rate=0.1, max_depth=6, subsample=0.8, colsample_bytree=0.8,
+        tree_method="hist", n_jobs=N_JOBS, random_state=RANDOM_STATE, verbosity=0)
+    final_xgb_reg.fit(tr_X[xgb_idx], tr_y_reg[xgb_idx]); ho_xgb_reg_pred = final_xgb_reg.predict(ho_X)
+    print(f" done ({time.time()-t0:.1f}s)")
+
+    with open(HOLDOUT_CACHE, "wb") as f:
+        pickle.dump(dict(
+            final_lr=final_lr, final_rf_cls=final_rf_cls, final_xgb_cls=final_xgb_cls,
+            final_lm=final_lm, final_rf_reg=final_rf_reg, final_xgb_reg=final_xgb_reg,
+            ho_lr_prob=ho_lr_prob, ho_lr_pred=ho_lr_pred,
+            ho_rf_prob=ho_rf_prob, ho_rf_pred=ho_rf_pred,
+            ho_xgb_prob=ho_xgb_prob, ho_xgb_pred=ho_xgb_pred,
+            ho_lm_pred=ho_lm_pred, ho_rf_reg_pred=ho_rf_reg_pred,
+            ho_xgb_reg_pred=ho_xgb_reg_pred, ho_y_cls=ho_y_cls, ho_y_reg=ho_y_reg,
+        ), f)
+    print(f"Holdout cache written to {HOLDOUT_CACHE}")
+```
+
+```{python}
+#| label: holdout-metrics
+def cls_metrics(name, prob, pred, y_true):
+    row = cls_row(0, name, prob, pred, y_true, np.nan)
+    return {"Model": name, "AUC": round(row["AUC"], 4), "F1": round(row["F1"], 4),
+            "Precision": round(row["Precision"], 4), "Recall": round(row["Recall"], 4),
+            "Accuracy": round(row["Accuracy"], 4)}
+
+holdout_cls = pd.DataFrame([
+    cls_metrics("Logistic Regression", ho_lr_prob,  ho_lr_pred,  ho_y_cls),
+    cls_metrics("Random Forest",       ho_rf_prob,  ho_rf_pred,  ho_y_cls),
+    cls_metrics("XGBoost",             ho_xgb_prob, ho_xgb_pred, ho_y_cls),
+])
+holdout_reg = pd.DataFrame([
+    {"Model": "Linear Regression", "MAE": round(calc_mae(ho_y_reg, ho_lm_pred), 2),     "RMSE": round(calc_rmse(ho_y_reg, ho_lm_pred), 2)},
+    {"Model": "Random Forest",     "MAE": round(calc_mae(ho_y_reg, ho_rf_reg_pred), 2),  "RMSE": round(calc_rmse(ho_y_reg, ho_rf_reg_pred), 2)},
+    {"Model": "XGBoost",           "MAE": round(calc_mae(ho_y_reg, ho_xgb_reg_pred), 2), "RMSE": round(calc_rmse(ho_y_reg, ho_xgb_reg_pred), 2)},
+])
+safe_display(holdout_cls, "Holdout December — Classification Results")
+safe_display(holdout_reg, "Holdout December — Regression Results")
+```
+
+# Visualizations
+
+```{python}
+#| label: plot-holdout-cls
+#| fig-cap: "December holdout classification performance by model"
+fig, ax = plt.subplots(figsize=(10, 5))
+metrics = ["AUC", "F1", "Precision", "Recall", "Accuracy"]; x = np.arange(len(metrics)); width = 0.25
+for j, model in enumerate(holdout_cls["Model"].tolist()):
+    vals = holdout_cls.loc[holdout_cls["Model"] == model, metrics].values[0]
+    bars = ax.bar(x + j*width - width, vals, width, label=model, color=COLORS.get(model, "gray"), alpha=0.85)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                f"{v:.3f}", ha="center", va="bottom", fontsize=8)
+ax.set_xticks(x); ax.set_xticklabels(metrics); ax.set_ylim(0, 1.15)
+ax.set_title("Holdout December — Classification Performance"); ax.set_ylabel("Score")
+ax.legend(loc="upper right"); plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: plot-holdout-reg
+#| fig-cap: "December holdout regression performance by model"
+fig, ax = plt.subplots(figsize=(8, 4))
+metrics = ["MAE", "RMSE"]; x = np.arange(len(metrics)); width = 0.25
+for j, model in enumerate(holdout_reg["Model"].tolist()):
+    vals = holdout_reg.loc[holdout_reg["Model"] == model, metrics].values[0]
+    bars = ax.bar(x + j*width - width, vals, width, label=model, color=COLORS.get(model, "gray"), alpha=0.85)
+    for bar, v in zip(bars, vals):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+                f"{v:.1f}", ha="center", va="bottom", fontsize=9)
+ax.set_xticks(x); ax.set_xticklabels(metrics)
+ax.set_title("Holdout December — Regression Performance"); ax.set_ylabel("Minutes; lower is better")
+ax.legend(loc="upper right"); plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: plot-roc
+#| fig-cap: "ROC curves for all classifiers on the December holdout"
+fig, ax = plt.subplots(figsize=(7, 6))
+for name, prob in [("Logistic Regression", ho_lr_prob),
+                   ("Random Forest",       ho_rf_prob),
+                   ("XGBoost",             ho_xgb_prob)]:
+    fpr, tpr, _ = roc_curve(ho_y_cls, prob)
+    ax.plot(fpr, tpr, label=f"{name} AUC={roc_auc_score(ho_y_cls, prob):.3f}", linewidth=2)
+ax.plot([0, 1], [0, 1], "--", color="gray", linewidth=1)
+ax.set_xlabel("False Positive Rate"); ax.set_ylabel("True Positive Rate")
+ax.set_title("ROC Curves — December Holdout"); ax.legend(loc="lower right")
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: actual-vs-predicted
+#| fig-cap: "Actual vs. predicted delay minutes for the best regression model (10 000-flight sample)"
+best_reg_model = holdout_reg.loc[holdout_reg["RMSE"].idxmin(), "Model"]
+best_pred_map  = {"Linear Regression": ho_lm_pred, "Random Forest": ho_rf_reg_pred, "XGBoost": ho_xgb_reg_pred}
+best_pred = best_pred_map[best_reg_model]
+rng = np.random.default_rng(RANDOM_STATE)
+idx = rng.choice(len(ho_y_reg), min(10_000, len(ho_y_reg)), replace=False)
+actual_sample = ho_y_reg[idx]; pred_sample = best_pred[idx]
+p1_a, p99_a = np.percentile(actual_sample, [1, 99]); p1_p, p99_p = np.percentile(pred_sample, [1, 99])
+lims = [min(p1_a, p1_p), max(p99_a, p99_p)]
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.scatter(actual_sample, pred_sample, alpha=0.12, s=4)
+ax.plot(lims, lims, "--", linewidth=1.2, label="Perfect prediction")
+m, b = np.polyfit(actual_sample, pred_sample, 1)
+x_line = np.linspace(lims[0], lims[1], 200)
+ax.plot(x_line, m*x_line + b, linewidth=1.2, label="Trend line")
+ax.set_xlim(lims); ax.set_ylim(lims)
+ax.set_xlabel("Actual Delay (minutes)"); ax.set_ylabel("Predicted Delay (minutes)")
+ax.set_title(f"Actual vs. Predicted Delay — {best_reg_model}"); ax.legend()
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: plot-confusion
+#| fig-cap: "Confusion matrices for all classifiers on the December holdout"
+fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+fig.suptitle("Confusion Matrices — December Holdout", fontweight="bold", y=1.02)
+for ax, (name, pred) in zip(axes, [("Logistic Regression", ho_lr_pred),
+                                    ("Random Forest",       ho_rf_pred),
+                                    ("XGBoost",             ho_xgb_pred)]):
+    cm = confusion_matrix(ho_y_cls, pred, labels=[0, 1]); ax.imshow(cm)
+    for i in range(2):
+        for j in range(2):
+            ax.text(j, i, f"{cm[i,j]:,}", ha="center", va="center", fontsize=13, fontweight="bold")
+    ax.set_xticks([0,1]); ax.set_yticks([0,1])
+    ax.set_xticklabels(["Pred 0","Pred 1"]); ax.set_yticklabels(["Actual 0","Actual 1"])
+    ax.set_title(name)
+plt.tight_layout(); plt.show()
+```
+
+# Feature Importance
+
+```{python}
+#| label: random-forest-feature-importance
+#| fig-cap: "Top 20 Random Forest feature importances for classification and regression"
+fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+for ax, model, title in [(axes[0], final_rf_cls, "Classification"),
+                          (axes[1], final_rf_reg, "Regression")]:
+    feat_names = resolve_feature_names(model, FEATURE_COLS)
+    imp = pd.Series(model.feature_importances_, index=feat_names)
+    imp.nlargest(20).sort_values().plot.barh(ax=ax)
+    ax.set_title(f"Random Forest — Top 20 Features ({title})")
+    ax.set_xlabel("Feature Importance")
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: plot-importance-xgb
+#| fig-cap: "Top 20 XGBoost feature importances (gain) for classification and regression"
+fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+for ax, booster_model, title in [(axes[0], final_xgb_cls, "Classification"),
+                                   (axes[1], final_xgb_reg, "Regression")]:
+    booster = booster_model.get_booster()
+    score   = booster.get_score(importance_type="gain")
+    imp = pd.Series({FEATURE_COLS[int(k[1:])]: v for k, v in score.items() if k.startswith("f")})
+    imp.nlargest(20).sort_values().plot.barh(ax=ax)
+    ax.set_title(f"XGBoost — Top 20 Features ({title})"); ax.set_xlabel("Gain")
+plt.tight_layout(); plt.show()
+```
+
+# Key Insights
+
+```{python}
+#| label: insights
+total_time     = round(time.time() - GLOBAL_START, 1)
+best_cls_model = holdout_cls.loc[holdout_cls["AUC"].idxmax(),  "Model"]
+best_reg_model = holdout_reg.loc[holdout_reg["RMSE"].idxmin(), "Model"]
+insights = pd.DataFrame({
+    "Item": ["Best Classifier (AUC)", "Best Classifier AUC", "Best Regressor (RMSE)",
+             "Best Regressor RMSE", "Total Features", "Training Rows (Jan–Nov)",
+             "Holdout Rows (Dec)", "CV Folds", "Total Pipeline Time"],
+    "Value": [
+        best_cls_model, holdout_cls.loc[holdout_cls["AUC"].idxmax(), "AUC"],
+        best_reg_model, f"{holdout_reg.loc[holdout_reg['RMSE'].idxmin(), 'RMSE']} min",
+        len(FEATURE_COLS), f"{len(train_cv_df):,}", f"{len(holdout_df):,}",
+        len(CV_FOLDS), f"{total_time} seconds",
+    ],
+})
+safe_display(insights, "Pipeline Summary")
+```
+
+For full project details see: [github.com/jonathanwilsonami/OR568_ML_Project](https://github.com/jonathanwilsonami/OR568_ML_Project)

@@ -1,0 +1,592 @@
+---
+title: "Phase 2: XGBoost with Weather & Propagation Features"
+subtitle: "Schedule, weather, and aircraft rotation features on 2019 U.S. domestic flights"
+date: today
+format:
+  html:
+    theme: cyborg
+    css: ../styles.css
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-summary: "Show code"
+    include-in-header:
+      - text: |
+          <link rel="stylesheet"
+                href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+  message: false
+bibliography: ../references.bib
+csl: https://www.zotero.org/styles/ieee
+link-citations: true
+---
+
+```{python}
+#| label: global-start
+#| include: false
+import time
+GLOBAL_START = time.perf_counter()
+```
+
+# Overview {.unnumbered}
+
+This phase extends the Phase 1 baseline with three progressively richer XGBoost feature sets:
+
+| Model | Features |
+|---|---|
+| `xgb_schedule` | Schedule / calendar only |
+| `xgb_weather_traffic` | Schedule + weather + route traffic |
+| `xgb_full_propagation` | All above + aircraft rotation / delay propagation |
+
+Evaluation follows the same expanding-window monthly CV and December holdout as Phase 1. 
+
+::: {.callout-note}
+This code does not run the ml-pipeline. The ml-pipeline was used to train the 10 year model and uses a much larger data set. If you would like to run that model see the `ml_pipeline` directory in the code base. Read the `README` to learn how to run the ml-pipeline. See the `config.py` if you wish to toggle the various pipeline parameters.  
+
+Variables and numbers in this code will not match with what is in the paper. However, the same process was followed for build the model what was discussed in the paper just a much smaller scale. The purpose of this page is to demonstrate the methodology. 
+:::
+
+# Setup
+
+```{python}
+#| label: imports
+from pathlib import Path
+import sys
+import importlib
+import warnings
+warnings.filterwarnings("ignore")
+
+import time
+import numpy as np
+import pandas as pd
+import polars as pl
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['figure.dpi'] = 120
+
+from sklearn.metrics import (
+    roc_auc_score, f1_score, precision_score, recall_score,
+    accuracy_score, mean_absolute_error, mean_squared_error, roc_curve,
+)
+from xgboost import XGBClassifier, XGBRegressor
+
+def timer_log(label, start_time):
+    elapsed = time.perf_counter() - start_time
+    print(f"[TIMER] {label}: {elapsed:.2f}s")
+```
+
+# Data Loading
+
+```{python}
+#| label: load-data
+t0 = time.perf_counter()
+
+pl.Config.set_tbl_rows(1000)
+pl.Config.set_tbl_cols(100)
+pl.Config.set_tbl_width_chars(200)
+
+# Quarto sets cwd to execute-dir (project root).
+# The shared-notebooks tree lives one level up from the project root.
+# Adjust SHARED_NOTEBOOKS_PATH if your layout differs.
+SHARED_NOTEBOOKS_PATH = Path(__file__).resolve().parent.parent / "shared-notebooks" \
+    if "__file__" in dir() else Path.cwd().parent / "shared-notebooks"
+
+# Fallback: walk upward looking for shared-notebooks (works when __file__ is unavailable)
+if not SHARED_NOTEBOOKS_PATH.exists():
+    _cur = Path.cwd()
+    while _cur != _cur.parent:
+        if (_cur / "shared-notebooks").exists():
+            SHARED_NOTEBOOKS_PATH = _cur / "shared-notebooks"
+            break
+        _cur = _cur.parent
+
+if not SHARED_NOTEBOOKS_PATH.exists():
+    raise RuntimeError(
+        f"Could not locate shared-notebooks. cwd={Path.cwd()}. "
+        "Set SHARED_NOTEBOOKS_PATH manually or check your project layout."
+    )
+
+utils_path = SHARED_NOTEBOOKS_PATH / "common_utils" / "python"
+if str(utils_path) not in sys.path:
+    sys.path.append(str(utils_path))
+
+import load_flight_data
+importlib.reload(load_flight_data)
+
+lf = load_flight_data.load_flight_data(file_name="flights_canonical_2019.parquet")
+
+timer_log("Load data", t0)
+```
+
+# Feature Engineering
+
+Features are grouped into:
+
+- **Calendar / schedule** — departure hour, weekday, month, holiday proximity, schedule block
+- **Weather** — temperature, wind speed/direction, ceiling height at origin and destination
+- **Traffic** — route frequency, airport flight volumes
+- **Rotation / propagation** — turnaround time, cumulative aircraft delay, 1- and 2-hop lag features
+
+::: {.callout-warning}
+**Leakage guard:** Raw `cum_arr_delay_aircraft_day` is *not* used as a feature because it can include the current flight's own arrival delay. The model uses `prior_cum_arr_delay_aircraft_day`, shifted by one flight within each `(tail_number, flight_date)` group.
+:::
+
+```{python}
+#| label: feature-engineering
+t0 = time.perf_counter()
+
+RAW_FEATURES = [
+    "flight_id", "tail_number", "reporting_airline", "origin", "dest",
+    "route_key", "distance", "flight_date",
+    "dep_hour_local", "dep_weekday_local", "dep_month_local",
+    "dep_ts_sched_utc", "dep_ts_actual_utc", "arr_ts_sched_utc", "arr_ts_actual_utc",
+    "dep_temp_c", "dep_wind_speed_m_s", "dep_wind_dir_deg", "dep_ceiling_height_m",
+    "arr_temp_c", "arr_wind_speed_m_s", "arr_wind_dir_deg", "arr_ceiling_height_m",
+    "prev_flight_id_same_tail", "next_flight_id_same_tail",
+    "prev_origin", "prev_dest", "next_origin", "next_dest",
+    "prev_arr_ts_actual_utc", "next_dep_ts_actual_utc",
+    "dep_delay", "dep_del15", "arr_delay", "arr_del15",
+    "prev_arr_delay", "prev_dep_delay", "next_arr_delay", "next_dep_delay",
+    "prev_arr_del15", "prev_dep_del15", "next_dep_del15", "next_arr_del15",
+    "prev_arr_late_15", "prev_dep_late_15", "next_arr_late_15", "next_dep_late_15",
+    "turnaround_minutes", "next_turnaround_minutes",
+    "rotation_continuity_flag", "next_rotation_continuity_flag",
+    "aircraft_leg_number_day", "cum_dep_delay_aircraft_day", "cum_arr_delay_aircraft_day",
+    "is_cancelled", "is_diverted", "crs_elapsed_time", "dep_time_blk", "arr_time_blk",
+]
+
+US_HOLIDAYS_2019 = [
+    "2019-01-01", "2019-01-21", "2019-02-18", "2019-05-27",
+    "2019-07-04", "2019-09-02", "2019-10-14", "2019-11-11",
+    "2019-11-28", "2019-12-25",
+]
+
+ml_lf = (
+    lf.select(RAW_FEATURES)
+    .filter(
+        (pl.col("is_cancelled") == 0) & (pl.col("is_diverted") == 0) &
+        pl.col("arr_del15").is_not_null() & pl.col("tail_number").is_not_null() &
+        pl.col("dep_ts_actual_utc").is_not_null() & pl.col("arr_ts_actual_utc").is_not_null()
+    )
+)
+
+lf_features = (
+    ml_lf
+    .with_columns([
+        pl.col("flight_date").cast(pl.Date),
+        pl.col("dep_ts_actual_utc").cast(pl.Datetime),
+        pl.col("arr_ts_actual_utc").cast(pl.Datetime),
+        pl.col("dep_month_local").cast(pl.Int8),
+    ])
+    .with_columns([
+        pl.when(pl.col("dep_hour_local") < 6).then(1)
+        .when(pl.col("dep_hour_local") < 11).then(2)
+        .when(pl.col("dep_hour_local") < 14).then(3)
+        .when(pl.col("dep_hour_local") < 18).then(4)
+        .when(pl.col("dep_hour_local") < 21).then(5)
+        .otherwise(6).alias("dep_time_bucket"),
+
+        pl.col("dep_weekday_local").is_in([6, 7]).cast(pl.Int8).alias("is_weekend"),
+        pl.col("flight_date").cast(pl.Utf8).is_in(US_HOLIDAYS_2019).cast(pl.Int8).alias("is_holiday"),
+
+        pl.min_horizontal([
+            (pl.col("flight_date").cast(pl.Date) - pl.lit(h).str.strptime(pl.Date))
+            .abs().dt.total_days()
+            for h in US_HOLIDAYS_2019
+        ]).alias("days_to_nearest_holiday"),
+
+        pl.len().over("route_key").alias("route_frequency"),
+        pl.len().over("origin").alias("origin_flight_volume"),
+        pl.len().over("dest").alias("dest_flight_volume"),
+        (pl.col("prev_arr_delay") > 15).cast(pl.Int8).alias("prev_arr_delayed_flag"),
+        (pl.col("prev_arr_delay") + pl.col("prev_dep_delay")).alias("prev_total_delay"),
+        (pl.col("turnaround_minutes") < 60).cast(pl.Int8).alias("tight_turnaround_flag"),
+        (
+            pl.col("aircraft_leg_number_day") /
+            pl.max("aircraft_leg_number_day").over(["tail_number", "flight_date"])
+        ).alias("relative_leg_position"),
+    ])
+)
+
+usa_2hop_lf = (
+    lf_features
+    .sort(["tail_number", "dep_ts_actual_utc"])
+    .with_columns([
+        pl.col("cum_dep_delay_aircraft_day").shift(1).over(["tail_number", "flight_date"]).fill_null(0).alias("prior_cum_dep_delay_aircraft_day"),
+        pl.col("cum_arr_delay_aircraft_day").shift(1).over(["tail_number", "flight_date"]).fill_null(0).alias("prior_cum_arr_delay_aircraft_day"),
+        # 1 hop back
+        pl.col("flight_id").shift(1).over("tail_number").alias("prev1_flight_id"),
+        pl.col("arr_delay").shift(1).over("tail_number").alias("prev1_arr_delay"),
+        pl.col("dep_delay").shift(1).over("tail_number").alias("prev1_dep_delay"),
+        pl.col("arr_del15").shift(1).over("tail_number").alias("prev1_arr_del15"),
+        pl.col("dep_del15").shift(1).over("tail_number").alias("prev1_dep_del15"),
+        # 2 hops back
+        pl.col("flight_id").shift(2).over("tail_number").alias("prev2_flight_id"),
+        pl.col("arr_delay").shift(2).over("tail_number").alias("prev2_arr_delay"),
+        pl.col("dep_delay").shift(2).over("tail_number").alias("prev2_dep_delay"),
+        pl.col("arr_del15").shift(2).over("tail_number").alias("prev2_arr_del15"),
+        pl.col("dep_del15").shift(2).over("tail_number").alias("prev2_dep_del15"),
+        # timing gaps
+        (pl.col("dep_ts_actual_utc") - pl.col("arr_ts_actual_utc").shift(1).over("tail_number"))
+            .dt.total_minutes().alias("prev1_turnaround_minutes"),
+        (pl.col("dep_ts_actual_utc") - pl.col("arr_ts_actual_utc").shift(2).over("tail_number"))
+            .dt.total_minutes().alias("time_since_prev2_arrival_minutes"),
+    ])
+    .filter(
+        pl.col("prev1_flight_id").is_not_null() & pl.col("prev2_flight_id").is_not_null() &
+        pl.col("prev1_turnaround_minutes").is_not_null() &
+        pl.col("time_since_prev2_arrival_minutes").is_not_null() &
+        pl.col("prev1_turnaround_minutes").is_between(0, 12 * 60) &
+        pl.col("time_since_prev2_arrival_minutes").is_between(0, 24 * 60)
+    )
+)
+
+flights = usa_2hop_lf.collect()
+
+print("Rows in final modeling table:", flights.height)
+print(flights.select(["flight_id", "tail_number", "origin", "dest", "arr_delay", "arr_del15"]).head())
+timer_log("Feature engineering + collect", t0)
+```
+
+# Feature Sets
+
+```{python}
+#| label: feature-sets
+xgb_schedule_features = [
+    "distance", "dep_hour_local", "dep_weekday_local", "dep_month_local",
+    "dep_time_bucket", "is_weekend", "is_holiday", "days_to_nearest_holiday", "crs_elapsed_time",
+]
+
+xgb_weather_traffic_features = xgb_schedule_features + [
+    "dep_temp_c", "dep_wind_speed_m_s", "dep_wind_dir_deg", "dep_ceiling_height_m",
+    "arr_temp_c", "arr_wind_speed_m_s", "arr_wind_dir_deg", "arr_ceiling_height_m",
+    "route_frequency", "origin_flight_volume", "dest_flight_volume",
+]
+
+xgb_full_features = xgb_weather_traffic_features + [
+    "turnaround_minutes", "tight_turnaround_flag", "rotation_continuity_flag",
+    "aircraft_leg_number_day", "relative_leg_position",
+    "prior_cum_dep_delay_aircraft_day", "prior_cum_arr_delay_aircraft_day",
+    "prev1_arr_delay", "prev1_dep_delay", "prev1_arr_del15", "prev1_dep_del15",
+    "prev2_arr_delay", "prev2_dep_delay", "prev2_arr_del15", "prev2_dep_del15",
+    "prev1_turnaround_minutes", "time_since_prev2_arrival_minutes",
+]
+
+TARGET_CLASS = "arr_del15"
+TARGET_REG   = "arr_delay"
+
+xgb_feature_sets = {
+    "xgb_schedule":         xgb_schedule_features,
+    "xgb_weather_traffic":  xgb_weather_traffic_features,
+    "xgb_full_propagation": xgb_full_features,
+}
+```
+
+# Train / CV / Holdout Split
+
+January through November are used for model development. **December is held out** and never seen during training or cross-validation.
+
+```{python}
+#| label: split-data
+t0 = time.perf_counter()
+
+flights = flights.with_columns([
+    pl.col("dep_ts_actual_utc").cast(pl.Datetime),
+    pl.col("flight_date").cast(pl.Date),
+    pl.col("dep_month_local").cast(pl.Int8),
+])
+
+train_cv_df = flights.filter(pl.col("dep_month_local") < 12)
+holdout_df  = flights.filter(pl.col("dep_month_local") == 12)
+
+print("Train/CV rows Jan–Nov:", train_cv_df.height)
+print("Final holdout rows Dec:", holdout_df.height)
+timer_log("Split", t0)
+```
+
+# Helper Functions
+
+```{python}
+#| label: helpers
+def safe_fill_and_to_pandas(df_pl: pl.DataFrame, cols: list[str]) -> pd.DataFrame:
+    out = df_pl.select(cols).to_pandas()
+    for c in out.columns:
+        if out[c].dtype.kind in "biufc":
+            out[c] = out[c].fillna(out[c].median())
+        else:
+            out[c] = out[c].fillna("missing")
+    return out
+
+def classification_metrics(y_true, y_prob, threshold=0.5):
+    y_pred = (y_prob >= threshold).astype(int)
+    return {
+        "auc":       roc_auc_score(y_true, y_prob),
+        "f1":        f1_score(y_true, y_pred, zero_division=0),
+        "precision": precision_score(y_true, y_pred, zero_division=0),
+        "recall":    recall_score(y_true, y_pred, zero_division=0),
+        "accuracy":  accuracy_score(y_true, y_pred),
+    }
+
+def regression_metrics(y_true, y_pred):
+    return {
+        "mae":  mean_absolute_error(y_true, y_pred),
+        "rmse": np.sqrt(mean_squared_error(y_true, y_pred)),
+    }
+
+def build_eval_table(results_dict):
+    rows = [{"model": k, **v} for k, v in results_dict.items()]
+    return pd.DataFrame(rows).sort_values("model").reset_index(drop=True)
+```
+
+# Expanding Window Cross-Validation
+
+Five folds, each adding one month to the training window:
+
+| Fold | Train | Validate |
+|------|-------|----------|
+| 1 | Jan – Jun | Jul |
+| 2 | Jan – Jul | Aug |
+| 3 | Jan – Aug | Sep |
+| 4 | Jan – Sep | Oct |
+| 5 | Jan – Oct | Nov |
+
+```{python}
+#| label: run-cv
+def month_time_cv_splits(df_pl):
+    return [
+        (m, df_pl.filter(pl.col("dep_month_local") < m), df_pl.filter(pl.col("dep_month_local") == m))
+        for m in [7, 8, 9, 10, 11]
+        if df_pl.filter(pl.col("dep_month_local") < m).height > 0
+    ]
+
+def run_xgb_month_cv(df_pl, feature_sets):
+    cv_rows_cls, cv_rows_reg = [], []
+    for model_name, cols in feature_sets.items():
+        print(f"\nRunning CV for {model_name}")
+        for val_month, train_fold, val_fold in month_time_cv_splits(df_pl):
+            t_fold = time.perf_counter()
+            X_train = safe_fill_and_to_pandas(train_fold, cols)
+            X_val   = safe_fill_and_to_pandas(val_fold,   cols)
+            y_train_cls = train_fold[TARGET_CLASS].to_pandas().astype(int)
+            y_val_cls   = val_fold[TARGET_CLASS].to_pandas().astype(int)
+            y_train_reg = train_fold[TARGET_REG].to_pandas().astype(float)
+            y_val_reg   = val_fold[TARGET_REG].to_pandas().astype(float)
+
+            clf = XGBClassifier(n_estimators=300, max_depth=6, learning_rate=0.05,
+                                subsample=0.8, colsample_bytree=0.8, eval_metric="logloss",
+                                random_state=42, n_jobs=-1, device="cpu")
+            clf.fit(X_train, y_train_cls)
+            y_prob = clf.predict_proba(X_val)[:, 1]
+            m = classification_metrics(y_val_cls, y_prob)
+            m.update({"model": model_name, "validation_month": val_month,
+                      "train_rows": train_fold.height, "validation_rows": val_fold.height})
+            cv_rows_cls.append(m)
+
+            reg = XGBRegressor(n_estimators=300, max_depth=6, learning_rate=0.05,
+                               subsample=0.8, colsample_bytree=0.8,
+                               random_state=42, n_jobs=-1, device="cpu")
+            reg.fit(X_train, y_train_reg)
+            y_pred_reg = reg.predict(X_val)
+            r = regression_metrics(y_val_reg, y_pred_reg)
+            r.update({"model": model_name, "validation_month": val_month,
+                      "train_rows": train_fold.height, "validation_rows": val_fold.height})
+            cv_rows_reg.append(r)
+            timer_log(f"  CV {model_name} month {val_month}", t_fold)
+
+    return pd.DataFrame(cv_rows_cls), pd.DataFrame(cv_rows_reg)
+
+
+t0 = time.perf_counter()
+xgb_cls_cv_table, xgb_reg_cv_table = run_xgb_month_cv(train_cv_df, xgb_feature_sets)
+
+cls_cv_mean_table = (
+    xgb_cls_cv_table.groupby("model")[["auc","f1","precision","recall","accuracy"]]
+    .mean().sort_values("auc", ascending=False)
+)
+reg_cv_mean_table = (
+    xgb_reg_cv_table.groupby("model")[["mae","rmse"]]
+    .mean().sort_values("mae", ascending=True)
+)
+
+print("\nClassification CV Mean Results")
+print(cls_cv_mean_table)
+print("\nRegression CV Mean Results")
+print(reg_cv_mean_table)
+timer_log("Month-based CV block", t0)
+```
+
+# Final Training: Jan–Nov → December Holdout
+
+```{python}
+#| label: final-training
+def train_xgb_models(train_df, test_df, feature_sets):
+    cls_results, reg_results, cls_preds, reg_preds, fitted_models = {}, {}, {}, {}, {}
+    y_train_cls = train_df[TARGET_CLASS].to_pandas().astype(int)
+    y_test_cls  = test_df[TARGET_CLASS].to_pandas().astype(int)
+    y_train_reg = train_df[TARGET_REG].to_pandas().astype(float)
+    y_test_reg  = test_df[TARGET_REG].to_pandas().astype(float)
+
+    for model_name, cols in feature_sets.items():
+        t_model = time.perf_counter()
+        X_train = safe_fill_and_to_pandas(train_df, cols)
+        X_test  = safe_fill_and_to_pandas(test_df,  cols)
+
+        clf = XGBClassifier(n_estimators=300, max_depth=6, learning_rate=0.05,
+                            subsample=0.8, colsample_bytree=0.8, eval_metric="logloss",
+                            random_state=42, n_jobs=-1, device="cpu")
+        clf.fit(X_train, y_train_cls)
+        y_prob = clf.predict_proba(X_test)[:, 1]
+
+        reg = XGBRegressor(n_estimators=300, max_depth=6, learning_rate=0.05,
+                           subsample=0.8, colsample_bytree=0.8,
+                           random_state=42, n_jobs=-1, device="cpu")
+        reg.fit(X_train, y_train_reg)
+        y_pred_reg = reg.predict(X_test)
+
+        cls_results[model_name]   = classification_metrics(y_test_cls, y_prob)
+        reg_results[model_name]   = regression_metrics(y_test_reg, y_pred_reg)
+        cls_preds[model_name]     = y_prob
+        reg_preds[model_name]     = y_pred_reg
+        fitted_models[model_name] = {"classifier": clf, "regressor": reg, "features": cols}
+
+        print(f"Done: {model_name}")
+        timer_log(f"  Final XGB {model_name}", t_model)
+
+    return cls_results, reg_results, cls_preds, reg_preds, fitted_models
+
+
+t0 = time.perf_counter()
+xgb_cls_results, xgb_reg_results, xgb_cls_preds, xgb_reg_preds, xgb_models = train_xgb_models(
+    train_cv_df, holdout_df, xgb_feature_sets,
+)
+timer_log("Final XGBoost block", t0)
+```
+
+# Final Holdout Results
+
+```{python}
+#| label: holdout-results
+cls_table = build_eval_table(xgb_cls_results).sort_values("auc", ascending=False)
+reg_table = build_eval_table(xgb_reg_results).sort_values("mae", ascending=True)
+
+print("Final December Holdout — Classification")
+print(cls_table.to_string(index=False))
+print("\nFinal December Holdout — Regression")
+print(reg_table.to_string(index=False))
+```
+
+# Visualizations
+
+## CV Summary
+
+```{python}
+#| label: fig-cv-bars
+#| fig-cap: "Cross-validation mean metrics across the three feature sets"
+#| fig-subcap:
+#|   - "Mean AUC (higher is better)"
+#|   - "Mean F1 (higher is better)"
+#|   - "Mean MAE — minutes (lower is better)"
+#|   - "Mean RMSE — minutes (lower is better)"
+#| layout-ncol: 2
+
+def plot_metric_bars(df, metric, title, sort_ascending=False):
+    plot_df = df.sort_values(metric, ascending=sort_ascending).copy()
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(plot_df["model"], plot_df[metric])
+    ax.set_xticklabels(plot_df["model"], rotation=30, ha="right")
+    ax.set_title(title); ax.set_ylabel(metric.upper())
+    fig.tight_layout(); plt.show()
+
+plot_metric_bars(cls_cv_mean_table.reset_index(), "auc",  "CV Mean AUC",  False)
+plot_metric_bars(cls_cv_mean_table.reset_index(), "f1",   "CV Mean F1",   False)
+plot_metric_bars(reg_cv_mean_table.reset_index(), "mae",  "CV Mean MAE",  True)
+plot_metric_bars(reg_cv_mean_table.reset_index(), "rmse", "CV Mean RMSE", True)
+```
+
+## December Holdout
+
+```{python}
+#| label: fig-holdout-bars
+#| fig-cap: "December holdout metrics across the three feature sets"
+#| fig-subcap:
+#|   - "AUC (higher is better)"
+#|   - "F1 (higher is better)"
+#|   - "MAE — minutes (lower is better)"
+#|   - "RMSE — minutes (lower is better)"
+#| layout-ncol: 2
+
+plot_metric_bars(cls_table, "auc",  "Holdout AUC",  False)
+plot_metric_bars(cls_table, "f1",   "Holdout F1",   False)
+plot_metric_bars(reg_table, "mae",  "Holdout MAE",  True)
+plot_metric_bars(reg_table, "rmse", "Holdout RMSE", True)
+```
+
+## ROC Curves
+
+```{python}
+#| label: fig-roc
+#| fig-cap: "ROC curves for all classification models on the December holdout"
+y_test_cls = holdout_df[TARGET_CLASS].to_pandas().astype(int)
+fig, ax = plt.subplots(figsize=(7, 6))
+for model_name in cls_table["model"].tolist():
+    y_prob = xgb_cls_preds[model_name]
+    fpr, tpr, _ = roc_curve(y_test_cls, y_prob)
+    ax.plot(fpr, tpr, label=f"{model_name}  AUC={roc_auc_score(y_test_cls, y_prob):.3f}")
+ax.plot([0, 1], [0, 1], linestyle="--", color="grey")
+ax.set_xlabel("False Positive Rate"); ax.set_ylabel("True Positive Rate")
+ax.set_title("ROC Curves: December Holdout"); ax.legend()
+fig.tight_layout(); plt.show()
+```
+
+## Actual vs Predicted
+
+```{python}
+#| label: fig-actual-vs-pred
+#| fig-cap: "Actual vs predicted arrival delay on the December holdout (5 000-flight sample)"
+best_reg_model = reg_table.iloc[0]["model"]
+y_test_reg     = holdout_df[TARGET_REG].to_pandas().astype(float)
+best_pred_reg  = xgb_reg_preds[best_reg_model]
+idx = np.random.RandomState(42).choice(len(y_test_reg), size=min(5000, len(y_test_reg)), replace=False)
+actual_sample = y_test_reg.iloc[idx].to_numpy()
+pred_sample   = np.array(best_pred_reg)[idx]
+min_val = min(actual_sample.min(), pred_sample.min())
+max_val = max(actual_sample.max(), pred_sample.max())
+slope, intercept = np.polyfit(actual_sample, pred_sample, 1)
+trend_x = np.linspace(min_val, max_val, 100)
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.scatter(actual_sample, pred_sample, alpha=0.3, s=8, label="Predictions")
+ax.plot([min_val, max_val], [min_val, max_val], linestyle="--", label="Perfect prediction")
+ax.plot(trend_x, slope*trend_x + intercept, linewidth=2,
+        label=f"Fitted trend: y={slope:.2f}x+{intercept:.2f}")
+ax.set_xlabel("Actual Arrival Delay (min)"); ax.set_ylabel("Predicted Arrival Delay (min)")
+ax.set_title(f"Actual vs Predicted — {best_reg_model}"); ax.legend()
+fig.tight_layout(); plt.show()
+```
+
+# Feature Importance
+
+```{python}
+#| label: fig-feature-importance
+#| fig-cap: "Top 20 feature importances for the best XGBoost classifier"
+best_name     = cls_table.iloc[0]["model"]
+best_xgb      = xgb_models[best_name]["classifier"]
+best_features = xgb_models[best_name]["features"]
+importance_df = (
+    pd.DataFrame({"feature": best_features, "importance": best_xgb.feature_importances_})
+    .sort_values("importance", ascending=False).head(20)
+)
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.barh(importance_df["feature"][::-1], importance_df["importance"][::-1])
+ax.set_title(f"Top 20 Feature Importances — {best_name}")
+fig.tight_layout(); plt.show()
+```
+
+# Pipeline Timing
+
+```{python}
+#| label: timing
+timer_log("TOTAL PIPELINE TIME", GLOBAL_START)
+```

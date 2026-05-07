@@ -9,38 +9,62 @@ code-tools: true
 
 # Purpose of This Page
 
-This page serves as the central entry point for understanding the machine learning workflow used throughout the project. It provides the setup, data pipeline, and reproducible code needed to run the models from start to finish. Its purpose is to help anyone on the team reproduce the analysis, rerun experiments, and understand how the project is organized so results can be generated consistently across different machines.
+This page is a walk through for the machine learning workflow used in this project. It provides a **reproducible, curated pipeline** from data ingestion → feature engineering → model training → evaluation.
 
-The shared-notebooks are more for exploratory work and prototyping, while this page is meant to be a more polished and reproducible version of the code that can be easily rerun by anyone on the team. The subpages under **ML Workflow** demonstrate how this workflow is applied to specific analyses, including focused market pair studies and full network-scale modeling.
-
-## Main Pages:
-
-- **Workflow Overview** —  Pipeline overview, setups, and execution (for both Python and R based environments)  
-- **BWI–NY Market Pair** — Focused corridor analysis and delay behavior  
-- **U.S. Domestic Network** — Nationwide analysis and network-level patterns  
-- **Shared Notebooks** — Exploratory analysis and rapid prototyping (excluded for now but found in code base)
+- Designed for **reproducibility across machines**
+- Distinct from `shared-notebooks`, which are used for **exploration and prototyping**
+- Subpages show how the workflow is applied to specific analyses
 
 ---
 
-# Project Overview
+## Project Phases
 
-This project was developed in two distinct but connected phases. The first phase focused on building a strong foundation in data engineering and predictive modeling, while the second phase expanded into system-level thinking — exploring how delays propagate through a network and how this framework can evolve into a broader digital twin.
+### **Phase 1 — Baseline (2019 Study)**
+- Built the **data pipeline and feature engineering framework**
+- Developed baseline models (linear + tree-based)
+- Validated that delay prediction is feasible
 
-## Phase 1: Data Pipeline and Predictive Modeling
+> Focus: *Establish a working ML pipeline*
 
-The first phase of the project focused on building a robust and reproducible machine learning workflow. This included sourcing and integrating data from the Bureau of Transportation Statistics (BTS) and NOAA weather datasets, constructing a scalable data pipeline, and engineering features suitable for predictive modeling.
+---
 
-Key efforts in this phase included data cleaning, temporal alignment of weather and flight records, and the creation of features such as time-of-day, route characteristics, and initial delay indicators. Multiple machine learning models were trained and evaluated using structured train-test splits and cross-validation to predict arrival delays and delay probabilities.
+### **Phase 2 — Multi-Year & System Modeling (2015–2025)**
+- Scaled to **~70M+ flights**
+- Introduced **propagation-aware features (2-hop aircraft rotation)**
+- Applied **time-aware validation and production-style evaluation**
 
-This phase established the core technical foundation of the project: a repeatable workflow that can ingest data, transform it, and produce predictive insights in a consistent and scalable manner.
+> Focus: *Model delay propagation and system behavior at scale*
 
-## Phase 2: Propagation, Network Effects, and System Thinking
+---
 
-The second phase expanded the project beyond isolated predictions into a system-level understanding of flight delays. Instead of treating each flight independently, delays were modeled as events that propagate through aircraft rotations, airport congestion, and temporal dependencies.
+### Note on Compute
 
-New features were introduced to capture these effects, including prior flight delays, turnaround time, and multi-hop propagation relationships. This allowed the model to better represent how disruptions spread across the network rather than occurring in isolation.
+- Full 10-year pipeline requires **significant resources**
+- This walk through uses a **2019 version** for reproducibility and demonstration of the process 
+- Same methods, smaller scale
 
-This phase also lays the groundwork for future extensions into digital twin systems, real-time data integration, and broader applications across domains such as drone coordination, construction systems, and intelligent infrastructure.
+See the **README** for running full pipelines.
+
+---
+
+## Main Pages
+
+- **Workflow Overview** — Setup, pipeline, execution  
+- **Phase 1: 2019 Study** — Baseline modeling  
+- **Phase 2: Multi-Year Study** — Scaled modeling  
+- **Shared Notebooks** — Exploratory work (codebase only)
+
+---
+
+## Toward a Online Model and Digital Twin
+
+This framework extends beyond prediction into a **real-time, system-level model**.
+
+Next steps:
+- Real-time data ingestion  
+- Continuous inference  
+- Forward simulation  
+- Full digital twin system  
 
 ---
 
@@ -48,7 +72,7 @@ This phase also lays the groundwork for future extensions into digital twin syst
 
 ## Project Setup and Environment
 
-To run the code on this site, you will need both the project environment and Quarto set up correctly. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.
+To run the code on this site, you will need both the project environment and Quarto set up correctly. See `README` in the repo for more details. The Conda environment manages the Python and R dependencies used throughout the project, while Quarto is used to render the notebooks and project pages into a reproducible website format. Some assumptions are made here such as you already have R, Python, git and Conda installed on your machine. If you do not have these installed, please refer to the official documentation for each tool to get them set up before proceeding.
 
 **Step 1: Clone the project**
 

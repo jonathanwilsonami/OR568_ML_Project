@@ -1,0 +1,592 @@
+---
+title: "OR568_Final_2026_0331"
+author: "V Sokolow"
+date: "2026-03-31"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(dplyr, skimr, tidyverse, caret, glmnet, janitor, ggplot2, lubridate, purrr,broom, arrow, recipes)
+
+#Select columns to keep
+bts_info <- c("year","month","dayof_month","day_of_week","flight_date","origin","dest","cancelled","dep_time_blk","crs_dep_time", "dep_time","dep_delay","taxi_out","wheels_off","air_time","wheels_on","arr_time_blk","crs_arr_time", "arr_time","arr_delay","taxi_in","distance","reporting_airline","dot_id_reporting_airline","iata_code_reporting_airline","tail_number")
+
+arr_weather_info <- c("arr_temp_c","arr_wind_speed_m_s","arr_wind_dir_deg")
+dep_weather_info <- c("dep_temp_c","dep_wind_speed_m_s","dep_wind_dir_deg")
+
+enriched_flights_NEW_2019 <- read_parquet("flights_canonical_2019.parquet") %>% 
+  clean_names() %>%
+  select(bts_info, arr_weather_info, dep_weather_info)
+```
+
+```{r}
+US_HOLIDAYS_2019 <- as_date(c(
+  "2019-01-01",  # New Year's Day
+  "2019-01-21",  # MLK Day
+  "2019-02-18",  # Presidents Day
+  "2019-05-27",  # Memorial Day
+  "2019-07-04",  # Independence Day
+  "2019-09-02",  # Labor Day
+  "2019-10-14",  # Columbus Day
+  "2019-11-11",  # Veterans Day
+  "2019-11-28",  # Thanksgiving
+  "2019-12-25"   # Christmas
+))
+
+# Create ±3‑day windows for each holiday
+holiday_windows <- map(US_HOLIDAYS_2019, ~ (.x - 3):(.x + 3)) %>%
+  flatten_int() %>%
+  as_date()
+
+
+flights_filtered <- enriched_flights_NEW_2019 %>%
+  # create flag for previous flight delayed
+  mutate(
+    dep_ts = ymd_hm(paste(flight_date, sprintf("%04d", dep_time))),
+    arr_ts = ymd_hm(paste(flight_date, sprintf("%04d", arr_time))),
+    # Fix overnight arrivals (arr_time < dep_time)
+    arr_ts = if_else(arr_ts < dep_ts, arr_ts + days(1), arr_ts),
+    # Flag holidays
+    is_holiday = as.integer(flight_date %in% holiday_windows)
+  ) %>%
+  arrange(tail_number, dep_ts) %>%
+  group_by(tail_number) %>%
+  mutate(
+    prev_arr_delay = lag(arr_delay),
+    prev_arr_ts    = lag(arr_ts),
+    time_since_prev = as.numeric(difftime(dep_ts, prev_arr_ts, units = "hours")),
+    prev_flight_late = prev_arr_delay > 15 & time_since_prev <= 8
+  ) %>%
+  ungroup() %>%
+  mutate(
+    is_dep_delay = factor(dep_delay > 15, levels = c(FALSE, TRUE)),
+    is_arr_delay = factor(arr_delay > 15, levels = c(FALSE, TRUE)),
+    hour_of_day = dep_time %/% 100,
+    # Fallback to lubridate if day_of_week column is absent
+    is_weekend = day_of_week %in% c("6", "7"),
+    ) %>%
+  group_by(hour_of_day) %>%
+  mutate(congestion = n()) %>%
+  ungroup %>%
+  filter(cancelled == '0')
+
+
+
+# Define the 5-fold Cross-Validation strategy
+set.seed(42)
+train_control <- trainControl(method = "cv", number = 5)
+```
+
+## Models
+### Departure Delay
+
+```{r}
+# Limit data to relevant variables
+dep_flight_filtered <- flights_filtered %>%
+  filter(cancelled == '0') %>%
+  filter(origin == "BWI") %>%
+  select(c("dep_delay","is_dep_delay","prev_flight_late","dep_temp_c","dep_wind_speed_m_s","reporting_airline","dep_time_blk","is_weekend","is_holiday")) %>%
+  # Scale weather vars
+  mutate(across(all_of(c("dep_temp_c","dep_wind_speed_m_s")), ~ as.numeric(scale(.))))
+
+
+dep_flight <- dep_flight_filtered %>%
+  filter(
+    !is.na(dep_delay),
+    !is.na(prev_flight_late),    
+    dep_delay >= -60,
+    dep_delay <= 1440,
+    !is.na(dep_temp_c),
+    !is.na(dep_wind_speed_m_s)
+
+  )
+
+```
+
+#### Regression
+##### Linear
+
+```{r, warning = FALSE}
+model_lm <- train(
+  dep_delay ~ prev_flight_late + dep_temp_c + dep_wind_speed_m_s + reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm <- function(model) {
+  cat("\n=== Linear Model Summary ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+}
+interpret_lm(model_lm)
+```
+
+##### Linear + PCA
+
+```{r}
+rec <- recipe(
+  dep_delay ~ prev_flight_late + dep_temp_c + dep_wind_speed_m_s +
+    reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight
+) %>%
+  step_normalize(dep_temp_c, dep_wind_speed_m_s) %>%
+  step_pca(dep_temp_c, dep_wind_speed_m_s, num_comp = 2)
+
+model_lm <- train(
+  rec,
+  data = dep_flight,
+  method = "lm",
+  trControl = train_control
+)
+
+interpret_pca_lm <- function(model) {
+  cat("\n=== Linear Model Summary (with PCA) ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+
+  cat("\n=== PCA Loadings ===\n")
+  print(tidy(model$recipe, number = 2))   # adjust step number if needed
+
+  cat("\n=== PCA Variance Explained ===\n")
+  print(model$recipe$steps[[2]]$res)      # variance explained
+}
+
+
+interpret_pca_lm(model_lm)
+```
+
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_dep_delay ~ prev_flight_late + dep_temp_c + dep_wind_speed_m_s + reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+
+interpret_classification <- function(model, data) {
+  cat("\n=== Classification Performance ===\n")
+  print(model$results)
+
+  cat("\n=== Confusion Matrix ===\n")
+  preds <- predict(model, newdata = dep_flight)
+  print(caret::confusionMatrix(preds, dep_flight$is_dep_delay))
+
+  if ("prob" %in% model$control$classProbs) {
+    cat("\n=== ROC / AUC ===\n")
+    probs <- predict(model, newdata = data, type = "prob")[,2]
+    roc_obj <- pROC::roc(response = data$delay_flag, predictor = probs)
+    print(pROC::auc(roc_obj))
+  }
+}
+
+interpret_classification(model_logit)
+
+```
+
+```{r}
+# Predicted vs Actual — Linear Regression
+dep_flight$predictions <- predict(model_lm, newdata = dep_flight)
+
+ggplot(dep_flight, aes(x = dep_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Departure Delay",
+    x = "Actual Departure Delay (min)",
+    y = "Predicted Departure Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+
+
+### Arrival Delay
+
+```{r}
+# Limit data to relevant variables
+arr_flight_filtered <- flights_filtered %>%
+  filter(cancelled == '0') %>%
+  filter(dest == "BWI") %>%
+  select(c("arr_delay","is_arr_delay","is_dep_delay","arr_temp_c","arr_wind_speed_m_s","reporting_airline","arr_time_blk","is_weekend","congestion","is_holiday")) %>%
+  # Scale weather vars
+  mutate(across(all_of(c("arr_temp_c","arr_wind_speed_m_s")), ~ as.numeric(scale(.))))
+
+
+arr_flight <- arr_flight_filtered %>%
+  filter(
+    !is.na(arr_delay),
+    !is.na(is_dep_delay),    
+    arr_delay >= -60,
+    arr_delay <= 1440,
+    !is.na(arr_temp_c),
+    !is.na(arr_wind_speed_m_s)
+
+  )
+
+```
+
+#### Regression
+##### Linear
+
+```{r}
+model_lm <- train(
+  arr_delay ~ is_dep_delay + arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm <- function(model) {
+  cat("\n=== Linear Model Summary ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+}
+interpret_lm(model_lm)
+```
+
+##### Linear + PCA
+
+```{r}
+rec <- recipe(
+  arr_delay ~ is_dep_delay + arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight
+) %>%
+  step_normalize(arr_temp_c, arr_wind_speed_m_s) %>%
+  step_pca(arr_temp_c, arr_wind_speed_m_s, num_comp = 2)
+
+model_lm <- train(
+  rec,
+  data = arr_flight,
+  method = "lm",
+  trControl = train_control
+)
+
+
+interpret_pca_lm <- function(model) {
+  cat("\n=== Linear Model Summary (with PCA) ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+
+  cat("\n=== PCA Loadings ===\n")
+  print(tidy(model$recipe, number = 2))   # adjust step number if needed
+
+  cat("\n=== PCA Variance Explained ===\n")
+  print(model$recipe$steps[[2]]$res)      # variance explained
+}
+
+
+interpret_pca_lm(model_lm)
+```
+
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_arr_delay ~ is_dep_delay + arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+
+interpret_classification <- function(model, data) {
+  cat("\n=== Classification Performance ===\n")
+  print(model$results)
+
+  cat("\n=== Confusion Matrix ===\n")
+  preds <- predict(model, newdata = arr_flight)
+  print(caret::confusionMatrix(preds, arr_flight$is_arr_delay))
+
+  if ("prob" %in% model$control$classProbs) {
+    cat("\n=== ROC / AUC ===\n")
+    probs <- predict(model, newdata = data, type = "prob")[,2]
+    roc_obj <- pROC::roc(response = data$delay_flag, predictor = probs)
+    print(pROC::auc(roc_obj))
+  }
+}
+
+interpret_classification(model_logit)
+```
+
+
+##### Arrival Delay Performance 
+
+```{r}
+# Predicted vs Actual — Linear Regression
+arr_flight$predictions <- predict(model_lm, newdata = arr_flight)
+
+ggplot(arr_flight, aes(x = arr_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Arrival Delay",
+    x = "Actual Arrival Delay (min)",
+    y = "Predicted Arrival Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+#### Non-inherited delays
+
+##### Departure Delay where previous incoming flight is not delayed
+```{r}
+dep_flight <- dep_flight %>%
+  filter(prev_flight_late == FALSE)
+```
+
+
+#### Regression
+##### Linear
+
+```{r, warning = FALSE}
+model_lm <- train(
+  dep_delay ~ dep_temp_c + dep_wind_speed_m_s + reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm <- function(model) {
+  cat("\n=== Linear Model Summary ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+}
+interpret_lm(model_lm)
+```
+
+##### Linear + PCA
+
+```{r}
+rec <- recipe(
+  dep_delay ~ dep_temp_c + dep_wind_speed_m_s +
+    reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight
+) %>%
+  step_normalize(dep_temp_c, dep_wind_speed_m_s) %>%
+  step_pca(dep_temp_c, dep_wind_speed_m_s, num_comp = 2)
+
+model_lm <- train(
+  rec,
+  data = dep_flight,
+  method = "lm",
+  trControl = train_control
+)
+
+interpret_pca_lm <- function(model) {
+  cat("\n=== Linear Model Summary (with PCA) ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+
+  cat("\n=== PCA Loadings ===\n")
+  print(tidy(model$recipe, number = 2))   # adjust step number if needed
+
+  cat("\n=== PCA Variance Explained ===\n")
+  print(model$recipe$steps[[2]]$res)      # variance explained
+}
+
+
+interpret_pca_lm(model_lm)
+```
+
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_dep_delay ~ dep_temp_c + dep_wind_speed_m_s + reporting_airline + dep_time_blk + is_weekend + is_holiday,
+  data = dep_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+
+interpret_classification <- function(model, data) {
+  cat("\n=== Classification Performance ===\n")
+  print(model$results)
+
+  cat("\n=== Confusion Matrix ===\n")
+  preds <- predict(model, newdata = dep_flight)
+  print(caret::confusionMatrix(preds, dep_flight$is_dep_delay))
+
+  if ("prob" %in% model$control$classProbs) {
+    cat("\n=== ROC / AUC ===\n")
+    probs <- predict(model, newdata = data, type = "prob")[,2]
+    roc_obj <- pROC::roc(response = data$delay_flag, predictor = probs)
+    print(pROC::auc(roc_obj))
+  }
+}
+
+interpret_classification(model_logit)
+
+```
+
+```{r}
+# Predicted vs Actual — Linear Regression
+dep_flight$predictions <- predict(model_lm, newdata = dep_flight)
+
+ggplot(dep_flight, aes(x = dep_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Departure Delay",
+    x = "Actual Departure Delay (min)",
+    y = "Predicted Departure Delay (min)"
+  ) +
+  theme_minimal()
+```
+
+##### Arrival Delay where flight not delayed upon departure
+```{r}
+arr_flight <- arr_flight %>%
+  filter(is_dep_delay == FALSE)
+```
+
+
+#### Regression
+##### Linear
+
+```{r}
+model_lm <- train(
+  arr_delay ~ arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight, method = "lm", trControl = train_control
+)
+
+interpret_lm <- function(model) {
+  cat("\n=== Linear Model Summary ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+}
+interpret_lm(model_lm)
+```
+
+##### Linear + PCA
+
+```{r}
+rec <- recipe(
+  arr_delay ~ arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight
+) %>%
+  step_normalize(arr_temp_c, arr_wind_speed_m_s) %>%
+  step_pca(arr_temp_c, arr_wind_speed_m_s, num_comp = 2)
+
+model_lm <- train(
+  rec,
+  data = arr_flight,
+  method = "lm",
+  trControl = train_control
+)
+
+
+interpret_pca_lm <- function(model) {
+  cat("\n=== Linear Model Summary (with PCA) ===\n")
+  print(summary(model$finalModel))
+
+  cat("\n=== Coefficients (sorted by |estimate|) ===\n")
+  coef_tbl <- broom::tidy(model$finalModel) %>%
+    dplyr::mutate(abs_est = abs(estimate)) %>%
+    dplyr::arrange(desc(abs_est))
+  print(coef_tbl)
+
+  cat("\n=== PCA Loadings ===\n")
+  print(tidy(model$recipe, number = 2))   # adjust step number if needed
+
+  cat("\n=== PCA Variance Explained ===\n")
+  print(model$recipe$steps[[2]]$res)      # variance explained
+}
+
+
+interpret_pca_lm(model_lm)
+```
+
+
+#### Classification
+##### Logistic Regression
+
+```{r}
+model_logit <- train(
+  is_arr_delay ~ arr_temp_c + arr_wind_speed_m_s + reporting_airline + arr_time_blk + is_weekend + congestion + is_holiday,
+  data = arr_flight, method = "glm",
+  family = "binomial",
+  trControl = train_control
+)
+
+interpret_classification <- function(model, data) {
+  cat("\n=== Classification Performance ===\n")
+  print(model$results)
+
+  cat("\n=== Confusion Matrix ===\n")
+  preds <- predict(model, newdata = arr_flight)
+  print(caret::confusionMatrix(preds, arr_flight$is_arr_delay))
+
+  if ("prob" %in% model$control$classProbs) {
+    cat("\n=== ROC / AUC ===\n")
+    probs <- predict(model, newdata = data, type = "prob")[,2]
+    roc_obj <- pROC::roc(response = data$delay_flag, predictor = probs)
+    print(pROC::auc(roc_obj))
+  }
+}
+
+interpret_classification(model_logit)
+```
+
+
+##### Arrival Delay Performance 
+
+```{r}
+# Predicted vs Actual — Linear Regression
+arr_flight$predictions <- predict(model_lm, newdata = arr_flight)
+
+ggplot(arr_flight, aes(x = arr_delay, y = predictions)) +
+  geom_point(alpha = 0.4, color = "darkgreen") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Linear Regression: Actual vs. Predicted Arrival Delay",
+    x = "Actual Arrival Delay (min)",
+    y = "Predicted Arrival Delay (min)"
+  ) +
+  theme_minimal()
+```
+
